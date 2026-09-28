@@ -1,0 +1,16 @@
+{
+  "name": "업무 일정",
+  "short_name": "일정",
+  "description": "달력·할 일·메모와 업무 사이클 분석을 한 화면에서 다루는 일정 앱",
+  "lang": "ko",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f6f9",
+  "theme_color": "#f6f6f9",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
