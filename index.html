@@ -114,7 +114,15 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .edit-tip{font-size:11px;color:var(--ink-2);margin-top:5px}
 .crow{display:flex;align-items:center;gap:9px;padding:9px 14px;border-bottom:1px solid var(--hair)}
 .crow input[type=text]{flex:1;min-width:0;background:var(--field);border:0;border-radius:9px;padding:8px 11px;font-size:15px}
-.crow input[type=color]{width:40px;height:34px;border:0;background:none;padding:0;cursor:pointer}
+.crow input[type=color]{width:38px;height:34px;border:1px solid var(--line);border-radius:9px;
+ background:none;padding:2px;cursor:pointer;flex:none}
+.crow input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+.crow input[type=color]::-webkit-color-swatch{border:0;border-radius:6px}
+.crow .cbtn2{flex:none;width:30px;height:30px;display:grid;place-items:center;border-radius:8px;
+ font-size:14px;color:var(--ink-3)}
+.crow .cbtn2:hover{background:var(--field);color:var(--ink)}
+.crow .cnt{flex:none;font-size:11px;color:var(--ink-3);min-width:26px;text-align:right}
+.crow input[type=text][readonly]{background:transparent;cursor:default}
 .crow .mv{color:var(--ink-3);font-size:16px;padding:4px 5px}
 .frow{display:flex;padding:8px 16px}
 .frow input{flex:1;min-width:0;background:var(--field);border:0;border-radius:10px;padding:11px 13px;font-size:15px}
@@ -493,7 +501,8 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 <div class="sheet" id="catSheet">
   <div class="sheet-bar"><h2>분류 설정</h2><button data-close="catSheet">완료</button></div>
   <div class="sheet-body"><div class="card" style="margin-top:12px">
-    <div class="hint-txt">이름과 색을 업무에 맞게 바꾸세요. 달력에 이 색으로 표시됩니다.</div>
+    <div class="hint-txt">색 상자를 누르면 색을, ✎ 를 누르거나 글자를 클릭하면 이름을 바꿉니다.
+      ↑ 로 순서를 올리고, × 로 삭제합니다. 오른쪽 숫자는 그 분류를 쓰는 일정 수입니다.</div>
     <div id="catList"></div>
     <div class="crow"><button id="addCat" style="color:var(--indigo);font-size:14.5px;font-weight:600">분류 추가</button></div>
   </div></div>
@@ -513,7 +522,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v19</span></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v20</span></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
   <div class="setrow"><label>데이터 백업</label><button id="expBtn">파일로 저장</button></div>
@@ -1300,18 +1309,33 @@ $('catMenu').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;
   else{curCat=v;localStorage.setItem('cur-cat',v);paintCatBtn();}
 };
 function renderCats(){
-  $('catList').innerHTML=store.cats.map((c,i)=>`<div class="crow">
-    <input type="color" value="${c.color}" data-i="${i}" data-f="color">
-    <input type="text" value="${esc(c.name)}" data-i="${i}" data-f="name">
-    <button class="mv" data-cdel="${i}">×</button></div>`).join('');
+  $('catList').innerHTML=store.cats.map((c,i)=>{
+    const used=store.items.filter(x=>x.cat===c.id).length;
+    return `<div class="crow">
+    <input type="color" value="${c.color}" data-i="${i}" data-f="color" title="색 바꾸기">
+    <input type="text" value="${esc(c.name)}" data-i="${i}" data-f="name" data-name="${i}">
+    <span class="cnt">${used?used+'건':''}</span>
+    <button class="cbtn2" data-cedit="${i}" title="이름 수정">✎</button>
+    <button class="cbtn2" data-cup="${i}" title="위로">↑</button>
+    <button class="cbtn2" data-cdel="${i}" title="삭제">×</button></div>`;}).join('');
 }
 $('catList').oninput=e=>{const t=e.target;if(t.dataset.i===undefined)return;
   const c=store.cats[+t.dataset.i];
   if(t.dataset.f==='name')c.name=t.value;else c.color=t.value;
   store.catsMt=NOW();save();paintCatBtn();};
-$('catList').onclick=e=>{const d=e.target.closest('[data-cdel]');if(!d)return;
-  if(store.cats.length<=2)return;
+$('catList').onclick=e=>{
+  const ed=e.target.closest('[data-cedit]');
+  if(ed){const inp=$('catList').querySelector(`input[data-name="${ed.dataset.cedit}"]`);
+    if(inp){inp.focus();inp.select();}return;}
+  const up=e.target.closest('[data-cup]');
+  if(up){const i=+up.dataset.cup;if(i>0){
+    [store.cats[i-1],store.cats[i]]=[store.cats[i],store.cats[i-1]];
+    store.catsMt=NOW();save();renderCats();}return;}
+  const d=e.target.closest('[data-cdel]');if(!d)return;
+  if(store.cats.length<=2){alert('분류는 최소 2개가 필요합니다.');return;}
   const i=+d.dataset.cdel,gone=store.cats[i].id;
+  const used=store.items.filter(x=>x.cat===gone).length;
+  if(used&&!confirm(`'${store.cats[i].name}' 분류를 삭제하면 이 분류의 일정 ${used}건이 '${store.cats[0].id===gone?store.cats[1].name:store.cats[0].name}'으로 옮겨집니다. 계속할까요?`))return;
   store.cats.splice(i,1);store.catsMt=NOW();
   const fb=store.cats[0].id;
   store.items.forEach(it=>{if(it.cat===gone){it.cat=fb;touch(it);}});
