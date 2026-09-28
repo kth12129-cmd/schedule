@@ -138,7 +138,31 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .weekdays span:first-child{color:var(--red)}
 .weekdays span:last-child{color:var(--sat)}
 .grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,1fr)}
-.cell{position:relative;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.cell{position:relative;min-height:0;display:flex;flex-direction:column;align-items:stretch;
+ justify-content:flex-start;gap:2px;padding:3px 3px 2px;overflow:hidden}
+.cell>.num{align-self:center;flex:none}
+.evs{display:flex;flex-direction:column;gap:2px;min-height:0;overflow:hidden}
+.ev{display:flex;align-items:center;gap:3px;font-size:9.5px;line-height:1.45;
+ padding:1px 4px 1px 3px;border-radius:3px;overflow:hidden;flex:none;
+ background:color-mix(in srgb,var(--c) 14%,transparent);border-left:2px solid var(--c)}
+.ev .evn{flex:none;font-size:8.5px;font-weight:700;color:var(--c);opacity:.7}
+.ev .evt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ color:var(--c);font-weight:600;text-align:left}
+.ev.dl{background:var(--red);border-left-color:var(--red)}
+.ev.dl .evt,.ev.dl .evn{color:#fff;opacity:1}
+.ev.done{opacity:.42}
+.ev.done .evt{text-decoration:line-through;font-weight:500}
+.ev.pri .evt{font-weight:800}
+.ev.more{background:none;border-left-color:transparent;padding-left:5px}
+.ev.more .evt{color:var(--ink-3);font-weight:700}
+.cell.dim .ev{opacity:.38}
+@media (max-width:660px){
+  .ev{font-size:0;height:4px;padding:0;border-radius:2px;border-left:0;
+    background:var(--c);gap:0}
+  .ev .evn,.ev .evt{display:none}
+  .ev.more{display:none}
+  .cell{padding:2px}
+}
 .num{width:var(--numsz);height:calc(var(--numsz) - 3px);border-radius:8px;display:grid;place-items:center;
  font-size:var(--numfs);font-weight:450;letter-spacing:-.02em;transition:background .13s,color .13s}
 .cell.dim .num{color:var(--ink-3)}
@@ -489,6 +513,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v19</span></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
   <div class="setrow"><label>데이터 백업</label><button id="expBtn">파일로 저장</button></div>
@@ -646,9 +671,10 @@ function renderMonth(){
     const evs=[...dls.map(x=>({t:x.stage,dl:true})),
       ...its.map(i=>({t:i.title,c:catOf(i.cat).color,done:i.done,pri:i.pri}))];
     const MAX=3;
-    let ev=evs.slice(0,MAX).map(e=>`<span class="ev${e.dl?' dl':''}${e.done?' done':''}${e.pri?' pri':''}"${
-      e.c?` style="--c:${e.c}"`:''}>${esc(e.t)}</span>`).join('');
-    if(evs.length>MAX)ev+=`<span class="ev more">+${evs.length-MAX}</span>`;
+    let ev=evs.slice(0,MAX).map((e,n)=>
+      `<span class="ev${e.dl?' dl':''}${e.done?' done':''}${e.pri?' pri':''}" style="--c:${e.c||'var(--red)'}">`+
+      `<b class="evn">${n+1}</b><span class="evt">${esc(e.t)}</span></span>`).join('');
+    if(evs.length>MAX)ev+=`<span class="ev more"><span class="evt">+${evs.length-MAX}건 더</span></span>`;
     h+=`<button class="${cl.join(' ')}" data-d="${k}">${memo?'<i class="memoflag"></i>':''}`+
        `<span class="num">${d.getDate()}</span>${hol?`<span class="holname">${esc(hol)}</span>`:''}`+
        `<span class="evs">${ev}</span></button>`;
@@ -1399,7 +1425,7 @@ $('v-cal').addEventListener('wheel',onWheel,{passive:false});
 $('v-year').addEventListener('wheel',onWheel,{passive:false});
 
 if('serviceWorker'in navigator)addEventListener('load',()=>{
-  navigator.serviceWorker.register('sw.js').catch(()=>{});});
+  navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});});
 
 paintCatBtn();
 renderMonth();renderDay();renderBanner();notify();
