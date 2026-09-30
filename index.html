@@ -97,17 +97,16 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .yrlist{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .yrlist button{background:var(--field);border-radius:10px;padding:9px 0;font-size:14.5px;font-weight:600;color:var(--ink-2)}
 .yrlist button.on{background:var(--ink);color:var(--surface)}
-.clock{flex:none;display:flex;align-items:baseline;gap:10px;padding:6px 14px;
- border:1px solid #1b2228;border-radius:11px;background:#0b0e11;
+.clock{flex:none;height:38px;display:flex;align-items:center;gap:9px;padding:0 13px;
+ border-radius:19px;background:#171a20;border:1px solid #23272f;
  font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
- font-variant-numeric:tabular-nums;white-space:nowrap;user-select:none;
- box-shadow:inset 0 0 14px rgba(57,255,154,.07),0 1px 3px rgba(0,0,0,.25)}
-.clock .cd{font-size:12px;font-weight:600;color:#2fe08c;letter-spacing:.06em;
- text-shadow:0 0 7px rgba(47,224,140,.55)}
-.clock .ct{font-size:18px;font-weight:700;color:#3dff9f;letter-spacing:.11em;line-height:1;
- text-shadow:0 0 9px rgba(61,255,159,.75),0 0 20px rgba(61,255,159,.28)}
-.clock .cs{font-size:12px;font-weight:600;color:#3dff9f;opacity:.7;letter-spacing:.07em;
- margin-left:-6px;text-shadow:0 0 7px rgba(61,255,159,.5)}
+ font-variant-numeric:tabular-nums;white-space:nowrap;user-select:none}
+.clock .cd{font-size:11px;font-weight:500;color:#8b93a0;letter-spacing:.04em}
+.clock .ct{font-size:15.5px;font-weight:600;color:#d8dde5;letter-spacing:.07em;line-height:1}
+.clock .cs{font-size:11px;font-weight:500;color:#5f8f7e;letter-spacing:.04em;margin-left:-5px}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .clock{background:#111419;border-color:#242932}
+}
 @media (max-width:900px){.clock .cd{display:none}}
 @media (max-width:620px){.clock{display:none}}
 .catbtn{flex:none;display:flex;align-items:center;gap:6px;background:var(--surface);
@@ -249,7 +248,7 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .day-head .cnt{font-size:12.5px;color:var(--ink-2)}
 .list{list-style:none;margin:0;padding:0;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .list .item:last-child{border-bottom:0}
-.tlall{flex:none;display:flex;flex-wrap:wrap;gap:4px;padding:6px 10px;border-top:1px solid var(--hair);
+.tlall{flex:none;display:flex;flex-wrap:wrap;gap:4px;padding:7px 12px;border-bottom:1px solid var(--hair);
  max-height:52px;overflow-y:auto}
 .tlall:empty{display:none}
 .tlchip{font-size:10.5px;font-weight:600;padding:2px 6px;border-radius:4px;line-height:1.4;
@@ -259,7 +258,6 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .tlchip.done{opacity:.45;text-decoration:line-through}
 .tlwrap{flex:1;min-height:0;overflow-y:auto;border-top:1px solid var(--hair);
  -webkit-overflow-scrolling:touch;position:relative}
-.tlall + .tlwrap{border-top:0}
 .tl{position:relative;width:100%}
 .tlrow{position:absolute;left:0;right:0;border-top:1px solid var(--hair)}
 .tlrow.half{border-top-style:dotted;opacity:.55}
@@ -500,8 +498,8 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   </div>
   <div class="card pane list-pane">
     <div class="day-head"><h2 id="dayTitle"></h2><span class="cnt" id="dayCnt"></span></div>
-    <ul class="list" id="list"></ul>
     <div class="tlall" id="tlall"></div>
+    <ul class="list" id="list"></ul>
     <div class="tlwrap" id="tlwrap"><div class="tl" id="tl"></div></div>
   </div>
   <div class="card pane memo-pane">
@@ -564,7 +562,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v26</span></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v27</span></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
   <div class="setrow"><label>데이터 백업</label><button id="expBtn">파일로 저장</button></div>
