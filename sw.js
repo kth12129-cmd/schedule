@@ -1,4 +1,4 @@
-const CACHE = 'schedule-v8';
+const CACHE = 'schedule-v12';
 const ASSETS = ['./','./index.html','./manifest.json',
   './icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
 
