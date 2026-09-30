@@ -135,11 +135,11 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .catmenu button:hover{background:var(--field)}
 .catmenu button.on{background:var(--field);font-weight:650}
 .catmenu i{width:11px;height:11px;border-radius:4px;flex:none}
-.cattag{font-size:11px;font-weight:700;color:var(--c);line-height:1;
- padding:2px 6px;border-radius:5px;background:color-mix(in srgb,var(--c) 13%,transparent)}
+.cattag{font-size:10px;font-weight:700;color:var(--c);line-height:1;
+ padding:2px 5px;border-radius:4px;background:color-mix(in srgb,var(--c) 13%,transparent)}
 .cattag:active{opacity:.6}
-.edit-in{width:100%;background:var(--field);border:0;border-radius:9px;
- padding:7px 10px;font-size:15.5px;line-height:1.35}
+.edit-in{width:100%;background:var(--field);border:0;border-radius:8px;
+ padding:6px 9px;font-size:14px;line-height:1.35}
 .edit-in:focus{outline:2px solid var(--indigo);outline-offset:-1px}
 .edit-tip{font-size:11px;color:var(--ink-2);margin-top:5px}
 .crow{display:flex;align-items:center;gap:9px;padding:9px 14px;border-bottom:1px solid var(--hair)}
@@ -262,9 +262,9 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 
 .day-head{flex:none;display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:2px 8px;
  padding:10px 13px 8px;border-bottom:2px solid var(--navy)}
-.day-head h2{margin:0;font-size:16.5px;font-weight:680;letter-spacing:-.03em}
-.day-head .wd{font-size:13px;color:var(--ink-2);font-weight:500;margin-left:5px}
-.day-head .cnt{font-size:12.5px;color:var(--ink-2)}
+.day-head h2{margin:0;font-size:15px;font-weight:700;letter-spacing:-.03em}
+.day-head .wd{font-size:12px;color:var(--ink-2);font-weight:500;margin-left:5px}
+.day-head .cnt{font-size:11.5px;color:var(--ink-2)}
 .list{list-style:none;margin:0;padding:0;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .list .item:last-child{border-bottom:0}
 .tlall{flex:none;display:flex;flex-wrap:wrap;gap:4px;padding:7px 12px;border-bottom:1px solid var(--hair);
@@ -294,40 +294,40 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .tlnow{position:absolute;left:28px;right:0;height:0;border-top:2px solid var(--red);z-index:3}
 .tlnow::before{content:"";position:absolute;left:-4px;top:-4px;width:7px;height:7px;
  border-radius:50%;background:var(--red)}
-.item{position:relative;display:grid;grid-template-columns:23px minmax(0,1fr) auto;gap:0 9px;
- padding:10px 12px 10px 13px;border-bottom:1px solid var(--hair)}
+.item{position:relative;display:grid;grid-template-columns:21px minmax(0,1fr) auto;gap:0 8px;
+ padding:8px 11px 8px 12px;border-bottom:1px solid var(--hair)}
 .item:last-child{border-bottom:0}
 .item::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:2.5px;border-radius:0 2px 2px 0;background:transparent}
 .item.pri::before{background:var(--amber)}
 .item.dl::before{background:var(--red)}
-.check{grid-column:1;align-self:start;margin-top:2px;width:21px;height:21px;border-radius:7px;border:1.7px solid var(--ink-3);display:grid;place-items:center}
+.check{grid-column:1;align-self:start;margin-top:2px;width:19px;height:19px;border-radius:6px;border:1.6px solid var(--ink-3);display:grid;place-items:center}
 .check svg{width:12px;height:12px;stroke:#fff;stroke-width:3;fill:none;opacity:0}
 .item.done .check{background:var(--moss);border-color:var(--moss)}
 .item.done .check svg{opacity:1}
 .check.locked{border-color:var(--red);border-style:dashed}
 .body{grid-column:2;min-width:0}
 .meta{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-bottom:3px;line-height:1}
-.no{font-size:10.5px;font-weight:700;color:var(--surface);background:var(--ink-3);min-width:16px;height:16px;padding:0 4px;border-radius:5px;display:grid;place-items:center}
+.no{font-size:9.5px;font-weight:700;color:var(--surface);background:var(--ink-3);min-width:15px;height:15px;padding:0 4px;border-radius:4px;display:grid;place-items:center}
 .item.pri .no{background:var(--amber)}.item.dl .no{background:var(--red)}
-.mdate{font-size:11.5px;color:var(--ink-2)}
-.mtime{font-size:11.5px;font-weight:700;color:var(--teal);background:color-mix(in srgb,var(--teal) 12%,var(--surface));padding:2px 6px;border-radius:5px}
+.mdate{font-size:10.5px;color:var(--ink-2)}
+.mtime{font-size:10.5px;font-weight:700;color:var(--teal);background:color-mix(in srgb,var(--teal) 12%,var(--surface));padding:1px 5px;border-radius:4px}
 .item.done .mtime{color:var(--ink-2);background:var(--chip)}
-.mtag{font-size:10.5px;color:var(--red);font-weight:700}
+.mtag{font-size:9.5px;color:var(--red);font-weight:700}
 .mtag.pri{color:var(--amber)}
-.title{font-size:16px;word-break:break-word;line-height:1.38;letter-spacing:-.015em}
+.title{font-size:14px;word-break:break-word;line-height:1.4;letter-spacing:-.01em}
 .item.pri .title{font-weight:620}
 .item.done .title{color:var(--ink-2);text-decoration:line-through}
 .caret{font-size:10px;color:var(--ink-3);margin-left:5px;vertical-align:2px}
 .acts{grid-column:3;display:flex;flex-direction:column;align-items:center;gap:0}
-.acts button{width:27px;height:25px;display:grid;place-items:center;font-size:13px;color:var(--ink-3);border-radius:7px}
+.acts button{width:24px;height:22px;display:grid;place-items:center;font-size:12px;color:var(--ink-3);border-radius:6px}
 .acts .flag.on{color:var(--amber)}
 .acts .note-btn.has{color:var(--indigo)}
 .note{grid-column:2;overflow:hidden;max-height:0;opacity:0;margin-top:0;transition:max-height .22s,opacity .18s,margin .22s}
-.note-inner{font-size:13.5px;line-height:1.6;color:var(--ink-2);border-left:2px solid var(--line);padding:1px 0 1px 10px;white-space:pre-wrap;word-break:break-word}
+.note-inner{font-size:12.5px;line-height:1.55;color:var(--ink-2);border-left:2px solid var(--line);padding:1px 0 1px 9px;white-space:pre-wrap;word-break:break-word}
 @media (hover:hover) and (pointer:fine){.item:hover .note.has{max-height:340px;opacity:1;margin-top:8px}}
 .item.open .note.has,.item.open .note.edit{max-height:340px;opacity:1;margin-top:8px}
 .note textarea{width:100%;min-height:66px;resize:vertical;background:var(--field);border:0;border-radius:10px;padding:9px 11px;font-size:14px;line-height:1.5}
-.empty{padding:20px 16px;color:var(--ink-2);font-size:14.5px}
+.empty{padding:18px 14px;color:var(--ink-2);font-size:13px}
 .memo-label{flex:none;display:flex;align-items:baseline;justify-content:flex-end;
  font-size:11.5px;font-weight:700;color:var(--ink-2);letter-spacing:.05em;margin-bottom:7px}
 .memo-label .mlab{display:none;margin-right:auto}
@@ -664,7 +664,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v30</span></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v31</span></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
   <div class="setrow"><label>데이터 백업</label><button id="expBtn">파일로 저장</button></div>
