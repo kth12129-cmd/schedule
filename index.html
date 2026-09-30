@@ -97,15 +97,19 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .yrlist{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .yrlist button{background:var(--field);border-radius:10px;padding:9px 0;font-size:14.5px;font-weight:600;color:var(--ink-2)}
 .yrlist button.on{background:var(--ink);color:var(--surface)}
-.clock{flex:none;display:flex;align-items:baseline;gap:7px;padding:5px 12px;
- border:1px solid var(--line);border-radius:12px;background:var(--surface);
+.clock{flex:none;display:flex;align-items:baseline;gap:10px;padding:6px 14px;
+ border:1px solid #1b2228;border-radius:11px;background:#0b0e11;
  font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
- font-variant-numeric:tabular-nums;white-space:nowrap;user-select:none}
-.clock .cd{font-size:11.5px;color:var(--ink-2);letter-spacing:.02em}
-.clock .ct{font-size:16px;font-weight:600;color:var(--ink);letter-spacing:.06em}
-.clock .cs{font-size:11.5px;color:var(--ink-3);letter-spacing:.04em;margin-left:-4px}
-@media (max-width:820px){.clock .cd{display:none}}
-@media (max-width:560px){.clock{display:none}}
+ font-variant-numeric:tabular-nums;white-space:nowrap;user-select:none;
+ box-shadow:inset 0 0 14px rgba(57,255,154,.07),0 1px 3px rgba(0,0,0,.25)}
+.clock .cd{font-size:12px;font-weight:600;color:#2fe08c;letter-spacing:.06em;
+ text-shadow:0 0 7px rgba(47,224,140,.55)}
+.clock .ct{font-size:18px;font-weight:700;color:#3dff9f;letter-spacing:.11em;line-height:1;
+ text-shadow:0 0 9px rgba(61,255,159,.75),0 0 20px rgba(61,255,159,.28)}
+.clock .cs{font-size:12px;font-weight:600;color:#3dff9f;opacity:.7;letter-spacing:.07em;
+ margin-left:-6px;text-shadow:0 0 7px rgba(61,255,159,.5)}
+@media (max-width:900px){.clock .cd{display:none}}
+@media (max-width:620px){.clock{display:none}}
 .catbtn{flex:none;display:flex;align-items:center;gap:6px;background:var(--surface);
  border:1px solid var(--line);border-radius:19px;padding:7px 12px 7px 10px;font-size:13.5px;color:var(--ink-2);white-space:nowrap}
 .catbtn i{width:9px;height:9px;border-radius:3px;background:var(--c,var(--ink-3));display:inline-block}
@@ -244,7 +248,8 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .day-head .wd{font-size:13px;color:var(--ink-2);font-weight:500;margin-left:5px}
 .day-head .cnt{font-size:12.5px;color:var(--ink-2)}
 .list{list-style:none;margin:0;padding:0;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.tlall{flex:none;display:flex;flex-wrap:wrap;gap:4px;padding:6px 10px;border-bottom:1px solid var(--hair);
+.list .item:last-child{border-bottom:0}
+.tlall{flex:none;display:flex;flex-wrap:wrap;gap:4px;padding:6px 10px;border-top:1px solid var(--hair);
  max-height:52px;overflow-y:auto}
 .tlall:empty{display:none}
 .tlchip{font-size:10.5px;font-weight:600;padding:2px 6px;border-radius:4px;line-height:1.4;
@@ -252,8 +257,9 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
  max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tlchip.dl{background:var(--red);color:#fff;border-left-color:var(--red)}
 .tlchip.done{opacity:.45;text-decoration:line-through}
-.tlwrap{flex:1;min-height:0;overflow-y:auto;border-bottom:1px solid var(--hair);
+.tlwrap{flex:1;min-height:0;overflow-y:auto;border-top:1px solid var(--hair);
  -webkit-overflow-scrolling:touch;position:relative}
+.tlall + .tlwrap{border-top:0}
 .tl{position:relative;width:100%}
 .tlrow{position:absolute;left:0;right:0;border-top:1px solid var(--hair)}
 .tlrow.half{border-top-style:dotted;opacity:.55}
@@ -494,9 +500,9 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   </div>
   <div class="card pane list-pane">
     <div class="day-head"><h2 id="dayTitle"></h2><span class="cnt" id="dayCnt"></span></div>
+    <ul class="list" id="list"></ul>
     <div class="tlall" id="tlall"></div>
     <div class="tlwrap" id="tlwrap"><div class="tl" id="tl"></div></div>
-    <ul class="list" id="list"></ul>
   </div>
   <div class="card pane memo-pane">
     <div class="memo-label"><span class="mlab">메모</span><span class="saved" id="saved">저장됨</span></div>
@@ -558,7 +564,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v25</span></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v26</span></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
   <div class="setrow"><label>데이터 백업</label><button id="expBtn">파일로 저장</button></div>
@@ -1457,7 +1463,7 @@ $('tl').onclick=e=>{const b=e.target.closest('[data-go]');if(!b)return;
 function tickClock(){
   const n=new Date();
   const k=`${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}`;
-  $('clock').querySelector('.cd').textContent=`${n.getMonth()+1}.${pad(n.getDate())} ${WD[n.getDay()]}`;
+  $('clock').querySelector('.cd').textContent=`${n.getFullYear()}.${pad(n.getMonth()+1)}.${pad(n.getDate())} ${WD[n.getDay()]}`;
   $('clock').querySelector('.ct').textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}`;
   $('clock').querySelector('.cs').textContent=pad(n.getSeconds());
   if(k!==TODAY&&document.activeElement===document.body
