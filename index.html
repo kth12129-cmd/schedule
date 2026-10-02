@@ -625,10 +625,8 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
     </div>
     <div class="hsec hsec-list"><span class="ptitle">일정 목록</span></div>
     <div class="hsec hsec-memo">
-      <span class="ptitle">메모</span>
       <span class="hspace"></span>
       <button class="hbtn" id="zoomOut" data-tip="원래 크기로">⤡</button>
-      <button class="hbtn txt" id="todayBtn" data-tip="오늘 날짜로 이동">오늘</button>
       <button class="hbtn" id="findBtn" data-tip="날짜 찾기">⌕</button>
       <button class="hbtn" id="miniBtn" data-tip="항상 위 미니 창">⧉</button>
       <button class="hbtn" id="analyBtn" data-tip="업무 사이클 분석">◱</button>
@@ -728,7 +726,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v38</span></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v39</span></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
   <div class="setrow"><label>데이터 백업</label><button id="expBtn">파일로 저장</button></div>
@@ -1423,7 +1421,7 @@ $('yrList').onclick=e=>{const b=e.target.closest('[data-y]');if(!b)return;
   else{view.setFullYear(y);renderMonth();}};
 $('prev').onclick=()=>{if(tab==='year'){yearView--;renderYear();}else{view.setMonth(view.getMonth()-1);renderMonth();}};
 $('next').onclick=()=>{if(tab==='year'){yearView++;renderYear();}else{view.setMonth(view.getMonth()+1);renderMonth();}};
-$('todayBtn').onclick=()=>{yearView=today.getFullYear();goto(TODAY);};
+
 $('analyBtn').onclick=()=>{renderChips();runQuery($('q').value||'');$('anSheet').classList.add('open');};
 $('findBtn').onclick=()=>openFind(false);$('findBtn2').onclick=()=>openFind(true);
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{
