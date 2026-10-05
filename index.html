@@ -59,17 +59,32 @@ input,textarea,select{font:inherit;color:inherit}
 .memo-pane textarea.memo{margin:9px 11px 11px;width:calc(100% - 22px)}
 /* 좁은 화면(휴대폰)에서는 위아래로 쌓기 */
 @media (max-width:660px){
+  /* 휴대폰: 화면을 고정하지 않고 자연스럽게 스크롤되게 한다 */
+  html,body{height:auto;min-height:100%;overflow:visible}
+  body{display:block;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+  header{position:sticky;top:0}
+  .brandbar{position:sticky;top:0;z-index:26}
   .navbar{max-width:620px;padding:10px 16px 8px}
   .hsec-list{display:none}
   .hsec-cal{flex:1}
   .hsec-memo{flex:none}
   .hsec-memo .ptitle{display:none}
   .memo-label .mlab{display:inline}
-  .view{flex-direction:column;max-width:620px;gap:8px}
-  .rightcol{flex:6;gap:8px}
-  .botrow{flex-direction:column;gap:8px}
-  .cal-pane{flex:6}.list-pane{flex:2.6}.tl-pane{flex:1.4}.memo-pane{flex:1.4}
-  .list{column-count:1}
+  .view{display:block;max-width:620px;padding:0 10px 14px}
+  .view.on{display:block}
+  #banner{padding:0 10px}
+  .rightcol{display:block}
+  .botrow{display:block}
+  .pane,.card{display:block}
+  .cal-pane{display:flex;flex-direction:column;height:62vh;margin-bottom:9px}
+  .list-pane{display:flex;flex-direction:column;margin-bottom:9px}
+  .list{column-count:1;overflow:visible;max-height:none}
+  .tl-pane{display:flex;flex-direction:column;height:300px;margin-bottom:9px}
+  .tlwrap{flex:1;min-height:0}
+  .memo-pane{display:flex;flex-direction:column;margin-bottom:9px}
+  .memo-pane textarea.memo{min-height:150px;flex:none}
+  .composer{position:sticky;bottom:0;z-index:31}
+  .ctip{max-width:min(250px,calc(100vw - 20px))}
 }
 .card{background:var(--surface);border-radius:10px;border:1px solid var(--line);
  box-shadow:0 1px 2px rgba(4,26,114,.05);overflow:hidden}
@@ -283,6 +298,21 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .newrow input{width:100%;background:var(--field);border:0;border-radius:8px;padding:7px 9px;font-size:14px}
 .newrow input:focus{outline:2px solid var(--navy);outline-offset:-1px}
 .newrow .nh{font-size:10.5px;color:var(--ink-2);margin-top:4px}
+.thumb{margin-top:5px;max-width:100%;max-height:110px;border-radius:6px;border:1px solid var(--line);
+ cursor:zoom-in;display:block}
+.hasimg{display:inline-block;font-size:9.5px;font-weight:700;color:var(--globe);margin-left:4px}
+.lightbox{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.85);display:none;
+ align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:22px}
+.lightbox.on{display:flex}
+.lightbox img{max-width:100%;max-height:78vh;border-radius:8px;background:#fff}
+.lightbox .lbt{color:#fff;font-size:14px;font-weight:600;text-align:center;max-width:90%}
+.lightbox .lba{display:flex;gap:10px}
+.lightbox button{background:rgba(255,255,255,.15);color:#fff;border-radius:9px;
+ padding:9px 17px;font-size:14px;font-weight:600}
+.lightbox button.del{background:rgba(224,56,44,.75)}
+.imgbtn{font-size:12px;font-weight:700;color:var(--navy);padding:3px 8px;border-radius:7px;
+ border:1px solid color-mix(in srgb,var(--navy) 35%,transparent);margin-left:6px}
+.imgbtn:hover{background:color-mix(in srgb,var(--navy) 8%,transparent)}
 .list{list-style:none;margin:0;padding:6px 4px;flex:1;min-height:0;overflow-y:auto;
  -webkit-overflow-scrolling:touch;column-count:2;column-gap:10px;column-fill:auto}
 .list>li{break-inside:avoid;-webkit-column-break-inside:avoid;page-break-inside:avoid}
@@ -315,6 +345,9 @@ body.dragging .cell{transition:background .1s}
  font-size:10px;line-height:1.25;cursor:pointer}
 .tlev .t{font-weight:700;color:var(--c);font-size:8.5px;opacity:.85}
 .tlev .n{font-weight:600;color:var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlev.auto{height:auto;min-height:15px;padding-bottom:2px;z-index:1}
+.tlev.auto .n{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3;word-break:break-word}
+.tlev:hover{z-index:4}
 .tlev.done{opacity:.45}
 .tlev.done .n{text-decoration:line-through}
 .tlev.pri{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--amber) 60%,transparent)}
@@ -346,7 +379,7 @@ body.dragging .cell{transition:background .1s}
 .item.pri .title{font-weight:620}
 .item.done .title{color:var(--ink-2);text-decoration:line-through}
 .caret{font-size:10px;color:var(--ink-3);margin-left:5px;vertical-align:2px}
-.acts{grid-column:3;display:grid;grid-template-columns:repeat(2,18px);grid-auto-rows:16px;
+.acts{grid-column:3;display:grid;grid-template-columns:repeat(2,18px);grid-auto-rows:15px;
  gap:1px;align-content:start;margin-top:1px}
 .acts button{width:18px;height:16px;display:grid;place-items:center;font-size:10.5px;
  color:var(--ink-3);border-radius:4px;line-height:1}
@@ -645,7 +678,8 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="rightcol">
   <div class="card pane list-pane">
     <div class="day-head"><h2 id="dayTitle"></h2><span class="cnt" id="dayCnt"></span>
-      <button class="addbtn" id="addItemBtn">+ 추가</button></div>
+      <button class="addbtn" id="addItemBtn">+ 추가</button>
+      <button class="imgbtn" id="imgBtn" title="캡처 이미지로 일정 만들기">📷</button></div>
     <div class="tlall" id="tlall"></div>
     <ul class="list" id="list"></ul>
   </div>
@@ -712,6 +746,12 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   </div></div>
 </div>
 <input type="file" id="impFile" accept="application/json,.json" style="display:none">
+<input type="file" id="imgFile" accept="image/*" style="display:none">
+<div class="lightbox" id="lbox">
+  <div class="lbt" id="lbTitle"></div>
+  <img id="lbImg" alt="">
+  <div class="lba"><button id="lbDel" class="del">이미지 삭제</button><button id="lbClose">닫기</button></div>
+</div>
 <div class="pop left" id="yrPop">
   <div class="pop-title">연도 선택</div>
   <div class="yrlist" id="yrList"></div>
@@ -726,7 +766,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v40</span></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v43</span></div>
   <div class="setrow"><label>앱으로 설치</label><button id="instBtn">방법 보기</button></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
@@ -979,7 +1019,10 @@ function renderDay(){
       <div class="acts"><button class="flag${i.pri?' on':''}" data-act="pri" data-tip="${i.pri?'중요 해제':'중요 표시'}">${i.pri?'★':'☆'}</button>
         <button data-act="edit" data-tip="내용 수정">✎</button>
         <button class="note-btn${has?' has':''}" data-act="open" data-tip="메모">≡</button>
+        <button data-act="img" data-tip="${i.img?'이미지 교체':'이미지 첨부'}"
+          style="${i.img?'color:var(--globe)':''}">📷</button>
         <button class="tip-r" data-act="del" data-tip="삭제">×</button></div>
+      ${i.img?`<img class="thumb" src="${i.img}" data-img="${i.id}" alt="">`:''}
       <div class="note ${isOpen?'edit':(has?'has':'')}">${isOpen
         ?`<textarea data-note="${i.id}" placeholder="">${esc(i.note||'')}</textarea>`
         :(has?`<div class="note-inner">${esc(i.note)}</div>`:'')}</div></li>`;});
@@ -1019,11 +1062,13 @@ function renderTL(){
   let body='';
   evs.forEach(e=>{
     const c=catColor(e.i);
-    const top=e.a/60*HH,hgt=Math.max(15,(e.b-e.a)/60*HH-1);
+    const top=e.a/60*HH;
+    const fixed=!!e.i.endTime;
+    const hgt=Math.max(15,(e.b-e.a)/60*HH-1);
     const w=100/N;
-    const span=e.i.endTime?`${e.i.time}~${e.i.endTime}`:e.i.time;
-    body+=`<div class="tlev${e.i.done?' done':''}${e.i.pri?' pri':''}" data-go="${e.i.id}"
-      style="--c:${c};top:${top}px;height:${hgt}px;left:${e.lane*w}%;width:calc(${w}% - 3px)"
+    const span=fixed?`${e.i.time}~${e.i.endTime}`:e.i.time;
+    body+=`<div class="tlev${fixed?'':' auto'}${e.i.done?' done':''}${e.i.pri?' pri':''}" data-go="${e.i.id}"
+      style="--c:${c};top:${top}px;${fixed?`height:${hgt}px;`:''}left:${e.lane*w}%;width:calc(${w}% - 3px)"
       title="${esc(span+' '+e.i.title)}">
       <div class="t">${span}</div><div class="n">${e.i.pri?'★ ':''}${esc(e.i.title)}</div></div>`;});
   if(sel===TODAY){
@@ -1516,12 +1561,16 @@ document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{
   else k=addDays(TODAY,+j);
   closeFind();goto(k);});
 
-$('list').onclick=e=>{const btn=e.target.closest('[data-act]');if(!btn)return;
+$('list').onclick=e=>{
+  const im=e.target.closest('[data-img]');
+  if(im){openLB(im.dataset.img);return;}
+  const btn=e.target.closest('[data-act]');if(!btn)return;
   const li=btn.closest('.item');if(!li||!li.dataset.id)return;
   const it=store.items.find(i=>i.id===li.dataset.id);if(!it)return;
   const a=btn.dataset.act;
   if(a==='toggle'){it.done=!it.done;it.doneAt=it.done?new Date().toISOString().slice(0,16).replace('T',' '):null;touch(it);}
   else if(a==='edit'){editItem=editItem===it.id?null:it.id;openNote=null;renderDay();return;}
+  else if(a==='img'){imgTarget=it.id;$('imgFile').click();return;}
   else if(a==='cat'){openCatMenu(it.id,false);return;}
   else if(a==='pri'){it.pri=!it.pri;touch(it);}
   else if(a==='del'){store.tomb[it.id]=NOW();store.items=store.items.filter(i=>i.id!==it.id);}
@@ -1987,6 +2036,70 @@ async function openMini(){
 }
 $('miniBtn').onclick=openMini;
 if(!MINI_OK)$('miniBtn').style.display='none';
+
+/* ── 캡처 이미지로 일정 등록 ── */
+function shrinkImage(file,cb){
+  const r=new FileReader();
+  r.onload=()=>{
+    const im=new Image();
+    im.onload=()=>{
+      const MAX=1280;
+      let w=im.width,h=im.height;
+      if(w>MAX||h>MAX){const k=MAX/Math.max(w,h);w=Math.round(w*k);h=Math.round(h*k);}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);
+      let q=0.72,out=c.toDataURL('image/jpeg',q);
+      while(out.length>420000&&q>0.35){q-=0.12;out=c.toDataURL('image/jpeg',q);}
+      cb(out);
+    };
+    im.onerror=()=>alert('이미지를 읽지 못했습니다.');
+    im.src=r.result;
+  };
+  r.onerror=()=>alert('파일을 읽지 못했습니다.');
+  r.readAsDataURL(file);
+}
+function attachImage(file,targetId){
+  if(!file||!/^image\//.test(file.type))return;
+  shrinkImage(file,data=>{
+    if(targetId){
+      const it=store.items.find(x=>x.id===targetId);
+      if(it){it.img=data;touch(it);save();renderDay();renderMonth();}
+      return;}
+    const n=new Date();
+    store.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+      date:sel,endDate:null,time:null,endTime:null,
+      title:`캡처 ${pad(n.getHours())}:${pad(n.getMinutes())}`,pri:false,
+      cats:curCats.slice(),cat:curCats[0],img:data,note:'',done:false,doneAt:null,mt:NOW()});
+    save();renderDay();renderMonth();renderBanner();
+  });
+}
+$('imgBtn').onclick=()=>{imgTarget=null;$('imgFile').click();};
+let imgTarget=null;
+$('imgFile').onchange=e=>{const f=e.target.files&&e.target.files[0];
+  if(f)attachImage(f,imgTarget);imgTarget=null;e.target.value='';};
+document.addEventListener('paste',e=>{
+  const t=e.target;
+  if(t&&/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
+  const items=(e.clipboardData&&e.clipboardData.items)||[];
+  for(const it of items){
+    if(it.type&&it.type.startsWith('image/')){
+      const f=it.getAsFile();
+      if(f){e.preventDefault();attachImage(f,editItem||null);return;}
+    }
+  }
+});
+let lbId=null;
+function openLB(id){
+  const it=store.items.find(x=>x.id===id);if(!it||!it.img)return;
+  lbId=id;$('lbImg').src=it.img;$('lbTitle').textContent=it.title;
+  $('lbox').classList.add('on');
+}
+$('lbClose').onclick=()=>{$('lbox').classList.remove('on');lbId=null;};
+$('lbox').onclick=e=>{if(e.target===$('lbox'))$('lbClose').click();};
+$('lbDel').onclick=()=>{
+  const it=store.items.find(x=>x.id===lbId);
+  if(it){delete it.img;touch(it);save();renderDay();renderMonth();}
+  $('lbClose').click();};
 
 $('addItemBtn').onclick=()=>{adding=!adding;editItem=null;openNote=null;renderDay();};
 /* 터치 기기: 항목을 길게 누르면 날짜 선택 창으로 옮기기 */
