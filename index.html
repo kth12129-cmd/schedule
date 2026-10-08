@@ -766,7 +766,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v43</span></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v44</span></div>
   <div class="setrow"><label>앱으로 설치</label><button id="instBtn">방법 보기</button></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
@@ -1712,6 +1712,15 @@ function redrawAll(){renderMonth();renderDay();renderBanner();
 
 /* ── Supabase 백엔드 ── */
 const SBCFG='sb-config';
+(function(){
+  const m=(location.hash||'').match(/sb=([A-Za-z0-9_\-]+)/);
+  if(!m)return;
+  try{
+    const j=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));
+    if(j&&j.url&&j.key)localStorage.setItem(SBCFG,JSON.stringify({url:j.url,key:j.key}));
+  }catch(e){}
+  history.replaceState(null,'',location.pathname+location.search);
+})();
 const sbCfg=()=>{try{return JSON.parse(localStorage.getItem(SBCFG)||'null');}catch(e){return null;}};
 function sbInit(){
   const cfg=sbCfg();
@@ -1727,7 +1736,7 @@ function sbInit(){
 }
 async function onAuth(){
   renderAuth();
-  if(!session){setSync('','로그인하면 기기끼리 연동됩니다');return;}
+  if(!session){setSync('','로그인 필요 · 기기끼리 연동 안 됨');return;}
   setSync('busy','불러오는 중…');
   const {data,error}=await SB.from('app_state').select('data')
     .eq('user_id',session.user.id).maybeSingle();
@@ -1781,9 +1790,20 @@ function renderAuth(){
     return;
   }
   box.innerHTML=`<div class="hint-txt"><b>${esc(session.user.email||'로그인됨')}</b> 으로 연결되어 있습니다.
-    다른 기기에서도 같은 계정으로 로그인하면 자동으로 맞춰집니다.</div>
+    다른 기기에서도 <b>같은 계정으로 로그인해야</b> 내용이 맞춰집니다.
+    휴대폰과 PC, 홈 화면에 추가한 앱은 저장 공간이 각각 달라서 로그인 전에는 서로 보이지 않습니다.</div>
+    <div class="frow"><button class="go2" id="aShare">다른 기기용 연결 주소 복사</button></div>
+    <div class="hint-txt" id="shMsg">복사한 주소를 다른 기기에서 열면 서버 설정이 자동으로 들어갑니다. 로그인만 하면 됩니다.</div>
     <div class="frow"><button class="go2 sec" id="aOut">로그아웃</button></div>
     <div class="frow"><button class="lnk" id="sbReset">서버 연결 정보 지우기</button></div>`;
+  $('aShare').onclick=async()=>{
+    const c=sbCfg();if(!c)return;
+    const b64=btoa(unescape(encodeURIComponent(JSON.stringify({url:c.url,key:c.key}))))
+      .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    const link=location.origin+location.pathname+'#sb='+b64;
+    try{await navigator.clipboard.writeText(link);$('shMsg').textContent='복사했습니다. 다른 기기에서 이 주소를 열어 로그인하세요.';}
+    catch(e){prompt('이 주소를 복사해 다른 기기에서 여세요',link);}
+  };
   $('aOut').onclick=async()=>{await SB.auth.signOut();session=null;backend='sb';setSync('','로그아웃됨');renderAuth();};
   $('sbReset').onclick=()=>{localStorage.removeItem(SBCFG);location.reload();};
 }
