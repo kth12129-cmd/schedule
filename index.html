@@ -66,8 +66,11 @@ input,textarea,select{font:inherit;color:inherit}
   .brandbar{position:sticky;top:0;z-index:26}
   .navbar{max-width:620px;padding:10px 16px 8px}
   .hsec-list{display:none}
-  .hsec-cal{flex:1}
-  .hsec-memo{flex:none}
+  .hsec-cal{flex:0 1 auto;min-width:0}
+  .hsec-memo{flex:1 1 auto;min-width:0;justify-content:flex-end;
+   -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 14px);
+   mask-image:linear-gradient(90deg,transparent 0,#000 14px)}
+  .hsec-memo .hbtn{width:38px;height:38px;font-size:19px}
   .hsec-memo .ptitle{display:none}
   .memo-label .mlab{display:inline}
   .view{display:block;max-width:620px;padding:0 10px 14px}
@@ -184,6 +187,11 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .go2.sec{background:var(--field);color:var(--ink)}
 .lnk{font-size:12.5px;color:var(--ink-3)}
 .pop.left{left:12px;right:auto;transform-origin:top left}
+.hsec-memo{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+ scroll-snap-type:x proximity;padding:2px 0;position:relative}
+.hsec-memo::-webkit-scrollbar{display:none}
+.hsec-memo .hspace{flex:1 1 auto;min-width:0}
+.hsec-memo .hbtn{scroll-snap-align:end}
 .hbtn{flex:none;width:42px;height:42px;border-radius:10px;display:grid;place-items:center;
  background:var(--surface);box-shadow:var(--shadow);font-size:21px;line-height:1;color:var(--ink-2);
  transition:transform .1s,color .12s}
@@ -573,6 +581,9 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .srow .unit{font-size:12.5px;color:var(--ink-2)}
 .srow .mv{color:var(--ink-3);font-size:16px;padding:4px 5px}
 .hint-txt{padding:14px 16px;font-size:12.5px;color:var(--ink-2);line-height:1.65}
+.diag{display:none;margin:0 16px 12px;padding:11px 12px;background:var(--field);border-radius:9px;
+ font:12px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-2);
+ white-space:pre-wrap;word-break:break-all}
 .rec-day{padding:14px 16px 5px;font-size:11.5px;font-weight:700;color:var(--ink-2);letter-spacing:.04em}
 .rec-item{display:grid;grid-template-columns:20px 44px 1fr;gap:9px;padding:7px 16px;font-size:14.5px;align-items:baseline}
 .rec-item .rn{font-size:10.5px;font-weight:700;color:var(--ink-3);text-align:right}
@@ -766,7 +777,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v44</span></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v45</span></div>
   <div class="setrow"><label>앱으로 설치</label><button id="instBtn">방법 보기</button></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
@@ -1686,8 +1697,9 @@ function payload(){return{items:store.items,tomb:store.tomb,memos:store.memos,me
   stages:store.stages,stagesMt:store.stagesMt,cats:store.cats,catsMt:store.catsMt,
   settings:store.settings,settingsMt:store.settingsMt,
   at:new Date().toISOString()};}
-function schedulePush(){if(!docRef)return;dirty=true;
-  clearTimeout(pushT);pushT=setTimeout(doPush,1100);}
+function schedulePush(){
+  if(backend!=='sb'&&!docRef)return;   /* Supabase 모드에는 docRef 가 없다 */
+  dirty=true;clearTimeout(pushT);pushT=setTimeout(doPush,1100);}
 async function doPush(){
   if(pushing||!dirty)return;
   if(backend==='sb'){
@@ -1754,6 +1766,31 @@ async function onAuth(){
         if(d&&mergeRemote(d)){save(false);redrawAll();}})
     .subscribe();
 }
+async function runDiag(out){
+  const L=[],say=t=>{L.push(t);out.textContent=L.join('\n');};
+  out.style.display='block';
+  const cfg=sbCfg();
+  say('① 서버 주소 : '+(cfg&&cfg.url?cfg.url:'없음 ✗'));
+  say('② 키 : '+(cfg&&cfg.key?cfg.key.slice(0,12)+'…('+cfg.key.length+'자)':'없음 ✗'));
+  say('③ 라이브러리 : '+(window.supabase?'불러옴':'실패 ✗ — 인터넷 연결을 확인하세요'));
+  if(!cfg||!cfg.url||!cfg.key||!window.supabase)return;
+  if(!SB){say('④ 연결 : 생성 안 됨 ✗ — 새로고침해 보세요');return;}
+  try{
+    const r=await fetch(cfg.url+'/auth/v1/health',{headers:{apikey:cfg.key}});
+    say('④ 서버 응답 : '+r.status+(r.ok?' 정상':' ✗ — 키가 틀렸거나 프로젝트가 멈춰 있습니다'));
+    if(!r.ok)return;
+  }catch(e){say('④ 서버 응답 : 실패 ✗ — '+e.message);return;}
+  const {data:sd}=await SB.auth.getSession();
+  if(!sd||!sd.session){say('⑤ 로그인 : 안 됨 ✗\n   → 바로 위에서 [가입] 또는 [로그인]을 먼저 하세요.\n   → 기기마다 한 번씩 로그인해야 합니다.');return;}
+  say('⑤ 로그인 : '+(sd.session.user.email||'완료'));
+  const {error:e1}=await SB.from('app_state').select('user_id').limit(1);
+  if(e1){say('⑥ 표(app_state) : 읽기 실패 ✗ — '+e1.message+'\n   → Supabase SQL Editor에서 supabase-setup.sql 을 실행하세요.');return;}
+  say('⑥ 표 읽기 : 정상');
+  const {error:e2}=await SB.from('app_state')
+    .upsert({user_id:sd.session.user.id,data:payload(),updated_at:new Date().toISOString()});
+  say('⑦ 저장 : '+(e2?'실패 ✗ — '+e2.message:'정상'));
+  if(!e2)say('\n모두 정상입니다. 다른 기기에서도 같은 이메일로 로그인했는지 확인하세요.');
+}
 function renderAuth(){
   const cfg=sbCfg(),box=$('authBody');if(!box)return;
   if(!cfg||!cfg.url||!cfg.key){
@@ -1770,21 +1807,31 @@ function renderAuth(){
     return;
   }
   if(!session){
-    box.innerHTML=`<div class="hint-txt">같은 계정으로 로그인한 기기끼리 일정이 연동됩니다.</div>
+    box.innerHTML=`<div class="hint-txt"><b style="color:var(--navy)">아직 로그인하지 않았습니다 — 그래서 다른 기기와 연동되지 않습니다.</b><br>
+      처음이면 이메일·비밀번호를 적고 <b>가입</b>을 먼저 누르세요. 그 다음 다른 기기에서 <b>같은 계정으로 로그인</b>하면 맞춰집니다.</div>
       <div class="frow"><input id="aEmail" type="email" placeholder="이메일" autocomplete="username"></div>
       <div class="frow"><input id="aPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"></div>
       <div class="frow" style="gap:8px"><button class="go2" id="aIn">로그인</button>
         <button class="go2 sec" id="aUp">가입</button></div>
       <div class="hint-txt" id="aMsg"></div>
+      <div class="frow"><button class="go2 sec" id="aDiag">연결 점검</button></div>
+      <pre class="diag" id="diagOut"></pre>
       <div class="frow"><button class="lnk" id="sbReset">서버 연결 정보 지우기</button></div>`;
+    $('aDiag').onclick=()=>runDiag($('diagOut'));
     const msg=t=>$('aMsg').textContent=t;
     const creds=()=>({email:$('aEmail').value.trim(),password:$('aPw').value});
     $('aIn').onclick=async()=>{msg('로그인 중…');
       const {error}=await SB.auth.signInWithPassword(creds());
-      msg(error?'로그인 실패: '+error.message:'');};
+      if(!error){msg('');return;}
+      let m='로그인 실패: '+error.message;
+      if(/Invalid login/i.test(error.message))m+='\n→ 아직 계정을 만들지 않았다면 먼저 [가입]을 누르세요.';
+      if(/not confirmed|confirm/i.test(error.message))m+='\n→ 메일함의 확인 링크를 누르거나, Supabase의 Authentication → Sign In / Providers → Email 에서 "Confirm email"을 끄세요.';
+      msg(m);};
     $('aUp').onclick=async()=>{msg('가입 중…');
       const {error}=await SB.auth.signUp(creds());
-      msg(error?'가입 실패: '+error.message:'가입되었습니다. 이메일 확인이 필요하면 메일함을 보세요.');};
+      if(error){msg('가입 실패: '+error.message
+        +(/already/i.test(error.message)?'\n→ 이미 만든 계정입니다. [로그인]을 누르세요.':''));return;}
+      msg('가입되었습니다. 바로 로그인되지 않으면 [로그인]을 누르세요. 확인 메일이 왔다면 링크를 먼저 누르세요.');};
     $('aPw').onkeydown=e=>{if(e.key==='Enter')$('aIn').click();};
     $('sbReset').onclick=()=>{localStorage.removeItem(SBCFG);location.reload();};
     return;
@@ -1794,8 +1841,11 @@ function renderAuth(){
     휴대폰과 PC, 홈 화면에 추가한 앱은 저장 공간이 각각 달라서 로그인 전에는 서로 보이지 않습니다.</div>
     <div class="frow"><button class="go2" id="aShare">다른 기기용 연결 주소 복사</button></div>
     <div class="hint-txt" id="shMsg">복사한 주소를 다른 기기에서 열면 서버 설정이 자동으로 들어갑니다. 로그인만 하면 됩니다.</div>
+    <div class="frow"><button class="go2 sec" id="aDiag">연결 점검</button></div>
+    <pre class="diag" id="diagOut"></pre>
     <div class="frow"><button class="go2 sec" id="aOut">로그아웃</button></div>
     <div class="frow"><button class="lnk" id="sbReset">서버 연결 정보 지우기</button></div>`;
+  $('aDiag').onclick=()=>runDiag($('diagOut'));
   $('aShare').onclick=async()=>{
     const c=sbCfg();if(!c)return;
     const b64=btoa(unescape(encodeURIComponent(JSON.stringify({url:c.url,key:c.key}))))
