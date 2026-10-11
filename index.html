@@ -15,10 +15,10 @@
   box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);
   --page:#f6f6f9;--surface:#fff;
   --ink:#14161c;--ink-2:#7c8090;--ink-3:#b8bcc8;
-  --line:#e6e7ee;--hair:#eeeff4;
+  --line:#cfd4e3;--hair:#dde1ec;
   --navy:#041a72;--navy-2:#0f2a8c;--globe:#0077be;
   --red:#c8322a;--sat:#1f5fc0;--amber:#c47a12;--teal:#0d6f80;--indigo:#041a72;--moss:#2f7d4a;
-  --field:#eeeff4;--chip:#e9eaf1;--fieldline:#d3d7e3;
+  --field:#eeeff4;--chip:#e9eaf1;--fieldline:#c4cada;
   --shadow:0 1px 2px rgba(20,22,28,.05),0 6px 18px rgba(20,22,28,.05);
   --numsz:30px;--numfs:15px;
 }
@@ -26,7 +26,7 @@
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --page:#0a0b0e;--surface:#15171c;--ink:#f2f3f7;--ink-2:#8b90a0;--ink-3:#4a4f5c;
-    --line:#262a33;--hair:#1f232b;--navy:#7f93e0;--navy-2:#9aabf0;--globe:#4aa8e0;--fieldline:#3b414f;
+    --line:#3a4150;--hair:#2e3440;--navy:#7f93e0;--navy-2:#9aabf0;--globe:#4aa8e0;--fieldline:#4a5263;
     --red:#ff6b5c;--sat:#6b9bf0;--amber:#f0a83c;--teal:#3fb3b6;
     --indigo:#8ea0ee;--moss:#5cb974;--field:#22262e;--chip:#252932;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.3);
@@ -162,10 +162,8 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .catmenu button{position:relative;display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:10px;font-size:14.5px;text-align:left;width:100%}
 .catmenu button:hover{background:var(--field)}
 .catmenu button.on{background:var(--field);font-weight:650}
-.catmenu button.cur{box-shadow:inset 0 0 0 1px var(--fieldline)}
-.catmenu button.cur::after{content:"";position:absolute;left:10px;right:10px;bottom:3px;height:2px;
- background:var(--navy);border-radius:1px;animation:caretblink 1.05s steps(1,end) infinite}
-@keyframes caretblink{0%,49%{opacity:1}50%,100%{opacity:0}}
+.catmenu button.cur::after{content:"";position:absolute;left:10px;right:10px;bottom:3px;height:1px;
+ background:var(--navy);opacity:.75}
 .catmenu button.multi{margin-top:4px;padding-top:10px;border-top:1px solid var(--hair);
  border-radius:0;font-size:13px;color:var(--ink-2)}
 .catmenu button.multi.on{color:var(--navy);font-weight:650;background:transparent}
@@ -223,7 +221,7 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .weekdays span:first-child{color:var(--red)}
 .weekdays span:last-child{color:var(--sat)}
 .grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,1fr);
- gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:7px;overflow:hidden}
+ gap:1px;background:var(--line);border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .cell{background:var(--surface)}
 .cell{position:relative;min-height:0;display:flex;flex-direction:column;align-items:stretch;
  justify-content:flex-start;gap:2px;padding:3px 3px 2px;overflow:hidden}
@@ -239,10 +237,7 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .ev.dl .evt,.ev.dl .evn{color:#fff;opacity:1}
 .ev.done{opacity:.42}
 .ev.done .evt{text-decoration:line-through;font-weight:500}
-.ev.pri{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--amber) 75%,transparent)}
 .ev.pri .evt{font-weight:800}
-.ev.pri .evt::before{content:"★ ";color:var(--amber);font-weight:900}
-.ev.dl.pri .evt::before{color:#ffd9a0}
 .evmore{display:flex;align-items:center;justify-content:center;gap:3px;padding:2px 0 1px;min-height:8px}
 .evmore i{width:4px;height:4px;border-radius:50%;flex:none;opacity:.85}
 .evmore b{font-size:8.5px;font-weight:700;color:var(--ink-3);line-height:1;margin-left:1px}
@@ -302,7 +297,8 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .setrow select{background:var(--field);border:0;border-radius:9px;padding:7px 9px;font-size:14px}
 .setrow button{font-size:13px;font-weight:600;color:var(--indigo)}
 .pop .note-s{font-size:11.5px;color:var(--ink-2);line-height:1.6;padding:9px 2px 2px}
-.memoflag{position:absolute;right:3px;top:3px;width:5px;height:5px;border-radius:50%;background:var(--indigo);opacity:.85}
+.priflag{position:absolute;right:4px;top:4px;width:6px;height:6px;border-radius:50%;
+ background:var(--amber);box-shadow:0 0 0 1.5px var(--surface)}
 
 .year-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:2px}
 @media(min-width:520px){.year-wrap{grid-template-columns:repeat(4,1fr)}}
@@ -811,7 +807,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v51</span></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v52</span></div>
   <div class="setrow"><label>앱으로 설치</label><button id="instBtn">방법 보기</button></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
@@ -1008,7 +1004,7 @@ function renderMonth(){
       ev+=`<span class="evmore" title="외 ${rest.length}건">`+
         rest.slice(0,6).map(e=>`<i style="background:${e.dl?'var(--red)':(e.c||'var(--ink-3)')}"></i>`).join('')+
         (rest.length>6?'<b>+</b>':'')+'</span>';}
-    h+=`<button class="${cl.join(' ')}" data-d="${k}">${memo?'<i class="memoflag"></i>':''}`+
+    h+=`<button class="${cl.join(' ')}" data-d="${k}">${evs.some(e=>e.pri)?'<i class="priflag"></i>':''}`+
        `<span class="num">${d.getDate()}</span>${hol?`<span class="holname">${esc(hol)}</span>`:''}`+
        `<span class="evs">${ev}</span></button>`;
   }
