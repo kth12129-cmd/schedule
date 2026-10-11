@@ -15,7 +15,7 @@
   box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);
   --page:#f6f6f9;--surface:#fff;
   --ink:#14161c;--ink-2:#7c8090;--ink-3:#b8bcc8;
-  --line:#cfd4e3;--hair:#dde1ec;
+  --line:#cfd4e3;--hair:#eef0f5;
   --navy:#041a72;--navy-2:#0f2a8c;--globe:#0077be;
   --red:#c8322a;--sat:#1f5fc0;--amber:#c47a12;--teal:#0d6f80;--indigo:#041a72;--moss:#2f7d4a;
   --field:#eeeff4;--chip:#e9eaf1;--fieldline:#c4cada;
@@ -26,7 +26,7 @@
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --page:#0a0b0e;--surface:#15171c;--ink:#f2f3f7;--ink-2:#8b90a0;--ink-3:#4a4f5c;
-    --line:#3a4150;--hair:#2e3440;--navy:#7f93e0;--navy-2:#9aabf0;--globe:#4aa8e0;--fieldline:#4a5263;
+    --line:#3a4150;--hair:#22262e;--navy:#7f93e0;--navy-2:#9aabf0;--globe:#4aa8e0;--fieldline:#4a5263;
     --red:#ff6b5c;--sat:#6b9bf0;--amber:#f0a83c;--teal:#3fb3b6;
     --indigo:#8ea0ee;--moss:#5cb974;--field:#22262e;--chip:#252932;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.3);
@@ -220,9 +220,7 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .weekdays span{text-align:center;font-size:10.5px;font-weight:700;color:var(--navy);letter-spacing:.06em}
 .weekdays span:first-child{color:var(--red)}
 .weekdays span:last-child{color:var(--sat)}
-.grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,1fr);
- gap:1px;background:var(--line);border:1px solid var(--line);border-radius:7px;overflow:hidden}
-.cell{background:var(--surface)}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,1fr)}
 .cell{position:relative;min-height:0;display:flex;flex-direction:column;align-items:stretch;
  justify-content:flex-start;gap:2px;padding:3px 3px 2px;overflow:hidden}
 .cell>.num{align-self:center;flex:none}
@@ -807,7 +805,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v52</span></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v53</span></div>
   <div class="setrow"><label>앱으로 설치</label><button id="instBtn">방법 보기</button></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
