@@ -600,6 +600,42 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .srow .unit{font-size:12.5px;color:var(--ink-2)}
 .srow .mv{color:var(--ink-3);font-size:16px;padding:4px 5px}
 .hint-txt{padding:14px 16px;font-size:12.5px;color:var(--ink-2);line-height:1.65}
+.capdrop{margin:0 16px 12px;padding:26px 14px;border:1.5px dashed var(--fieldline);border-radius:12px;
+ text-align:center;font-size:13.5px;color:var(--ink-2);line-height:1.6;background:var(--field);cursor:pointer}
+.capdrop:hover{border-color:var(--navy);color:var(--ink)}
+.capdrop.over{border-color:var(--navy);background:color-mix(in srgb,var(--navy) 8%,var(--field))}
+.capdrop b{display:block;font-size:14.5px;color:var(--navy);margin-bottom:5px}
+.capprev{display:none;margin:0 16px 14px;max-width:calc(100% - 32px);max-height:190px;
+ border-radius:9px;border:1px solid var(--line)}
+.capprev.on{display:block}
+.capbusy{display:flex;align-items:center;gap:9px;padding:0 16px 14px;font-size:12.5px;color:var(--navy);font-weight:600}
+.capbusy i{width:13px;height:13px;border-radius:50%;border:2px solid color-mix(in srgb,var(--navy) 25%,transparent);
+ border-top-color:var(--navy);animation:capspin .8s linear infinite;flex:none}
+@keyframes capspin{to{transform:rotate(360deg)}}
+.capcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-top:9px;
+ display:grid;grid-template-columns:22px 1fr;gap:8px 9px;align-items:start;opacity:.5;transition:opacity .15s,border-color .15s}
+.capcard.on{opacity:1;border-color:color-mix(in srgb,var(--navy) 45%,transparent)}
+.capcard .cc{grid-column:1;width:19px;height:19px;margin-top:2px;accent-color:var(--navy)}
+.capcard .cb{grid-column:2;display:flex;flex-direction:column;gap:7px;min-width:0}
+.capcard .cr{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.capcard input[type=date],.capcard input[type=time],.capcard select{
+ background:var(--field);border:1px solid var(--fieldline);border-radius:8px;padding:6px 8px;font-size:13.5px}
+.capcard input[type=text]{width:100%;background:var(--field);border:1px solid var(--fieldline);
+ border-radius:8px;padding:8px 10px;font-size:14.5px}
+.capcard .pl{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--ink-2)}
+.capcard .pl input{accent-color:var(--amber);width:16px;height:16px}
+.capcard .raw{font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.capbar{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;
+ padding:12px 0 4px;background:linear-gradient(transparent,var(--page) 22%)}
+.capnone{padding:22px 16px;text-align:center;color:var(--ink-2);font-size:13.5px;line-height:1.7}
+.updbar{position:fixed;left:50%;transform:translateX(-50%);z-index:70;display:none;
+ bottom:calc(78px + env(safe-area-inset-bottom,0px));align-items:center;gap:11px;
+ background:var(--ink);color:var(--page);border-radius:22px;padding:8px 8px 8px 16px;
+ box-shadow:0 8px 28px rgba(0,0,0,.26);font-size:13px;max-width:calc(100vw - 24px)}
+.updbar.on{display:flex}
+.updbar button{flex:none;background:var(--surface);color:var(--navy);font-weight:700;
+ font-size:12.5px;border-radius:15px;padding:7px 13px}
+.updbar .x{background:transparent;color:var(--ink-3);padding:7px 4px;font-size:15px;font-weight:400}
 .diag{display:none;margin:0 16px 12px;padding:11px 12px;background:var(--field);border-radius:9px;
  font:12px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-2);
  white-space:pre-wrap;word-break:break-all}
@@ -748,6 +784,29 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="hint" id="hint">앞에 ! 를 붙이면 중요 일정으로 맨 위에 올라갑니다</div>
 </div>
 
+<div class="updbar" id="updBar"><span id="updTxt"></span>
+  <button id="updGo">지금 받기</button><button class="x" id="updX">×</button></div>
+
+<!-- 캡처로 일정 등록 -->
+<div class="sheet" id="capSheet">
+  <div class="sheet-bar"><h2>캡처로 일정 등록</h2><button data-close="capSheet">닫기</button></div>
+  <div class="sheet-body">
+    <div class="card" style="margin-top:12px">
+      <div class="hint-txt">윈도우는 <b>Win + Shift + S</b>, 맥은 <b>⌃⇧⌘4</b> 로 필요한 부분만 오려낸 뒤
+        이 창에서 <b>붙여넣기</b>(Ctrl+V / ⌘V)하세요. 글자를 읽어 일정 후보를 만들어 드립니다.</div>
+      <div class="capdrop" id="capDrop"><b>여기에 붙여넣기</b>또는 눌러서 이미지 선택 · 끌어다 놓기</div>
+      <img class="capprev" id="capPrev" alt="">
+      <div class="capbusy" id="capBusy" style="display:none"><i></i><span id="capMsg"></span></div>
+    </div>
+    <div id="capList"></div>
+    <div class="capbar" id="capBar" style="display:none">
+      <button class="go2 sec" id="capAll">전체 선택</button>
+      <button class="go2" id="capSave">등록</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="capFile" accept="image/*" style="display:none">
+
 <!-- 분석 -->
 <div class="sheet" id="anSheet">
   <div class="sheet-bar"><h2>분석</h2><button data-close="anSheet">닫기</button></div>
@@ -805,7 +864,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2);margin-left:auto">v54</span>
+  <div class="setrow"><label>버전</label><span id="verTxt" style="font-size:13px;color:var(--ink-2);margin-left:auto"></span>
     <button id="freshBtn">최신으로 받기</button></div>
   <div class="setrow"><label>앱으로 설치</label><button id="instBtn">방법 보기</button></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
@@ -1759,6 +1818,33 @@ function redrawAll(){renderMonth();renderDay();renderBanner();
   if($('anSheet').classList.contains('open')){runQuery($('q').value||'');}}
 
 /* ── Supabase 백엔드 ── */
+const APPVER=/*ver*/'v56';
+(function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
+/* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
+let updSeen=null;
+function showUpd(v){
+  if(updSeen===v)return;updSeen=v;
+  $('updTxt').textContent='새 버전 '+v+' 이 올라왔습니다';
+  $('updBar').classList.add('on');
+  $('updGo').onclick=()=>{
+    try{if('caches'in window)caches.keys().then(ks=>ks.forEach(k=>caches.delete(k)));}catch(e){}
+    location.replace(location.pathname+'?'+v);};
+  $('updX').onclick=()=>$('updBar').classList.remove('on');
+}
+async function checkUpdate(){
+  if(!/^https?:$/.test(location.protocol))return;
+  try{
+    const r=await fetch(location.pathname+'?_u='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return;
+    const t=await r.text();
+    const m=t.match(/APPVER=\/\*ver\*\/'(v\d+)'/);
+    if(m&&m[1]!==APPVER)showUpd(m[1]);
+  }catch(e){}
+}
+setTimeout(checkUpdate,2500);
+setInterval(checkUpdate,1800000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate();});
+
 const SBCFG='sb-config';
 (function(){
   const m=(location.hash||'').match(/sb=([A-Za-z0-9_\-]+)/);
@@ -2208,12 +2294,153 @@ function attachImage(file,targetId){
     save();renderDay();renderMonth();renderBanner();
   });
 }
-$('imgBtn').onclick=()=>{imgTarget=null;$('imgFile').click();};
+/* ── 캡처 → 글자 인식 → 확인 → 등록 ── */
+let capCands=[],tessP=null,capBusy=false;
+function loadTess(){
+  if(tessP)return tessP;
+  tessP=new Promise((res,rej)=>{
+    const sc=document.createElement('script');
+    sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+    sc.onload=()=>res(window.Tesseract);
+    sc.onerror=()=>{tessP=null;rej(new Error('글자 인식 모듈을 불러오지 못했습니다. 인터넷 연결을 확인하세요.'));};
+    document.head.appendChild(sc);});
+  return tessP;
+}
+function capSay(t){const b=$('capBusy');if(!b)return;
+  b.style.display=t?'flex':'none';if(t)$('capMsg').textContent=t;}
+function prepOCR(file,cb){
+  const r=new FileReader();
+  r.onload=()=>{const im=new Image();
+    im.onload=()=>{
+      let w=im.width,h=im.height;
+      const k=Math.min(3,Math.max(1,1500/Math.max(1,w)));
+      w=Math.round(w*k);h=Math.round(h*k);
+      if(w>2600){const k2=2600/w;w=2600;h=Math.round(h*k2);}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);
+      x.imageSmoothingQuality='high';x.drawImage(im,0,0,w,h);
+      try{const d=x.getImageData(0,0,w,h),p=d.data;
+        for(let i=0;i<p.length;i+=4){
+          let g=0.299*p[i]+0.587*p[i+1]+0.114*p[i+2];
+          g=g<128?Math.max(0,(g-30)*1.35):Math.min(255,(g-30)*1.35);
+          p[i]=p[i+1]=p[i+2]=g;}
+        x.putImageData(d,0,0);}catch(e){}
+      cb(c.toDataURL('image/png'),r.result);
+    };
+    im.onerror=()=>alert('이미지를 읽지 못했습니다.');
+    im.src=r.result;};
+  r.onerror=()=>alert('파일을 읽지 못했습니다.');
+  r.readAsDataURL(file);
+}
+const DT_RE=/(\d{1,2}\s*[\/월.]\s*\d{1,2})|(\d{1,2}\s*:\s*\d{2})|(\d{1,2}\s*시)|(오전|오후)|(오늘|내일|모레|글피)|([일월화수목금토]요일)|(\d{1,2}\s*일\b)/;
+function buildCaps(text){
+  const lines=(text||'').split(/\n+/).map(x=>x.replace(/\s+/g,' ').trim())
+    .filter(x=>x.length>=2&&/[가-힣A-Za-z0-9]/.test(x)).slice(0,40);
+  capCands=lines.map(line=>{
+    const p=parseInput(line,sel);
+    return{on:DT_RE.test(line),raw:line,date:p.date,endDate:p.endDate,
+      time:p.time,endTime:p.endTime,pri:p.pri,
+      cat:p.cat||curCats[0]||store.cats[0].id,title:p.title};
+  });
+  renderCaps();
+}
+function renderCaps(){
+  const box=$('capList');
+  if(!capCands.length){box.innerHTML='<div class="card capnone">읽어낸 글자에서 일정으로 볼 만한 줄을 찾지 못했습니다.<br>더 또렷하게 캡처해 보세요.</div>';
+    $('capBar').style.display='none';return;}
+  const opts=c=>store.cats.map(x=>`<option value="${x.id}"${x.id===c?' selected':''}>${esc(x.name)}</option>`).join('');
+  box.innerHTML=capCands.map((c,i)=>`<div class="capcard${c.on?' on':''}" data-i="${i}">
+    <input type="checkbox" class="cc" data-f="on"${c.on?' checked':''}>
+    <div class="cb">
+      <input type="text" data-f="title" value="${esc(c.title)}">
+      <div class="cr">
+        <input type="date" data-f="date" value="${c.date}">
+        <input type="time" data-f="time" value="${c.time||''}">
+        <select data-f="cat">${opts(c.cat)}</select>
+        <label class="pl"><input type="checkbox" data-f="pri"${c.pri?' checked':''}>중요</label>
+      </div>
+      <div class="raw">읽은 글자 · ${esc(c.raw)}</div>
+    </div></div>`).join('');
+  const n=capCands.filter(c=>c.on).length;
+  $('capBar').style.display='grid';
+  $('capSave').textContent=n?`${n}건 등록`:'등록';
+  $('capSave').disabled=!n;
+  $('capAll').textContent=n===capCands.length?'전체 해제':'전체 선택';
+}
+$('capList').addEventListener('input',e=>{
+  const card=e.target.closest('[data-i]');if(!card)return;
+  const c=capCands[+card.dataset.i],f=e.target.dataset.f;if(!c||!f)return;
+  if(f==='on'||f==='pri')c[f]=e.target.checked;else c[f]=e.target.value;
+  if(f==='on'){card.classList.toggle('on',c.on);
+    const n=capCands.filter(x=>x.on).length;
+    $('capSave').textContent=n?`${n}건 등록`:'등록';$('capSave').disabled=!n;
+    $('capAll').textContent=n===capCands.length?'전체 해제':'전체 선택';}
+});
+$('capList').addEventListener('change',e=>{
+  const card=e.target.closest('[data-i]');if(!card)return;
+  const c=capCands[+card.dataset.i],f=e.target.dataset.f;if(!c||!f)return;
+  if(f==='on'||f==='pri')c[f]=e.target.checked;else c[f]=e.target.value;});
+$('capAll').onclick=()=>{const all=capCands.every(c=>c.on);
+  capCands.forEach(c=>c.on=!all);renderCaps();};
+$('capSave').onclick=()=>{
+  const pick=capCands.filter(c=>c.on);if(!pick.length)return;
+  pick.forEach((c,n)=>{
+    store.items.push({id:(Date.now()+n).toString(36)+Math.random().toString(36).slice(2,6),
+      date:c.date,endDate:c.endDate||null,time:c.time||null,endTime:c.endTime||null,
+      title:c.title||c.raw,pri:!!c.pri,cats:[c.cat],cat:c.cat,
+      note:'',done:false,doneAt:null,mt:NOW()});});
+  save();
+  const first=pick[0].date;
+  $('capSheet').classList.remove('open');
+  capCands=[];$('capList').innerHTML='';$('capBar').style.display='none';
+  $('capPrev').classList.remove('on');capSay('');
+  goto(first);renderBanner();
+};
+async function capRun(file){
+  if(capBusy||!file||!/^image\//.test(file.type||''))return;
+  capBusy=true;capCands=[];$('capList').innerHTML='';$('capBar').style.display='none';
+  capSay('이미지를 준비하는 중…');
+  prepOCR(file,async(forOcr,shown)=>{
+    $('capPrev').src=shown;$('capPrev').classList.add('on');
+    try{
+      capSay('글자 인식 준비 중…');
+      const T=await loadTess();
+      const worker=await T.createWorker('kor+eng',1,{logger:m=>{
+        if(m.status==='recognizing text')capSay('글자 읽는 중… '+Math.round((m.progress||0)*100)+'%');
+        else if(/traineddata|loading language/i.test(m.status||''))capSay('한국어 인식 자료 받는 중… (처음 한 번만, 1~2분)');
+      }});
+      const res=await worker.recognize(forOcr);
+      await worker.terminate();
+      capSay('');
+      buildCaps(res&&res.data?res.data.text:'');
+    }catch(err){capSay('');alert('글자를 읽지 못했습니다.\n'+(err&&err.message||''));}
+    capBusy=false;
+  });
+}
+function openCap(){
+  capCands=[];$('capList').innerHTML='';$('capBar').style.display='none';
+  $('capPrev').classList.remove('on');capSay('');
+  closeFind();$('capSheet').classList.add('open');
+}
+$('capDrop').onclick=()=>$('capFile').click();
+$('capFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)capRun(f);e.target.value='';};
+['dragenter','dragover'].forEach(ev=>$('capDrop').addEventListener(ev,e=>{
+  e.preventDefault();$('capDrop').classList.add('over');}));
+['dragleave','drop'].forEach(ev=>$('capDrop').addEventListener(ev,e=>{
+  e.preventDefault();$('capDrop').classList.remove('over');}));
+$('capDrop').addEventListener('drop',e=>{
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)capRun(f);});
+$('imgBtn').onclick=openCap;
 let imgTarget=null;
 $('imgFile').onchange=e=>{const f=e.target.files&&e.target.files[0];
   if(f)attachImage(f,imgTarget);imgTarget=null;e.target.value='';};
 document.addEventListener('paste',e=>{
   const t=e.target;
+  if($('capSheet').classList.contains('open')){
+    const its=(e.clipboardData&&e.clipboardData.items)||[];
+    for(const it of its){if(it.type&&it.type.startsWith('image/')){
+      const f=it.getAsFile();if(f){e.preventDefault();capRun(f);return;}}}
+    return;}
   if(t&&/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
   const items=(e.clipboardData&&e.clipboardData.items)||[];
   for(const it of items){
