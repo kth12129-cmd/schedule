@@ -805,7 +805,8 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
-  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2)">v53</span></div>
+  <div class="setrow"><label>버전</label><span style="font-size:13px;color:var(--ink-2);margin-left:auto">v54</span>
+    <button id="freshBtn">최신으로 받기</button></div>
   <div class="setrow"><label>앱으로 설치</label><button id="instBtn">방법 보기</button></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
@@ -2308,6 +2309,13 @@ $('impFile').onchange=e=>{
     e.target.value='';
   };
   r.readAsText(f);
+};
+$('freshBtn').onclick=()=>{
+  /* 브라우저가 붙들고 있는 예전 파일을 버리고 새로 받아온다 */
+  try{if('caches'in window)caches.keys().then(ks=>ks.forEach(k=>caches.delete(k)));}catch(e){}
+  try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistrations)
+    navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister()));}catch(e){}
+  setTimeout(()=>location.replace(location.pathname+'?v='+Date.now()),250);
 };
 $('setBtn').onclick=openSet;
 $('acctBtn').onclick=()=>{closeFind();renderAuth();$('authSheet').classList.add('open');};
