@@ -654,12 +654,17 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .composer-inner{max-width:620px;margin:0 auto;display:flex;gap:8px;align-items:center}
 .composer input{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:9px 15px;font-size:16px}
 .composer input:focus{outline:0;border-color:var(--indigo)}
-/* 입력 중: 입력칸을 한 줄 전체로 확대, 나머지 버튼은 아래 줄로 */
-.composer.typing .composer-inner{flex-wrap:wrap;max-width:860px;row-gap:8px}
-.composer.typing #input{order:-1;flex:1 0 100%;font-size:18px;padding:14px 18px;border-radius:16px;border-width:1.5px;border-color:var(--indigo)}
-.composer.typing .clock{display:none}
-.composer.typing .catbtn{margin-right:auto}
-.composer.typing .hint{max-width:860px;font-size:14px;color:var(--ink);text-align:left;padding:0 6px;line-height:1.45;word-break:break-all}
+/* 입력 중: 한 줄 안에서 부드럽게 — 시계·찾기 버튼만 접고 입력칸이 그 자리를 차지 */
+.composer .clock,.composer #findBtn2{overflow:hidden;white-space:nowrap;
+  transition:max-width .26s cubic-bezier(.32,.72,0,1),opacity .18s ease,margin .26s cubic-bezier(.32,.72,0,1),padding .26s cubic-bezier(.32,.72,0,1)}
+.composer #findBtn2{max-width:38px}
+.composer .clock{max-width:200px}
+.composer #input{transition:border-color .18s ease,box-shadow .18s ease}
+.composer.typing .clock,.composer.typing #findBtn2{max-width:0;opacity:0;margin-left:-8px;padding-left:0;padding-right:0;border-width:0;pointer-events:none}
+.composer.typing #input{border-color:var(--indigo);box-shadow:0 0 0 3px color-mix(in srgb,var(--indigo) 12%,transparent)}
+.composer .hint{transition:opacity .18s ease}
+.composer.typing .hint{max-width:620px;font-size:12.5px;color:var(--ink-2);text-align:left;padding:0 4px;line-height:1.4;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .composer.typing .hint:empty{display:none}
 .pribtn{flex:none;display:flex;align-items:center;gap:5px;background:var(--surface);
  border:1px solid var(--line);border-radius:19px;padding:7px 12px;font-size:13.5px;
@@ -1935,7 +1940,7 @@ function redrawAll(){renderMonth();renderDay();renderBanner();
   if($('anSheet').classList.contains('open')){runQuery($('q').value||'');}}
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v60';
+const APPVER=/*ver*/'v61';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
