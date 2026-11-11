@@ -447,6 +447,14 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .saved.on{opacity:1}
 
 /* 시트 */
+.bp-h{margin:22px 6px 8px;font-size:13px;font-weight:600;color:var(--ink-2)}.bp-h span{font-weight:500;color:var(--navy)}
+.bp-n{display:flex;gap:11px;padding:12px 13px;border-radius:16px;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.bp-ic{flex:none;width:38px;height:38px;border-radius:9px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:700}
+.bp-tx{min-width:0;flex:1}.bp-a{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2)}.bp-a b{font-weight:600;color:var(--ink-2)}
+.bp-t{font-size:14.5px;font-weight:700;margin-top:2px;color:var(--ink)}.bp-b{font-size:13.5px;line-height:1.45;white-space:pre-line;margin-top:2px;color:var(--ink)}
+.bp-btn{display:block;width:100%;padding:12px;border-radius:12px;background:var(--navy);color:#fff;font-size:15px;font-weight:700;border:0}
+#pushBtn{margin-left:8px}
+#briefSheet .setrow{display:flex;align-items:center;gap:8px;padding:13px 14px;min-height:50px}#briefSheet .setrow label{flex:1;font-size:15px}
 .sheet{position:fixed;inset:0;z-index:60;background:var(--page);transform:translateY(100%);
  transition:transform .32s cubic-bezier(.32,.72,0,1);overflow-y:auto;
  padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
@@ -944,13 +952,27 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="sheet-bar"><h2>계정 · 동기화</h2><button data-close="authSheet">닫기</button></div>
   <div class="sheet-body"><div class="card" style="margin-top:12px" id="authBody"></div></div>
 </div>
+<div class="sheet" id="briefSheet">
+  <div class="sheet-bar"><h2>아침 알림</h2><button data-close="briefSheet">닫기</button></div>
+  <div class="sheet-body">
+    <div class="card" style="margin-top:12px">
+      <div class="setrow"><label>매일 아침 알림 보내기</label><input type="checkbox" id="briefOn" style="width:22px;height:22px;accent-color:var(--navy)"></div>
+      <div class="setrow"><label>보낼 시각</label><input type="time" id="briefTime" style="font-size:14px;background:var(--field);border:1px solid var(--fieldline);border-radius:8px;padding:5px 8px;color:var(--ink)"></div>
+      <div class="setrow"><label>이 기기</label><span id="pushState" style="font-size:13px;color:var(--ink-2);margin-left:auto"></span><button id="pushBtn">받기</button></div>
+    </div>
+    <div class="bp-h">이렇게 도착해요 <span id="bpWhen"></span></div>
+    <div class="bp-n"><div class="bp-ic">㈜</div><div class="bp-tx"><div class="bp-a"><b>업무 일정</b><span>지금</span></div><div class="bp-t" id="bpT"></div><div class="bp-b" id="bpB"></div></div></div>
+    <div class="bp-h">알림을 누르면 이 화면이 열려요</div>
+    <button id="briefNow" class="bp-btn">오늘 일정 화면 미리보기</button>
+    <button id="pushTest" class="bp-btn" style="margin-top:8px">지금 이 기기로 테스트 보내기</button>
+    <p id="pushMsg" style="font-size:12.5px;color:var(--ink-2);margin:10px 4px;line-height:1.6;word-break:keep-all"></p>
+  </div>
+</div>
 <!-- 설정 팝오버 -->
 <div class="pop" id="setPop">
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
-  <div class="setrow"><label>아침 브리핑</label><input type="checkbox" id="briefOn" style="width:22px;height:22px;accent-color:var(--navy)"></div>
-  <div class="setrow"><label>보여줄 시각</label><input type="time" id="briefTime" style="font-size:14px;background:var(--field);border:1px solid var(--fieldline);border-radius:8px;padding:5px 8px;color:var(--ink)"></div>
-  <div class="setrow"><label>오늘 일정 미리보기</label><button id="briefNow">보기</button></div>
+  <div class="setrow"><label>아침 알림</label><button id="briefOpen">설정</button></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
   <div class="setrow"><label>버전</label><span id="verTxt" style="font-size:13px;color:var(--ink-2);margin-left:auto"></span>
     <button id="freshBtn">최신으로 받기</button></div>
@@ -1456,7 +1478,7 @@ $('brief').addEventListener('click',e=>{
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('brief').style.display==='block')closeBrief();});
 function briefCheck(){
-  const st=store.settings||{};if(!st.briefOn)return;
+  const st=store.settings||{};if(!st.briefOn||pushHere())return;
   const [h,m]=(st.briefTime||'07:30').split(':').map(Number),n=new Date(),k=tdy();
   if(n.getHours()*60+n.getMinutes()<h*60+m)return;
   const get=x=>{try{return localStorage.getItem(x)||'';}catch(e){return '';}},put=(x,v)=>{try{localStorage.setItem(x,v);}catch(e){}};
@@ -2203,7 +2225,7 @@ function renderShare(){
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v69';
+const APPVER=/*ver*/'v70';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -2952,7 +2974,50 @@ $('instBtn').onclick=async()=>{
 $('briefOn').onchange=()=>{store.settings.briefOn=$('briefOn').checked;store.settingsMt=NOW();save();
   if($('briefOn').checked&&'Notification'in window&&Notification.permission==='default'){try{Notification.requestPermission();}catch(e){}}};
 $('briefTime').onchange=()=>{store.settings.briefTime=$('briefTime').value||'07:30';store.settingsMt=NOW();save();};
-$('briefNow').onclick=()=>{closeFind();openBrief();};
+$('briefNow').onclick=()=>{$('briefSheet').classList.remove('open');openBrief();};
+$('briefOpen').onclick=()=>{closeFind();renderBP();$('briefSheet').classList.add('open');};
+function bpText(){
+  const rows=briefData().todos.filter(t=>!t.done).sort((a,b)=>(a.time||'99:99')<(b.time||'99:99')?-1:1),dd=new Date();
+  const day=`${dd.getMonth()+1}월 ${dd.getDate()}일 ${['일','월','화','수','목','금','토'][dd.getDay()]}요일`;
+  return{t:rows.length?`오늘 일정 ${rows.length}건 · ${day}`:day,
+    b:rows.length?rows.slice(0,6).map(r=>`${r.time||'종일'}  ${r.title}`).join('\n')+(rows.length>6?`\n외 ${rows.length-6}건`:''):'오늘은 예정된 일정이 없어요.'};
+}
+function renderBP(){
+  const st=store.settings||{},tx=bpText();
+  $('briefOn').checked=!!st.briefOn;$('briefTime').value=st.briefTime||'07:30';
+  $('bpT').textContent=tx.t;$('bpB').textContent=tx.b;
+  $('bpWhen').textContent=st.briefOn?`· 매일 ${st.briefTime||'07:30'}`:'· 꺼져 있음';
+  const dev=pushHere();$('pushState').textContent=dev?'켜짐':'꺼짐';$('pushBtn').textContent=dev?'다시 연결':'받기';
+}
+const pushHere=()=>{try{return localStorage.getItem('push-on')==='1';}catch(e){return false;}};
+const b64u=x=>{const p='='.repeat((4-x.length%4)%4),r=(x+p).replace(/-/g,'+').replace(/_/g,'/'),a=atob(r);return Uint8Array.from(Array.from(a,c=>c.charCodeAt(0)));};
+async function pushEnable(){
+  if(!SB)throw new Error('먼저 로그인해 주세요.');
+  if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))
+    throw new Error('이 화면에서는 알림을 받을 수 없어요. 아이폰은 사파리에서 공유 → 홈 화면에 추가 후, 홈 화면의 앱으로 열어 주세요.');
+  const perm=await Notification.requestPermission();
+  if(perm!=='granted')throw new Error('알림이 허용되지 않았어요. 기기 설정에서 이 앱의 알림을 켜 주세요.');
+  const reg=await navigator.serviceWorker.register('sw.js');await navigator.serviceWorker.ready;
+  const c=sbCfg(),pub=(await (await fetch(c.url+'/functions/v1/brief-push',{headers:{apikey:c.key}})).json()).pub;
+  let sub=await reg.pushManager.getSubscription();
+  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(pub)});
+  const j=sub.toJSON(),u=(await SB.auth.getUser()).data.user;
+  const r=await SB.from('push_subs').upsert({endpoint:j.endpoint,user_id:u.id,p256dh:j.keys.p256dh,auth:j.keys.auth});
+  if(r.error)throw r.error;
+  try{localStorage.setItem('push-on','1');}catch(e){}
+}
+$('pushBtn').onclick=async()=>{const m=$('pushMsg');m.textContent='연결 중…';
+  try{await pushEnable();m.textContent='이 기기로 알림을 받도록 연결했어요. 아래 테스트 버튼을 눌러 보세요.';}
+  catch(e){m.textContent=e.message||String(e);}renderBP();};
+$('pushTest').onclick=async()=>{const m=$('pushMsg');
+  if(!pushHere()){m.textContent='먼저 위의 "받기"를 눌러 이 기기를 연결해 주세요.';return;}
+  m.textContent='보내는 중…';
+  try{const r=await SB.functions.invoke('brief-push',{body:{test:true}});if(r.error)throw r.error;
+    m.textContent=r.data&&r.data.ok?'보냈어요. 잠시 후 기기에 알림이 도착합니다.':'보낼 수 있는 기기가 없어요. "받기"를 다시 눌러 주세요.';}
+  catch(e){m.textContent='보내지 못했어요: '+(e.message||e);}};
+$('briefOn').addEventListener('change',renderBP);$('briefTime').addEventListener('change',renderBP);
+if(/[?&]brief=1/.test(location.search)){setTimeout(()=>{openBrief();try{history.replaceState(null,'',location.pathname);}catch(e){}},1500);}
+if('serviceWorker'in navigator){navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.brief)openBrief();});}
 $('alertH').onchange=()=>{store.settings.alertH=+$('alertH').value;store.settingsMt=NOW();save();};
 $('permBtn2').onclick=()=>{if(!('Notification'in window))return;
   Notification.requestPermission().then(()=>{openSet();notify();renderBanner();});};

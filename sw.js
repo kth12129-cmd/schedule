@@ -1,29 +1,17 @@
-const CACHE = 'schedule-v33';
-const ASSETS = ['./','./index.html','./manifest.json',
-  './icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
-
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+/* 푸시 알림 전용 서비스 워커 (파일 캐시 없음) */
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+self.addEventListener('push',e=>{
+  let d={};try{d=e.data.json();}catch(_){}
+  e.waitUntil(self.registration.showNotification(d.title||'업무 일정',{
+    body:d.body||'',tag:d.tag||'brief',icon:'icons/icon-192.png',badge:'icons/icon-192.png',
+    data:{url:d.url||'./?brief=1'}}));
 });
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys()
-    .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
-    .then(() => self.clients.claim()));
-});
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  const url = new URL(e.request.url);
-  /* Supabase API 호출은 절대 캐시하지 않는다 */
-  if (url.hostname.endsWith('.supabase.co')) return;
-  e.respondWith(
-    fetch(e.request)
-      .then(res => {
-        if (url.origin === location.origin) {
-          const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
-        }
-        return res;
-      })
-      .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
-  );
+self.addEventListener('notificationclick',e=>{
+  e.notification.close();
+  e.waitUntil((async()=>{
+    const all=await clients.matchAll({type:'window',includeUncontrolled:true});
+    for(const c of all){if('focus'in c){await c.focus();c.postMessage({brief:1});return;}}
+    await clients.openWindow((e.notification.data&&e.notification.data.url)||'./?brief=1');
+  })());
 });
