@@ -1420,14 +1420,13 @@ function briefHTML(d){
   return `<div class="bf">
   <div class="bf-hero"><div class="bf-top"><button data-bf="close" aria-label="닫기">⌄</button></div>
     <p class="bf-date">${dd.getMonth()+1}월 ${dd.getDate()}일 ${WDK[dd.getDay()]}요일</p>
-    <h1 class="bf-title">${name}${greet}</h1><p class="bf-lead">${lead}</p></div>
+    <h1 class="bf-title">${name}${greet}</h1></div>
   ${dls.length?`<div class="bf-sec"><h2>오늘 기한</h2>${dls.map(x=>`<span class="bf-dl">${e(x)}</span>`).join('')}</div>`:''}
   <div class="bf-sec"><h2>할 일</h2>${rows.length?rows.map(t=>`<button class="bf-item${t.done?' done':''}" ${t.id?`data-bf-toggle="${e(t.id)}"`:''}>
       <span class="bf-ck">${t.done?'✓':''}</span><span class="bf-b"><span class="bf-t">${t.pri?'★ ':''}${e(t.title)}</span>
       <span class="bf-s"><i style="background:${t.color}"></i>${e(t.cat||'')}</span></span>
       <span class="bf-time${t.time?'':' n'}">${t.time?t.time+(t.end?'~'+t.end:''):'종일'}</span></button>`).join(''):'<div class="bf-empty">오늘 예정된 일정이 없어요.</div>'}</div>
   <div class="bf-sec"><h2>시간표</h2>
-    ${un.length?`<div class="bf-un">${un.map(t=>`<span style="--c:${t.color}">${e(t.title)}</span>`).join('')}</div><p class="bf-note">위 항목은 시간이 정해지지 않았어요.</p>`:''}
     <div class="bf-tlw" data-sc="${Math.round(sc)}"><div class="bf-tl" style="height:${20+(s1-s0)*HP}px">${tl}</div></div></div>
   <div class="bf-foot">${e(d.foot||'')}</div></div>`;
 }
@@ -2204,7 +2203,7 @@ function renderShare(){
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v68';
+const APPVER=/*ver*/'v69';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
