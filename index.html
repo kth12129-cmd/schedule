@@ -199,7 +199,7 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .go2{flex:1 1 0;min-width:0;height:46px;display:grid;place-items:center;text-align:center;
  background:var(--navy);color:#fff;border-radius:10px;padding:0 10px;font-size:15px;font-weight:650;
  line-height:1;border:1px solid transparent;white-space:nowrap}
-.go2.sec{background:var(--field);color:var(--ink);border-color:var(--line)}
+.go2.alt{background:var(--field);color:var(--ink);border-color:var(--line)}
 .lnk{font-size:12.5px;color:var(--ink-3)}
 .pop.left{left:12px;right:auto;transform-origin:top left}
 .hsec-memo{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;
@@ -404,6 +404,24 @@ body.dragging .cell{transition:background .1s}
 .item.done .mtime{color:var(--ink-2);background:var(--chip)}
 .mtag{font-size:9.5px;color:var(--red);font-weight:700}
 .mtag.pri{color:var(--amber)}
+.mtag.sh{color:var(--indigo)}
+.mtag.ownr{color:var(--c);font-weight:700}
+.item.oth{border-left:3px solid var(--c);background:color-mix(in srgb,var(--c) 5%,transparent)}
+.item.oth .title{cursor:default}
+.ev.oth{opacity:.85;border-style:dashed}
+.acts .shbtn.on{color:var(--indigo)}
+#shBody .card{margin-top:12px}
+#shBody h3{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--navy)}
+#shBody .shrow{display:flex;align-items:center;gap:10px;padding:10px 2px;border-top:1px solid var(--hair);font-size:14.5px}
+#shBody .shrow:first-of-type{border-top:0}
+#shBody .shrow .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#shBody .shrow .sm{font-size:12px;color:var(--ink-2)}
+#shBody .shrow button{color:var(--indigo);font-size:13.5px;font-weight:600}
+#shBody .shrow input[type=checkbox]{width:20px;height:20px;accent-color:var(--navy)}
+#shBody .shadd{display:flex;gap:8px;margin-top:8px}
+#shBody .shadd input,#shBody .shname{flex:1;min-width:0;background:var(--field);border:1px solid var(--fieldline);border-radius:10px;padding:11px 13px;font-size:15px}
+#shBody .shadd button{flex:none;background:var(--navy);color:#fff;border-radius:10px;padding:0 16px;font-weight:650;font-size:14.5px}
+#shBody .shmsg{font-size:12.5px;color:var(--ink-2);padding:6px 2px;line-height:1.5}
 .title{font-size:14px;word-break:break-word;line-height:1.4;letter-spacing:-.01em}
 .item.pri .title{font-weight:620}
 .item.done .title{color:var(--ink-2);text-decoration:line-through}
@@ -824,7 +842,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
     </div>
     <div id="capList"></div>
     <div class="capbar" id="capBar" style="display:none">
-      <button class="go2 sec" id="capAll">전체 선택</button>
+      <button class="go2 alt" id="capAll">전체 선택</button>
       <button class="go2" id="capSave">등록</button>
     </div>
   </div>
@@ -867,6 +885,10 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
     <div class="crow"><button id="addCat" style="color:var(--indigo);font-size:14.5px;font-weight:600">분류 추가</button></div>
   </div></div>
 </div>
+<div class="sheet" id="shSheet">
+  <div class="sheet-bar"><h2>일정 공유</h2><button data-close="shSheet">완료</button></div>
+  <div class="sheet-body"><div id="shBody"></div></div>
+</div>
 <input type="file" id="impFile" accept="application/json,.json" style="display:none">
 <input type="file" id="imgFile" accept="image/*" style="display:none">
 <div class="lightbox" id="lbox">
@@ -893,6 +915,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="setrow"><label>앱으로 설치</label><button id="instBtn">방법 보기</button></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
+  <div class="setrow"><label>일정 공유</label><button id="shBtn">열기</button></div>
   <div class="setrow"><label>데이터 백업</label><button id="expBtn">파일로 저장</button></div>
   <div class="setrow"><label>백업 불러오기</label><button id="impBtn">파일 선택</button></div>
   <div class="setrow"><label>알림 권한</label><button id="permBtn2">허용하기</button></div>
@@ -968,7 +991,11 @@ const DEFAULT_CATS=[
 if(!store.cats||!store.cats.length)store.cats=JSON.parse(JSON.stringify(DEFAULT_CATS));
 store.catsMt=store.catsMt||0;
 let curCats=(localStorage.getItem('cur-cats')||localStorage.getItem('cur-cat')||'').split(',').filter(Boolean);
-if(!curCats.length)curCats=[store.cats[0].id];
+if(!curCats.length)curCats=['__all'];
+try{if(!localStorage.getItem('cat-all-v1')){curCats=['__all'];localStorage.setItem('cat-all-v1','1');localStorage.setItem('cur-cats','__all');}}catch(e){}
+const allMode=()=>curCats.includes('__all');
+const addCats=()=>allMode()?[store.cats[0].id]:curCats.slice();
+const inView=i=>allMode()||catsOf(i).some(c=>curCats.includes(c.id));
 const saveCurCats=()=>localStorage.setItem('cur-cats',curCats.join(','));
 const catOf=id=>store.cats.find(c=>c.id===id)||store.cats[store.cats.length-1];
 const catsOf=i=>{const a=(Array.isArray(i.cats)&&i.cats.length?i.cats:[i.cat]).map(catOf);
@@ -1067,9 +1094,16 @@ function caseState(c){
 }
 const deadlinesOn=day=>{const o=[];store.cases.forEach(c=>{const s=caseState(c);
   if(!s.complete&&s.deadline===day)o.push({label:c.label,stage:s.stage.name,level:s.level});});return o;};
-const ordItems=day=>store.items.filter(i=>i.date===day||(i.endDate&&i.date<=day&&day<=i.endDate)).sort((a,b)=>
+const ordAll=day=>store.items.filter(i=>i.date===day||(i.endDate&&i.date<=day&&day<=i.endDate)).sort((a,b)=>
   (a.done-b.done)||((b.pri?1:0)-(a.pri?1:0))||((a.time||'99:99')<(b.time||'99:99')?-1:1)||(a.id<b.id?-1:1));
-const hasAny=day=>ordItems(day).length>0||deadlinesOn(day).length>0||!!(store.memos[day]||'').trim();
+const ordItems=day=>ordAll(day).filter(inView);
+const isShared=i=>i.share!==undefined&&i.share!==null?!!i.share:catsOf(i).some(c=>c.share);
+let otherItems=[],myShares=[],inShares=[];
+const viewOff=new Set((()=>{try{return JSON.parse(localStorage.getItem('sh-off')||'[]');}catch(e){return [];}})());
+const ownerName=o=>o.owner_name||o.owner_label||'';
+const othersFor=day=>otherItems.filter(o=>!viewOff.has(o.owner)&&(o.date===day||(o.endDate&&o.date<=day&&day<=o.endDate)))
+  .sort((a,b)=>((a.time||'99:99')<(b.time||'99:99')?-1:1));
+const hasAny=day=>othersFor(day).length>0||ordItems(day).length>0||deadlinesOn(day).length>0||!!(store.memos[day]||'').trim();
 
 function parseInput(raw,baseYmd){
   let s=' '+raw.trim()+' ',d=fromYmd(baseYmd),hit=false,time=null,endTime=null,endDate=null,pri=false;
@@ -1140,10 +1174,11 @@ function renderMonth(){
     if(k===sel)cl.push('sel');
     if(dls.length)cl.push('hasdl');else if(its.length||memo)cl.push('has');
     const evs=[...dls.map(x=>({t:x.stage,dl:true})),
-      ...its.map(i=>({t:(i.endDate?'▸ ':'')+i.title,c:catColor(i),done:i.done,pri:i.pri,id:i.id}))];
+      ...its.map(i=>({t:(i.endDate?'▸ ':'')+i.title,c:catColor(i),done:i.done,pri:i.pri,id:i.id})),
+      ...othersFor(k).map(o=>({t:(ownerName(o)?ownerName(o)+' · ':'')+o.title,c:o.color||'#8a8f9e',done:o.done,oth:true}))];
     const MAX=3;
     let ev=evs.slice(0,MAX).map((e,n)=>
-      `<span class="ev${e.dl?' dl':''}${e.done?' done':''}${e.pri?' pri':''}" style="--c:${e.c||'var(--red)'}"`+
+      `<span class="ev${e.dl?' dl':''}${e.done?' done':''}${e.pri?' pri':''}${e.oth?' oth':''}" style="--c:${e.c||'var(--red)'}"`+
       `${e.id?` draggable="true" data-drag="${e.id}"`:''}>`+
       `<b class="evn">${n+1}</b><span class="evt">${esc(e.t)}</span></span>`).join('');
     if(evs.length>MAX){
@@ -1198,13 +1233,14 @@ function renderDay(){
       ${editItem===i.id?'':`draggable="true" data-drag="${i.id}"`}>
       <button class="check" data-act="toggle"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></button>
       <div class="body"><div class="meta"><span class="no">${n}</span><span class="mdate">${md(i.date)}${i.endDate?'~'+md(i.endDate):''}</span>
-        ${i.time?`<span class="mtime">${i.time}${i.endTime?'~'+i.endTime:''}</span>`:''}${i.pri?'<span class="mtag pri">중요</span>':''}
+        ${i.time?`<span class="mtime">${i.time}${i.endTime?'~'+i.endTime:''}</span>`:''}${i.pri?'<span class="mtag pri">중요</span>':''}${isShared(i)?'<span class="mtag sh">공유</span>':''}
         ${catsOf(i).map(c=>`<button class="cattag" data-act="cat" data-tip="분류 변경" style="--c:${c.color}">${esc(c.name)}</button>`).join('')}</div>
         ${editItem===i.id
           ?`<input class="edit-in" data-edit="${i.id}" value="${esc((i.endDate?md(i.date)+'~'+md(i.endDate)+' ':'')+(i.time?i.time+(i.endTime?'~'+i.endTime:'')+' ':'')+i.title)}">
              <div class="edit-tip">시간·날짜도 같이 고칠 수 있습니다. Enter 저장, Esc 취소</div>`
           :`<div class="title" data-act="open">${esc(i.title)}${has&&!isOpen?'<span class="caret">⌄</span>':''}</div>`}</div>
       <div class="acts"><button class="flag${i.pri?' on':''}" data-act="pri" data-tip="${i.pri?'중요 해제':'중요 표시'}">${i.pri?'★':'☆'}</button>
+        <button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'공유 해제':'상대방에게 보이기'}">👥</button>
         <button data-act="edit" data-tip="내용 수정">✎</button>
         <button class="note-btn${has?' has':''}" data-act="open" data-tip="메모">≡</button>
         <button data-act="img" data-tip="${i.img?'이미지 교체':'이미지 첨부'}"
@@ -1214,6 +1250,11 @@ function renderDay(){
       <div class="note ${isOpen?'edit':(has?'has':'')}">${isOpen
         ?`<textarea data-note="${i.id}" placeholder="">${esc(i.note||'')}</textarea>`
         :(has?`<div class="note-inner">${esc(i.note)}</div>`:'')}</div></li>`;});
+  othersFor(sel).forEach(o=>{
+    h+=`<li class="item oth${o.done?' done':''}" style="--c:${o.color||'#8a8f9e'}"><button class="check locked"></button>
+      <div class="body"><div class="meta"><span class="mtag ownr">${esc(ownerName(o)||'공유받음')}</span><span class="mdate">${md(o.date)}${o.endDate?'~'+md(o.endDate):''}</span>
+        ${o.time?`<span class="mtime">${o.time}${o.endTime?'~'+o.endTime:''}</span>`:''}${o.cat?`<span class="mtag" style="color:${o.color}">${esc(o.cat)}</span>`:''}</div>
+        <div class="title">${esc(o.title)}</div></div><div class="acts"></div></li>`;});
   $('list').innerHTML=h||'<li class="empty">아래에 한 줄로 적으면 이 날에 들어갑니다.</li>';
   $('memo').value=store.memos[sel]||'';
   renderTL();
@@ -1269,7 +1310,7 @@ function renderTL(){
   w.scrollTop=Math.max(0,focus/60*HH-HH);
 }
 function renderBanner(){
-  const k=addDays(TODAY,1),its=ordItems(k).filter(i=>!i.done),dls=deadlinesOn(k),n=its.length+dls.length;
+  const k=addDays(TODAY,1),its=ordAll(k).filter(i=>!i.done),dls=deadlinesOn(k),n=its.length+dls.length;
   if(!n){$('banner').innerHTML='';return;}
   const perm=('Notification'in window)?Notification.permission:'x';
   const line=[...dls.map(x=>`${x.label} · ${x.stage} 기한`),
@@ -1283,7 +1324,7 @@ function renderBanner(){
 function tomorrowRows(){
   const k=addDays(TODAY,1);
   return[...deadlinesOn(k).map(x=>`${x.label} · ${x.stage} 기한`),
-    ...ordItems(k).filter(i=>!i.done).map(i=>(i.pri?'★ ':'')+(i.time?i.time+' ':'')+i.title)];
+    ...ordAll(k).filter(i=>!i.done).map(i=>(i.pri?'★ ':'')+(i.time?i.time+' ':'')+i.title)];
 }
 function fire(title,body){
   try{if(navigator.vibrate)navigator.vibrate([220,110,220]);}catch(e){}
@@ -1789,6 +1830,11 @@ $('list').onclick=e=>{
   else if(a==='img'){imgTarget=it.id;$('imgFile').click();return;}
   else if(a==='cat'){openCatMenu(it.id,false);return;}
   else if(a==='pri'){it.pri=!it.pri;touch(it);}
+  else if(a==='share'){
+    if(backend!=='sb'||!session){toastMsg('로그인하면 공유할 수 있습니다');return;}
+    it.share=!isShared(it);touch(it);
+    if(it.share&&!myShares.length)toastMsg('공유할 사람을 먼저 추가하세요 (설정 → 일정 공유)');
+    else toastMsg(it.share?'공유했습니다':'공유를 해제했습니다');}
   else if(a==='del'){store.tomb[it.id]=NOW();store.items=store.items.filter(i=>i.id!==it.id);setTimeout(()=>toastMsg('일정을 삭제했습니다','되돌리기',undoDo),0);}
   else if(a==='open'){openNote=openNote===it.id?null:it.id;save();renderDay();return;}
   save();renderDay();renderMonth();renderBanner();};
@@ -1835,7 +1881,7 @@ function add(){const v=$('input').value.trim();if(!v)return;
   const p=parseInput(v,sel);
   store.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
     date:p.date,endDate:p.endDate,time:p.time,endTime:p.endTime,title:p.title,pri:p.pri||priOn,
-    cats:p.cat?[p.cat]:curCats.slice(),cat:p.cat||curCats[0],
+    cats:p.cat?[p.cat]:addCats(),cat:p.cat||addCats()[0],
     note:'',done:false,doneAt:null,mt:NOW()});
   save();$('input').value='';$('send').disabled=true;
   priOn=false;paintPri();
@@ -1927,7 +1973,7 @@ async function doPush(){
     const {error}=await SB.from('app_state')
       .upsert({user_id:session.user.id,data:payload(),updated_at:new Date().toISOString()});
     if(error){setSync('busy','저장 실패 · 재시도');dirty=true;}
-    else setSync('on','동기화됨 · '+(session.user.email||''));
+    else{setSync('on','동기화됨 · '+(session.user.email||''));syncShared();}
     pushing=false;if(dirty)setTimeout(doPush,3000);
     return;
   }
@@ -1941,8 +1987,95 @@ async function doPush(){
 function redrawAll(){renderMonth();renderDay();renderBanner();
   if($('anSheet').classList.contains('open')){runQuery($('q').value||'');}}
 
+/* ── 일정 공유 ── */
+let sharedServerIds=null,sharedHash={},shChan=null,shT=null;
+const myName=()=>((store.settings&&store.settings.name)||((session&&session.user.email)||'').split('@')[0]||'').trim();
+function shareData(i){const c=catsOf(i)[0];
+  return{date:i.date,endDate:i.endDate||null,time:i.time||null,endTime:i.endTime||null,title:i.title,
+    done:!!i.done,cat:c?c.name:'',color:c?c.color:'#8a8f9e'};}
+async function syncShared(){
+  if(backend!=='sb'||!SB||!session)return;
+  const uid=session.user.id;
+  try{
+    if(sharedServerIds===null){
+      const {data,error}=await SB.from('shared_items').select('item_id').eq('owner_id',uid);
+      if(error)return;sharedServerIds=new Set((data||[]).map(r=>r.item_id));}
+    const want=store.items.filter(isShared),wantIds=new Set(want.map(i=>i.id)),nm=myName(),up=[];
+    want.forEach(i=>{const d={...shareData(i),owner:nm},h=JSON.stringify(d);
+      if(sharedHash[i.id]!==h||!sharedServerIds.has(i.id))
+        up.push({row:{owner_id:uid,item_id:i.id,data:d,updated_at:new Date().toISOString()},h});});
+    if(up.length){const {error}=await SB.from('shared_items').upsert(up.map(x=>x.row));
+      if(!error)up.forEach(x=>{sharedHash[x.row.item_id]=x.h;sharedServerIds.add(x.row.item_id);});}
+    const del=[...sharedServerIds].filter(id=>!wantIds.has(id));
+    if(del.length){const {error}=await SB.from('shared_items').delete().eq('owner_id',uid).in('item_id',del);
+      if(!error)del.forEach(id=>{sharedServerIds.delete(id);delete sharedHash[id];});}
+  }catch(e){}
+}
+async function loadShares(){
+  if(backend!=='sb'||!SB||!session)return;
+  const uid=session.user.id;
+  try{
+    const [a,b,c]=await Promise.all([
+      SB.from('shares').select('viewer_email,owner_name').eq('owner_id',uid),
+      SB.from('shares').select('owner_id,owner_name').neq('owner_id',uid),
+      SB.from('shared_items').select('owner_id,item_id,data').neq('owner_id',uid)]);
+    myShares=a.data||[];inShares=b.data||[];
+    const nmOf={};inShares.forEach(r=>nmOf[r.owner_id]=r.owner_name);
+    otherItems=(c.data||[]).map(r=>({id:r.owner_id+':'+r.item_id,owner:r.owner_id,owner_name:(r.data&&r.data.owner)||nmOf[r.owner_id]||'',...r.data}));
+    redrawAll();
+    if($('shSheet').classList.contains('open'))renderShare();
+  }catch(e){}
+}
+function startShareWatch(){
+  if(shChan){try{SB.removeChannel(shChan);}catch(e){}}
+  const kick=()=>{clearTimeout(shT);shT=setTimeout(loadShares,600);};
+  shChan=SB.channel('share-'+session.user.id)
+    .on('postgres_changes',{event:'*',schema:'public',table:'shared_items'},kick)
+    .on('postgres_changes',{event:'*',schema:'public',table:'shares'},kick)
+    .subscribe();
+}
+function renderShare(){
+  const box=$('shBody');if(!box)return;
+  if(backend!=='sb'||!session){box.innerHTML='<div class="card"><div class="shmsg">일정을 공유하려면 먼저 로그인해야 합니다. 설정 → 계정 · 기기 연동에서 로그인하세요.</div></div>';return;}
+  const me=(session.user.email||'').toLowerCase();
+  box.innerHTML=`
+  <div class="card"><h3>내 이름 (상대방에게 보이는 이름)</h3>
+    <div class="shadd"><input class="shname" id="shName" value="${esc(myName())}" placeholder="예) 김태현 대리" maxlength="20"><button id="shNameSave">저장</button></div></div>
+  <div class="card"><h3>내 일정을 보여줄 사람</h3>
+    ${myShares.length?myShares.map(r=>`<div class="shrow"><span class="nm">${esc(r.viewer_email)}</span><button data-shdel="${esc(r.viewer_email)}">삭제</button></div>`).join(''):'<div class="shmsg">아직 없습니다. 아래에 이메일을 적고 추가하세요.</div>'}
+    <div class="shadd"><input id="shEmail" type="email" placeholder="상대방 이메일" autocomplete="off"><button id="shAdd">추가</button></div>
+    <div class="shmsg" id="shMsg"></div></div>
+  <div class="card"><h3>이 분류는 자동으로 공유</h3>
+    ${store.cats.map(c=>`<label class="shrow"><input type="checkbox" data-shcat="${c.id}" ${c.share?'checked':''}><i style="width:10px;height:10px;border-radius:50%;background:${c.color}"></i><span class="nm">${esc(c.name)}</span></label>`).join('')}
+    <div class="shmsg">체크한 분류의 일정은 따로 누르지 않아도 공유됩니다. 일정 목록의 👥 버튼으로 일정마다 따로 켜고 끌 수 있습니다.</div></div>
+  <div class="card"><h3>나에게 공유한 사람</h3>
+    ${inShares.length?inShares.map(r=>`<label class="shrow"><input type="checkbox" data-shview="${r.owner_id}" ${viewOff.has(r.owner_id)?'':'checked'}><span class="nm">${esc(r.owner_name||'이름 없음')}</span><span class="sm">내 달력에 표시</span></label>`).join(''):'<div class="shmsg">아직 나에게 일정을 공유한 사람이 없습니다. 상대방이 내 이메일('+esc(me)+')을 추가하면 여기에 나타납니다.</div>'}</div>
+  <div class="card"><div class="shmsg">공유한 일정은 <b>제목·날짜·시간·분류</b>만 보입니다. 메모와 첨부 이미지는 보이지 않고, 상대방은 볼 수만 있습니다.</div></div>`;
+  $('shNameSave').onclick=async()=>{
+    store.settings=store.settings||{};store.settings.name=$('shName').value.trim();store.settingsMt=NOW();save();
+    try{await SB.from('shares').update({owner_name:myName()}).eq('owner_id',session.user.id);}catch(e){}
+    sharedHash={};syncShared();toastMsg('저장했습니다');};
+  $('shAdd').onclick=async()=>{
+    const em=$('shEmail').value.trim().toLowerCase(),msg=t=>$('shMsg').textContent=t;
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){msg('이메일 형식이 올바르지 않습니다.');return;}
+    if(em===me){msg('본인 이메일은 추가할 수 없습니다.');return;}
+    const {error}=await SB.from('shares').upsert({owner_id:session.user.id,viewer_email:em,owner_name:myName()});
+    if(error){msg('추가 실패: '+error.message);return;}
+    await loadShares();syncShared();};
+  box.querySelectorAll('[data-shdel]').forEach(b=>b.onclick=async()=>{
+    await SB.from('shares').delete().eq('owner_id',session.user.id).eq('viewer_email',b.dataset.shdel);loadShares();});
+  box.querySelectorAll('[data-shcat]').forEach(b=>b.onchange=()=>{
+    const c=store.cats.find(x=>x.id===b.dataset.shcat);if(!c)return;
+    c.share=b.checked;store.catsMt=NOW();save();redrawAll();});
+  box.querySelectorAll('[data-shview]').forEach(b=>b.onchange=()=>{
+    if(b.checked)viewOff.delete(b.dataset.shview);else viewOff.add(b.dataset.shview);
+    try{localStorage.setItem('sh-off',JSON.stringify([...viewOff]));}catch(e){}
+    redrawAll();});
+}
+$('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
+
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v62';
+const APPVER=/*ver*/'v66';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -1979,7 +2112,12 @@ const SBCFG='sb-config';
   }catch(e){}
   history.replaceState(null,'',location.pathname+location.search);
 })();
-const sbCfg=()=>{try{return JSON.parse(localStorage.getItem(SBCFG)||'null');}catch(e){return null;}};
+/* 공개용(anon/publishable) 키만 넣는다. 비밀 키(sb_secret_, service_role)는 절대 넣지 않는다. */
+const SB_DEFAULT={url:'https://pzymujbcoqnnmgbhaqwb.supabase.co',key:'sb_publishable_AMQmGIHCX0nAC8W4MHFzsw_cpMMq9pN'};
+const sbCfg=()=>{let c=null;try{c=JSON.parse(localStorage.getItem(SBCFG)||'null');}catch(e){}
+  if(c&&c.url&&c.key)return c;
+  if(/^https?:$/.test(location.protocol)&&!/claude|anthropic/i.test(location.hostname))return SB_DEFAULT;
+  return null;};
 function sbInit(){
   const cfg=sbCfg();
   if(!cfg||!cfg.url||!cfg.key)return false;
@@ -2003,6 +2141,7 @@ async function onAuth(){
     if(data&&data.data&&mergeRemote(data.data)){save(false);redrawAll();}
     setSync('on','동기화됨 · '+(session.user.email||''));
     dirty=true;doPush();
+    loadShares();startShareWatch();
   }
   if(chan){try{SB.removeChannel(chan);}catch(e){}}
   chan=SB.channel('state-'+session.user.id)
@@ -2058,9 +2197,9 @@ function renderAuth(){
       <div class="frow"><input id="aEmail" type="email" placeholder="이메일" autocomplete="username"></div>
       <div class="frow"><input id="aPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"></div>
       <div class="frow btns"><button class="go2" id="aIn">로그인</button>
-        <button class="go2 sec" id="aUp">가입</button></div>
+        <button class="go2 alt" id="aUp">가입</button></div>
       <div class="hint-txt" id="aMsg"></div>
-      <div class="frow"><button class="go2 sec" id="aDiag">연결 점검</button></div>
+      <div class="frow"><button class="go2 alt" id="aDiag">연결 점검</button></div>
       <pre class="diag" id="diagOut"></pre>
       <div class="frow"><button class="lnk" id="sbReset">서버 연결 정보 지우기</button></div>`;
     $('aDiag').onclick=()=>runDiag($('diagOut'));
@@ -2087,9 +2226,9 @@ function renderAuth(){
     휴대폰과 PC, 홈 화면에 추가한 앱은 저장 공간이 각각 달라서 로그인 전에는 서로 보이지 않습니다.</div>
     <div class="frow"><button class="go2" id="aShare">다른 기기용 연결 주소 복사</button></div>
     <div class="hint-txt" id="shMsg">복사한 주소를 다른 기기에서 열면 서버 설정이 자동으로 들어갑니다. 로그인만 하면 됩니다.</div>
-    <div class="frow"><button class="go2 sec" id="aDiag">연결 점검</button></div>
+    <div class="frow"><button class="go2 alt" id="aDiag">연결 점검</button></div>
     <pre class="diag" id="diagOut"></pre>
-    <div class="frow"><button class="go2 sec" id="aOut">로그아웃</button></div>
+    <div class="frow"><button class="go2 alt" id="aOut">로그아웃</button></div>
     <div class="frow"><button class="lnk" id="sbReset">서버 연결 정보 지우기</button></div>`;
   $('aDiag').onclick=()=>runDiag($('diagOut'));
   $('aShare').onclick=async()=>{
@@ -2166,6 +2305,7 @@ function openSet(){
   $('setPop').classList.add('open');$('popBack').classList.add('open');
 }
 function paintCatBtn(){
+  if(allMode()){$('catBtn').style.setProperty('--c','#8a8f9e');$('catName').textContent='전체';return;}
   const cs=curCats.map(catOf);
   $('catBtn').style.setProperty('--c',cs[0].color);
   $('catName').textContent=cs.length>1?`${cs[0].name} 외 ${cs.length-1}`:cs[0].name;}
@@ -2175,10 +2315,11 @@ function curSel(){
     return it?catsOf(it).map(c=>c.id):[];}
   return curCats.slice();
 }
+const catNav=()=>catTarget?store.cats.map(c=>c.id):['__all'].concat(store.cats.map(c=>c.id));
 function paintCatMenu(){
-  const sel2=curSel();
-  $('catMenu').innerHTML=store.cats.map((c,i)=>
-    `<button data-c="${c.id}" class="${sel2.includes(c.id)?'on':''}${i===catIdx?' cur':''}">
+  const sel2=curSel(),nav=catNav();
+  $('catMenu').innerHTML=(catTarget?'':`<button data-c="__all" class="${allMode()?'on':''}${nav[catIdx]==='__all'?' cur':''}"><i style="background:#8a8f9e"></i>전체<span class="ck">${allMode()?'✓':''}</span></button>`)+store.cats.map((c,i)=>
+    `<button data-c="${c.id}" class="${sel2.includes(c.id)?'on':''}${nav[catIdx]===c.id?' cur':''}">
       <i style="background:${c.color}"></i>${esc(c.name)}<span class="ck">${sel2.includes(c.id)?'✓':''}</span></button>`).join('')
     +`<button data-c="__multi" class="multi${multiCat?' on':''}"><span class="mk">${multiCat?'☑':'☐'}</span>다중 선택</button>`
     +'<div class="kbd">↑ ↓ 로 옮기고 Enter 로 선택</div>'
@@ -2186,7 +2327,7 @@ function paintCatMenu(){
     +'<button data-c="__close" style="color:var(--ink-2);font-size:13px">완료</button>';
 }
 function moveCat(n){
-  const N=store.cats.length;if(!N)return;
+  const N=catNav().length;if(!N)return;
   catIdx=(catIdx+n+N)%N;paintCatMenu();
   const el=$('catMenu').querySelector('.cur');
   if(el&&el.scrollIntoView)el.scrollIntoView({block:'nearest'});
@@ -2199,12 +2340,14 @@ function pickCat(v){
       else a=[v];
       it.cats=a;it.cat=a[0];touch(it);save();renderDay();renderMonth();}
   }else{
-    if(multiCat){curCats=curCats.includes(v)?curCats.filter(x=>x!==v):curCats.concat(v);
-      if(!curCats.length)curCats=[v];}
+    if(v==='__all')curCats=['__all'];
+    else if(multiCat){const b=curCats.filter(x=>x!=='__all');curCats=b.includes(v)?b.filter(x=>x!==v):b.concat(v);
+      if(!curCats.length)curCats=['__all'];}
     else curCats=[v];
     saveCurCats();paintCatBtn();
+    try{renderMonth();renderDay();}catch(e){}
   }
-  const ix=store.cats.findIndex(c=>c.id===v);if(ix>=0)catIdx=ix;
+  const ix=catNav().indexOf(v);if(ix>=0)catIdx=ix;
   if(multiCat){paintCatMenu();return;}
   closeFind();
   if(!catTarget){const inp=$('input');if(inp)inp.focus();}
@@ -2212,7 +2355,7 @@ function pickCat(v){
 function openCatMenu(itemId,anchorUp){
   catTarget=itemId||null;
   const s0=curSel();
-  const ix=store.cats.findIndex(c=>c.id===(s0[0]||''));
+  const ix=catNav().indexOf(s0[0]||'');
   catIdx=ix>=0?ix:0;
   try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
   paintCatMenu();
@@ -2225,7 +2368,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='ArrowDown'){e.preventDefault();moveCat(1);}
   else if(e.key==='ArrowUp'){e.preventDefault();moveCat(-1);}
   else if(e.key==='Enter'){e.preventDefault();
-    const c=store.cats[catIdx];if(c)pickCat(c.id);}
+    const id=catNav()[catIdx];if(id)pickCat(id);}
 },true);
 $('catBtn').onclick=()=>openCatMenu(null,true);
 $('catMenu').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;
@@ -2277,7 +2420,7 @@ $('catList').onclick=e=>{
     let a=(it.cats||[it.cat]).filter(x=>x!==gone);
     if(!a.length)a=[fb];
     if(a.join()!==(it.cats||[it.cat]).join()){it.cats=a;it.cat=a[0];touch(it);}});
-  curCats=curCats.filter(x=>x!==gone);if(!curCats.length)curCats=[fb];saveCurCats();
+  curCats=curCats.filter(x=>x!==gone);if(!curCats.length)curCats=['__all'];saveCurCats();
   save();renderCats();paintCatBtn();renderDay();renderMonth();};
 $('addCat').onclick=()=>{
   store.cats.push({id:'c'+Date.now().toString(36),name:'새 분류',color:nextColor()});
@@ -2327,7 +2470,7 @@ dropTargets($('yearWrap'),'.yd');
 let pipWin=null,pipHost=null;
 const MINI_OK=('documentPictureInPicture' in window);
 function miniRows(day,label){
-  const its=ordItems(day).filter(i=>!i.done||day===TODAY),dls=deadlinesOn(day);
+  const its=ordAll(day).filter(i=>!i.done||day===TODAY),dls=deadlinesOn(day);
   if(!its.length&&!dls.length)return '';
   let h=`<div class="msec">${label}</div>`;
   dls.forEach(x=>{h+=`<div class="mi"><span class="mdl">기한</span>
@@ -2374,7 +2517,7 @@ async function openMini(){
     const p=parseInput(v,TODAY);
     store.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
       date:p.date,endDate:p.endDate,time:p.time,endTime:p.endTime,title:p.title,pri:p.pri,
-      cats:p.cat?[p.cat]:curCats.slice(),cat:p.cat||curCats[0],
+      cats:p.cat?[p.cat]:addCats(),cat:p.cat||addCats()[0],
       note:'',done:false,doneAt:null,mt:NOW()});
     save();inp.value='';renderMini();renderDay();renderMonth();renderBanner();});
   pipWin.addEventListener('pagehide',()=>{pipWin=null;pipHost=null;});
@@ -2414,7 +2557,7 @@ function attachImage(file,targetId){
     store.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
       date:sel,endDate:null,time:null,endTime:null,
       title:`캡처 ${pad(n.getHours())}:${pad(n.getMinutes())}`,pri:false,
-      cats:curCats.slice(),cat:curCats[0],img:data,note:'',done:false,doneAt:null,mt:NOW()});
+      cats:addCats(),cat:addCats()[0],img:data,note:'',done:false,doneAt:null,mt:NOW()});
     save();renderDay();renderMonth();renderBanner();
   });
 }
@@ -2464,7 +2607,7 @@ function buildCaps(text){
     const p=parseInput(line,sel);
     return{on:DT_RE.test(line),raw:line,date:p.date,endDate:p.endDate,
       time:p.time,endTime:p.endTime,pri:p.pri,
-      cat:p.cat||curCats[0]||store.cats[0].id,title:p.title};
+      cat:p.cat||addCats()[0]||store.cats[0].id,title:p.title};
   });
   renderCaps();
 }
@@ -2613,7 +2756,7 @@ $('list').addEventListener('keydown',e=>{
     const p=parseInput(v,sel);
     store.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
       date:p.date,endDate:p.endDate,time:p.time,endTime:p.endTime,title:p.title,pri:p.pri,
-      cats:p.cat?[p.cat]:curCats.slice(),cat:p.cat||curCats[0],note:'',done:false,doneAt:null,mt:NOW()});
+      cats:p.cat?[p.cat]:addCats(),cat:p.cat||addCats()[0],note:'',done:false,doneAt:null,mt:NOW()});
     save();inp.value='';
     if(p.date!==sel){sel=p.date;const d=fromYmd(sel);
       if(d.getMonth()!==view.getMonth()||d.getFullYear()!==view.getFullYear())view=new Date(d.getFullYear(),d.getMonth(),1);}
