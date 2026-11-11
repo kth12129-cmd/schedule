@@ -628,6 +628,29 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .srow .unit{font-size:12.5px;color:var(--ink-2)}
 .srow .mv{color:var(--ink-3);font-size:16px;padding:4px 5px}
 .hint-txt{padding:14px 16px;font-size:12.5px;color:var(--ink-2);line-height:1.65}
+.capacts{margin:16px 16px 12px;display:flex;flex-direction:column;gap:8px}
+.capacts .hint-txt{margin:0;padding:0}
+.caprow{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font-size:13px;color:var(--ink-2)}
+.caprow select{font-size:13px;background:var(--field);border:1px solid var(--fieldline);border-radius:8px;padding:4px 6px;color:var(--ink)}
+.bp-btn.alt2{background:var(--field);color:var(--navy);border:1px solid var(--fieldline)}
+.capshots{display:flex;gap:8px;margin:0 16px 12px;overflow-x:auto}.capshots img{height:64px;border-radius:8px;border:1px solid var(--line);flex:none}
+.capshots:empty{display:none}
+#cropBox{position:fixed;inset:0;z-index:9500;background:#0e0f12;color:#fff;flex-direction:column;touch-action:none}
+#cropBox.on{display:flex!important}
+.cr-top,.cr-bot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;font-size:14px}
+.cr-bot{padding:10px 14px calc(14px + env(safe-area-inset-bottom,0px))}
+.cr-top button,.cr-bot button{border:0;border-radius:10px;padding:11px 14px;font-size:14.5px;font-weight:700;background:#fff;color:#041A72}
+.cr-top button{background:#ffffff22;color:#fff}.cr-bot button{flex:1}.cr-bot .alt3{background:#ffffff22;color:#fff}
+.cr-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
+.cr-wrap{position:relative;display:inline-block;line-height:0;user-select:none;-webkit-user-select:none;overflow:hidden}
+.cr-wrap img{max-width:calc(100vw - 16px);max-height:calc(100vh - 170px);display:block;pointer-events:none}
+.cr-rect{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.55);cursor:move;touch-action:none}
+.cr-rect i{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;touch-action:none}
+.cr-rect i::after{content:"";position:absolute;left:8px;top:8px;width:10px;height:10px;border-radius:50%;background:#fff}
+.cr-rect i[data-h=nw]{left:0;top:0;cursor:nwse-resize}.cr-rect i[data-h=n]{left:50%;top:0;cursor:ns-resize}.cr-rect i[data-h=ne]{left:100%;top:0;cursor:nesw-resize}
+.cr-rect i[data-h=e]{left:100%;top:50%;cursor:ew-resize}.cr-rect i[data-h=se]{left:100%;top:100%;cursor:nwse-resize}.cr-rect i[data-h=s]{left:50%;top:100%;cursor:ns-resize}
+.cr-rect i[data-h=sw]{left:0;top:100%;cursor:nesw-resize}.cr-rect i[data-h=w]{left:0;top:50%;cursor:ew-resize}
+#capCount{position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:9600;background:#041A72;color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
 .capdrop{margin:0 16px 12px;padding:26px 14px;border:1.5px dashed var(--fieldline);border-radius:12px;
  text-align:center;font-size:13.5px;color:var(--ink-2);line-height:1.6;background:var(--field);cursor:pointer}
 .capdrop:hover{border-color:var(--navy);color:var(--ink)}
@@ -878,12 +901,22 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 
 <!-- 캡처로 일정 등록 -->
 <div class="sheet" id="capSheet">
-  <div class="sheet-bar"><h2>캡처로 일정 등록</h2><button data-close="capSheet">닫기</button></div>
+  <div class="sheet-bar"><h2>캡처</h2><button data-close="capSheet">닫기</button></div>
   <div class="sheet-body">
     <div class="card" style="margin-top:12px">
-      <div class="hint-txt">윈도우는 <b>Win + Shift + S</b>, 맥은 <b>⌃⇧⌘4</b> 로 필요한 부분만 오려낸 뒤
-        이 창에서 <b>붙여넣기</b>(Ctrl+V / ⌘V)하세요. 글자를 읽어 일정 후보를 만들어 드립니다.</div>
-      <div class="capdrop" id="capDrop"><b>여기에 붙여넣기</b>또는 눌러서 이미지 선택 · 끌어다 놓기</div>
+      <div class="capacts">
+        <button class="bp-btn" id="capGrab">🖥 화면 캡처 시작</button>
+        <div class="caprow" id="capGrabOpt">
+          <label>찍는 시점 <select id="capDelay"><option value="0">바로</option><option value="3">3초 뒤</option><option value="5">5초 뒤</option><option value="10">10초 뒤</option><option value="15">15초 뒤</option></select></label>
+          <label id="capPipL"><input type="checkbox" id="capPip" checked> 작은 찍기 창 띄우기</label>
+        </div>
+        <div class="hint-txt" id="capGrabHint">화면·창·탭을 고르면 찍기 창이 뜹니다. <b>작은 찍기 창</b>을 켜 두면 다른 앱으로 넘어가서도 <b>📸 찍기</b>를 누를 수 있어요(크롬·엣지). 찍은 뒤 필요한 부분만 끌어서 자릅니다.</div>
+        <button class="bp-btn" id="capShotBtn">📱 스크린샷 불러와서 자르기</button>
+        <button class="bp-btn alt2" id="capAway">다른 앱에서 찍고 오기</button>
+        <div class="hint-txt" id="capAwayHint">휴대폰은 앱이 화면을 직접 찍을 수 없어요. 전원+음량 버튼으로 스크린샷을 찍은 뒤 이 앱에서 불러와 자르세요.</div>
+      </div>
+      <div class="capshots" id="capShots"></div>
+      <div class="capdrop" id="capDrop"><b>파일 업로드 · 붙여넣기</b>눌러서 파일 선택 · 끌어다 놓기 · Ctrl+V / ⌘V</div>
       <img class="capprev" id="capPrev" alt="">
       <div class="capbusy" id="capBusy" style="display:none"><i></i><span id="capMsg"></span></div>
     </div>
@@ -893,6 +926,12 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
       <button class="go2" id="capSave">등록</button>
     </div>
   </div>
+</div>
+<div id="cropBox" style="display:none">
+  <div class="cr-top"><button id="crCancel">취소</button><b>자를 부분을 끌어 정하세요</b><button id="crReset">전체</button></div>
+  <div class="cr-stage" id="crStage"><div class="cr-wrap" id="crWrap"><img id="crImg" alt="" draggable="false">
+    <div class="cr-rect" id="crRect"><i data-h="nw"></i><i data-h="n"></i><i data-h="ne"></i><i data-h="e"></i><i data-h="se"></i><i data-h="s"></i><i data-h="sw"></i><i data-h="w"></i></div></div></div>
+  <div class="cr-bot"><button class="alt3" id="crSave">이미지로 저장</button><button id="crOk">글자 읽어 일정 만들기</button></div>
 </div>
 <input type="file" id="capFile" accept="image/*" style="display:none">
 
@@ -2225,7 +2264,7 @@ function renderShare(){
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v71';
+const APPVER=/*ver*/'v72';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -2838,16 +2877,16 @@ async function capRun(file){
 function openCap(){
   capCands=[];$('capList').innerHTML='';$('capBar').style.display='none';
   $('capPrev').classList.remove('on');capSay('');
-  closeFind();$('capSheet').classList.add('open');
+  closeFind();capUI();$('capSheet').classList.add('open');
 }
 $('capDrop').onclick=()=>$('capFile').click();
-$('capFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)capRun(f);e.target.value='';};
+$('capFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)openCrop(f);e.target.value='';};
 ['dragenter','dragover'].forEach(ev=>$('capDrop').addEventListener(ev,e=>{
   e.preventDefault();$('capDrop').classList.add('over');}));
 ['dragleave','drop'].forEach(ev=>$('capDrop').addEventListener(ev,e=>{
   e.preventDefault();$('capDrop').classList.remove('over');}));
 $('capDrop').addEventListener('drop',e=>{
-  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)capRun(f);});
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)openCrop(f);});
 $('imgBtn').onclick=openCap;
 let imgTarget=null;
 $('imgFile').onchange=e=>{const f=e.target.files&&e.target.files[0];
@@ -2857,7 +2896,7 @@ document.addEventListener('paste',e=>{
   if($('capSheet').classList.contains('open')){
     const its=(e.clipboardData&&e.clipboardData.items)||[];
     for(const it of its){if(it.type&&it.type.startsWith('image/')){
-      const f=it.getAsFile();if(f){e.preventDefault();capRun(f);return;}}}
+      const f=it.getAsFile();if(f){e.preventDefault();openCrop(f);return;}}}
     return;}
   if(t&&/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
   const items=(e.clipboardData&&e.clipboardData.items)||[];
@@ -2868,6 +2907,111 @@ document.addEventListener('paste',e=>{
     }
   }
 });
+
+/* ── 화면 캡처 · 자르기 ── */
+const canGrab=!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
+const isTouchDev=matchMedia('(pointer:coarse)').matches&&!canGrab;
+let capShots=[],grab=null,awaiting=false;
+const toFile=(c,n)=>new Promise(r=>c.toBlob(b=>r(new File([b],n||'capture.png',{type:'image/png'})),'image/png'));
+function capUI(){
+  $('capGrab').style.display=canGrab?'':'none';$('capGrabOpt').style.display=canGrab?'':'none';$('capGrabHint').style.display=canGrab?'':'none';
+  $('capPipL').style.display=('documentPictureInPicture'in window)?'':'none';
+  $('capShotBtn').style.display=canGrab?'none':'';$('capAway').style.display=canGrab?'none':'';$('capAwayHint').style.display=canGrab?'none':'';
+  $('capShotBtn').textContent=awaiting?'👉 방금 찍은 스크린샷 불러오기':'📱 스크린샷 불러와서 자르기';
+  $('capShots').innerHTML=capShots.slice(-6).map((x,i,a)=>`<img src="${x.url}" data-k="${capShots.length-a.length+i}" alt="">`).join('');
+}
+$('capShots').onclick=e=>{const im=e.target.closest('img');if(im&&capShots[+im.dataset.k])openCrop(capShots[+im.dataset.k].file);};
+async function shootOne(){
+  if(!grab||!grab.video.videoWidth)return false;
+  const v=grab.video,c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  const f=await toFile(c,'screen-'+Date.now()+'.png');capShots.push({file:f,url:URL.createObjectURL(f)});return true;
+}
+function grabEnd(open){
+  if(!grab)return;const g=grab;grab=null;
+  try{g.stream.getTracks().forEach(t=>t.stop());}catch(e){}
+  try{if(g.pip)g.pip.close();}catch(e){}
+  const c=$('capCount');if(c)c.remove();
+  capUI();
+  if(open&&capShots.length){try{window.focus();}catch(e){}openCrop(capShots[capShots.length-1].file);}
+}
+function pipUI(pip){
+  const d=pip.document;
+  d.body.style.cssText='margin:0;padding:12px;background:#041A72;color:#fff;font-family:-apple-system,system-ui,sans-serif;display:flex;flex-direction:column;gap:8px';
+  d.body.innerHTML='<div id="m" style="font-size:12.5px;font-weight:500">다른 앱으로 이동해 찍으세요</div><div style="display:flex;gap:8px"><button id="s" style="flex:1;padding:10px;border:0;border-radius:9px;background:#fff;color:#041A72;font-size:14px;font-weight:700">📸 찍기</button><button id="e" style="padding:10px 12px;border:0;border-radius:9px;background:rgba(255,255,255,.2);color:#fff;font-size:13px;font-weight:600">끝내기</button></div>';
+  d.getElementById('s').onclick=async()=>{if(await shootOne())d.getElementById('m').textContent=capShots.length+'장 찍었어요. 계속 찍거나 끝내기를 누르세요';capUI();};
+  d.getElementById('e').onclick=()=>grabEnd(true);
+  pip.addEventListener('pagehide',()=>grabEnd(true));
+}
+$('capGrab').onclick=async()=>{
+  if(grab)return;
+  const delay=+$('capDelay').value||0,wantPip=$('capPip').checked&&('documentPictureInPicture'in window);
+  let pip=null;
+  if(wantPip){try{pip=await documentPictureInPicture.requestWindow({width:270,height:120});}catch(e){pip=null;}}
+  let stream;
+  try{stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:8},audio:false});}
+  catch(e){if(pip)pip.close();return;}
+  const v=document.createElement('video');v.muted=true;v.playsInline=true;v.srcObject=stream;
+  try{await v.play();}catch(e){}
+  grab={stream,video:v,pip};
+  stream.getVideoTracks()[0].addEventListener('ended',()=>grabEnd(true));
+  if(pip){pipUI(pip);return;}
+  const pill=document.createElement('div');pill.id='capCount';document.body.appendChild(pill);
+  let n=delay;
+  const tick=async()=>{
+    if(!grab)return;
+    if(n>0){pill.textContent=`${n}초 뒤에 찍어요 · 지금 다른 앱으로 이동하세요`;n--;setTimeout(tick,1000);return;}
+    await new Promise(r=>setTimeout(r,350));
+    await shootOne();grabEnd(true);};
+  tick();
+};
+$('capShotBtn').onclick=()=>{awaiting=false;capUI();$('capFile').click();};
+$('capAway').onclick=()=>{awaiting=true;capUI();
+  alert('이 앱을 두고 캡처할 화면으로 이동해 스크린샷을 찍으세요.\n(아이폰: 전원+음량 올리기 / 안드로이드: 전원+음량 내리기)\n\n다시 이 앱으로 돌아오면 "방금 찍은 스크린샷 불러오기" 버튼이 준비돼 있어요.');};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&awaiting&&$('capSheet').classList.contains('open')){capUI();try{$('capShotBtn').scrollIntoView({block:'center'});}catch(e){}}});
+
+/* 자르기 창 */
+let crFile=null,cr={x:0,y:0,w:0,h:0},crDrag=null,crUrl=null;
+const crImg=$('crImg'),crRect=$('crRect'),crWrap=$('crWrap');
+function crPaint(){crRect.style.left=cr.x+'px';crRect.style.top=cr.y+'px';crRect.style.width=cr.w+'px';crRect.style.height=cr.h+'px';}
+function crFull(){cr={x:0,y:0,w:crImg.clientWidth,h:crImg.clientHeight};crPaint();}
+function openCrop(file){
+  if(!file||!/^image\//.test(file.type||''))return;
+  crFile=file;if(crUrl)URL.revokeObjectURL(crUrl);crUrl=URL.createObjectURL(file);
+  crImg.onload=()=>{crFull();};crImg.src=crUrl;
+  $('cropBox').classList.add('on');document.body.style.overflow='hidden';
+  setTimeout(crFull,120);
+}
+function closeCrop(){$('cropBox').classList.remove('on');document.body.style.overflow='';crImg.removeAttribute('src');}
+const crPos=e=>{const b=crWrap.getBoundingClientRect();return{x:Math.min(Math.max(e.clientX-b.left,0),crImg.clientWidth),y:Math.min(Math.max(e.clientY-b.top,0),crImg.clientHeight)};};
+crWrap.addEventListener('pointerdown',e=>{
+  const h=e.target.dataset&&e.target.dataset.h;
+  const fullR=cr.w>=crImg.clientWidth-2&&cr.h>=crImg.clientHeight-2;
+  if(e.target===crRect&&!fullR)crDrag={h:'mv',sx:e.clientX,sy:e.clientY,o:{...cr}};
+  else if(h)crDrag={h,sx:e.clientX,sy:e.clientY,o:{...cr}};
+  else{const p=crPos(e);cr={x:p.x,y:p.y,w:1,h:1};crDrag={h:'new',ox:p.x,oy:p.y};crPaint();}
+  try{crWrap.setPointerCapture(e.pointerId);}catch(_){}e.preventDefault();});
+crWrap.addEventListener('pointermove',e=>{
+  if(!crDrag)return;const W=crImg.clientWidth,H=crImg.clientHeight,M=24,cl=(v,a,b)=>Math.min(Math.max(v,a),b);
+  if(crDrag.h==='new'){const p=crPos(e);cr={x:Math.min(crDrag.ox,p.x),y:Math.min(crDrag.oy,p.y),w:Math.abs(p.x-crDrag.ox),h:Math.abs(p.y-crDrag.oy)};crPaint();return;}
+  const dx=e.clientX-crDrag.sx,dy=e.clientY-crDrag.sy;let{x,y,w,h}=crDrag.o;
+  if(crDrag.h==='mv'){x=cl(x+dx,0,W-w);y=cl(y+dy,0,H-h);}
+  else{let x2=x+w,y2=y+h;const k=crDrag.h;
+    if(k.includes('w'))x=cl(x+dx,0,x2-M);if(k.includes('e'))x2=cl(x2+dx,x+M,W);
+    if(k.includes('n'))y=cl(y+dy,0,y2-M);if(k.includes('s'))y2=cl(y2+dy,y+M,H);
+    w=x2-x;h=y2-y;}
+  cr={x,y,w,h};crPaint();});
+['pointerup','pointercancel'].forEach(t=>crWrap.addEventListener(t,()=>{
+  crDrag=null;if(cr.w<24||cr.h<24)crFull();}));
+$('crCancel').onclick=closeCrop;$('crReset').onclick=crFull;
+async function crOut(){
+  const im=crImg,k=im.naturalWidth/im.clientWidth,c=document.createElement('canvas');
+  c.width=Math.max(1,Math.round(cr.w*k));c.height=Math.max(1,Math.round(cr.h*k));
+  c.getContext('2d').drawImage(im,cr.x*k,cr.y*k,cr.w*k,cr.h*k,0,0,c.width,c.height);
+  return toFile(c,'crop-'+Date.now()+'.png');
+}
+$('crOk').onclick=async()=>{const f=await crOut();closeCrop();capRun(f);};
+$('crSave').onclick=async()=>{const f=await crOut();closeCrop();attachImage(f,null);toastMsg('이미지로 저장했어요');};
 let lbId=null;
 function openLB(id){
   const it=store.items.find(x=>x.id===id);if(!it||!it.img)return;
