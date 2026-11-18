@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="업무 일정">
-<script>try{var __t=localStorage.getItem("theme2")||"light";document.documentElement.setAttribute("data-theme",__t)}catch(e){document.documentElement.setAttribute("data-theme","light")}</script>
+<script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus")}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -1192,6 +1192,110 @@ textarea.memo{background:transparent}
 .hsec-memo .hbtn.seg{height:100%}
 @media (max-width:660px){.hsec-memo{height:36px}}
 .hsec-memo .hbtn.seg{margin:0!important;align-self:stretch}
+
+/* ===== v88 화면 구성 · 현황 · 디자인 시안 ===== */
+:root[data-skin="indigo"]{--page:#08090a;--surface:#101113;--field:#16181b;--chip:#1b1d21;--ink:#f7f8f8;--ink-2:#a8acb4;--ink-3:#6b6f78;--line:#26282d;--hair:#1a1c20;--fieldline:#2e3036;--navy:#5e6ad2;--navy-2:#9aa3f0}
+:root[data-skin="stripe"]{--page:#f6f9fc;--surface:#fff;--field:#eef2f7;--chip:#e6ebf1;--ink:#0a2540;--ink-2:#425466;--ink-3:#8898aa;--line:#d9e1ea;--hair:#e8edf3;--fieldline:#cfd7e1;--navy:#635bff;--navy-2:#4b44d6}
+:root[data-skin="paper"]{--page:#f7f6f3;--surface:#fff;--field:#f1f0ec;--chip:#ebeae5;--ink:#37352f;--ink-2:#6f6e69;--ink-3:#a5a39d;--line:#e3e2de;--hair:#edece8;--fieldline:#d9d8d3;--navy:#2383e2;--navy-2:#1a6bc0}
+:root[data-skin="mono"]{--page:#fafafa;--surface:#fff;--field:#f2f2f2;--chip:#ededed;--ink:#000;--ink-2:#555;--ink-3:#999;--line:#d8d8d8;--hair:#ececec;--fieldline:#cfcfcf;--navy:#000;--navy-2:#000}
+:root[data-skin="green"]{--page:#0c0c0c;--surface:#161616;--field:#1f1f1f;--chip:#262626;--ink:#fff;--ink-2:#b3b3b3;--ink-3:#727272;--line:#2c2c2c;--hair:#202020;--fieldline:#333;--navy:#1a9f4a;--navy-2:#3ddc7a}
+:root[data-skin="coral"]{--page:#f7f7f7;--surface:#fff;--field:#f0f0f0;--chip:#ebebeb;--ink:#222;--ink-2:#6a6a6a;--ink-3:#a8a8a8;--line:#ddd;--hair:#ebebeb;--fieldline:#d2d2d2;--navy:#ff385c;--navy-2:#e0204a}
+
+/* 헤더 가운데: 화면 구성 전환 */
+.lay{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);height:36px}
+.lay button{padding:0 14px;font-size:12.5px;font-weight:700;color:var(--ink-2);border-left:1px solid var(--hair);white-space:nowrap}
+.lay button:first-child{border-left:0}
+.lay button:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.lay button.on{background:var(--ink);color:var(--page)}
+@media (max-width:980px){.hsec-list{display:none!important}}
+
+/* 오른쪽 탭 */
+.rt-tabs{display:none;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);flex:none}
+.rt-tabs button{flex:1;padding:10px 6px;font-size:13px;font-weight:700;color:var(--ink-2);border-left:1px solid var(--hair)}
+.rt-tabs button:first-child{border-left:0}
+.rt-tabs button.on{background:var(--ink);color:var(--page)}
+.rt-tabs .rt-x{display:none;flex:0 0 44px}
+html[data-layout="focus"] .rt-tabs,html[data-layout="list"] .rt-tabs,html[data-layout="cal"] .rt-tabs{display:flex}
+html[data-layout="cal"] .rt-tabs .rt-x{display:block}
+.status-pane{display:none}
+html:not([data-layout="split"]) .rightcol>.card,html:not([data-layout="split"]) .rightcol>.botrow{flex:1;min-height:0}
+html:not([data-layout="split"]) .rightcol[data-rt="status"]>:not(.rt-tabs):not(.status-pane){display:none}
+html:not([data-layout="split"]) .rightcol[data-rt="day"]>:not(.rt-tabs):not(.list-pane){display:none}
+html:not([data-layout="split"]) .rightcol[data-rt="time"]>:not(.rt-tabs):not(.botrow){display:none}
+html:not([data-layout="split"]) .rightcol[data-rt="memo"]>:not(.rt-tabs):not(.botrow){display:none}
+html:not([data-layout="split"]) .rightcol[data-rt="time"] .memo-pane,html:not([data-layout="split"]) .rightcol[data-rt="memo"] .tl-pane{display:none}
+html:not([data-layout="split"]) .rightcol[data-rt="status"] .status-pane{display:block}
+html:not([data-layout="split"]) .botrow{display:flex}
+html:not([data-layout="split"]) .rightcol[data-rt="time"] .tl-pane,html:not([data-layout="split"]) .rightcol[data-rt="memo"] .memo-pane{flex:1}
+html[data-layout="focus"] .cal-pane{flex:7}
+html[data-layout="focus"] .rightcol{flex:4.6}
+html[data-layout="list"] .cal-pane{display:none}
+html[data-layout="list"] .rightcol{flex:1}
+html[data-layout="cal"] .rightcol{position:fixed;top:0;right:0;bottom:0;width:min(480px,94vw);z-index:70;padding:14px;background:var(--page);
+  border-left:1px solid var(--line);transform:translateX(104%);transition:transform .25s cubic-bezier(.2,.8,.2,1);box-shadow:-18px 0 50px rgba(0,0,0,.25)}
+html[data-layout="cal"] body.rc-open .rightcol,html[data-layout="cal"].x body.rc-open .rightcol{transform:none}
+#rcBack{display:none;position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.35)}
+html[data-layout="cal"] body.rc-open #rcBack{display:block}
+#rcOpen{display:none;position:fixed;right:18px;bottom:96px;z-index:60;padding:10px 16px;border-radius:22px;background:var(--ink);color:var(--page);font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+html[data-layout="cal"] #rcOpen{display:block}
+html[data-layout="cal"] body.rc-open #rcOpen{display:none}
+
+/* 현황 */
+.status-pane{overflow-y:auto;padding:14px}
+.st-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.st-tile{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--surface)}
+.st-tile span{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--ink-2)}
+.st-tile b{display:block;font-size:34px;font-weight:300;letter-spacing:-.05em;line-height:1.1;margin-top:4px;color:var(--ink)}
+.st-tile.ok b{color:var(--moss)}.st-tile.now{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}.st-tile.now b{color:var(--navy)}
+.st-tile.warn{border-color:var(--red);background:color-mix(in srgb,var(--red) 8%,var(--surface))}.st-tile.warn b{color:var(--red)}
+.st-cols{display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px}
+html[data-layout="list"] .st-cols{grid-template-columns:1fr 1fr}
+.st-h{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 8px;padding-bottom:6px;border-bottom:2px solid var(--ink);font-size:14px;font-weight:800;letter-spacing:.02em}
+.st-h em{font-style:normal;font-size:10.5px;font-weight:600;color:var(--ink-3);letter-spacing:.04em}
+.st-row{display:flex;align-items:center;gap:10px;padding:9px 10px;margin-bottom:6px;border:1px solid var(--hair);border-left:4px solid var(--c);border-radius:6px;background:var(--surface);cursor:pointer;transition:border-color .15s}
+.st-row:hover{border-color:var(--ink-2);border-left-color:var(--c)}
+.st-row .d{flex:none;min-width:52px;font-size:12px;font-weight:800;color:var(--ink)}
+.st-row .d small{margin-left:3px;font-weight:600;color:var(--ink-3)}
+.st-row .t{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-row .tm{flex:none;font-size:11.5px;font-weight:700;color:var(--ink-2)}
+.st-row.done .t{text-decoration:line-through;color:var(--ink-3);font-weight:500}
+.st-row.done::after{content:"완료";flex:none;font-size:10px;font-weight:800;color:var(--moss);letter-spacing:.08em}
+.st-row.late{border-color:var(--red);border-left-color:var(--red);background:color-mix(in srgb,var(--red) 7%,var(--surface))}
+.st-row.late::after{content:"지연";flex:none;font-size:10px;font-weight:800;color:var(--red);letter-spacing:.08em}
+.st-row.today{border-color:var(--navy);border-left-color:var(--navy);background:color-mix(in srgb,var(--navy) 8%,var(--surface))}
+.st-row.pri .t::before{content:"★ ";color:var(--amber)}
+.st-more{font-size:12px;color:var(--ink-3);padding:2px 4px}
+.st-empty{font-size:12.5px;color:var(--ink-3);padding:6px 2px}
+.st-empty:empty{display:none}
+
+/* 디자인 시트 */
+.ds-h{margin:18px 2px 10px;font-size:11px;font-weight:800;letter-spacing:.24em;color:var(--ink-2)}
+.ds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.ds-card{text-align:left;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);transition:border-color .15s}
+.ds-card:hover{border-color:var(--ink-2)}
+.ds-card.on{border-color:var(--navy);box-shadow:inset 0 0 0 2px var(--navy)}
+.ds-card b{display:block;margin:10px 0 3px;font-size:14.5px}
+.ds-card span{display:block;font-size:12px;color:var(--ink-2);line-height:1.5}
+.thumb{height:84px;border-radius:6px;border:1px solid var(--line);display:flex;gap:5px;padding:6px;background:var(--field);position:relative;overflow:hidden}
+.thumb i{display:block;border-radius:3px;background:var(--surface);border:1px solid var(--line);flex:1.6}
+.thumb i.b{flex:1;display:flex;flex-direction:column;gap:4px;padding:3px;background:var(--surface)}
+.thumb i.c{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1.4fr 1fr;gap:4px;padding:3px;background:transparent;border:0}
+.thumb i.c u:first-child{grid-column:1/3}
+.thumb i.full{flex:1}
+.thumb i.dr{position:absolute;right:6px;top:6px;bottom:6px;width:30%;flex:none;background:var(--ink);opacity:.85}
+.thumb u{display:block;flex:1;border-radius:2px;background:color-mix(in srgb,var(--ink) 14%,transparent);border:0;text-decoration:none}
+.thumb.sw{padding:7px;flex-wrap:wrap;align-content:flex-start;border-width:1px;border-style:solid}
+.thumb.sw i{flex:none;width:44%;height:34px;display:flex;align-items:flex-end;padding:4px;border:1px solid}
+.thumb.sw i u{width:100%;height:6px;border-radius:3px;flex:none}
+.thumb.sw s{flex:none;display:block;height:5px;border-radius:3px;margin-top:6px;width:30%;text-decoration:none}
+.thumb.sw s:nth-of-type(2){width:20%}
+@media (max-width:660px){
+  .st-tiles{grid-template-columns:repeat(2,1fr)}
+  html[data-layout="list"] .st-cols{grid-template-columns:1fr}
+  html[data-layout="cal"] .cal-pane{flex:1}
+}
+.hsec-list{flex:0 0 auto!important;margin:0 10px;overflow:visible}
+@media (max-width:1180px){.hsec-list{display:none!important}}
 </style>
 </head>
 <body>
@@ -1210,7 +1314,7 @@ textarea.memo{background:transparent}
       <div class="arrows"><button class="arrow" id="prev" data-tip="이전">‹</button><button class="arrow" id="next" data-tip="다음">›</button></div>
       <span class="zlab"></span>
     </div>
-    <div class="hsec hsec-list"><span class="ptitle">일정 목록</span></div>
+    <div class="hsec hsec-list"><div class="lay" id="layBar"><button data-l="focus">한눈에</button><button data-l="split">분할</button><button data-l="cal">달력</button><button data-l="list">목록</button></div></div>
     <div class="hsec hsec-memo">
       <span class="hspace"></span>
       <button class="hbtn" id="zoomOut" data-tip="원래 크기로">⤡</button>
@@ -1220,6 +1324,7 @@ textarea.memo{background:transparent}
       <button class="hbtn" id="findBtn" data-tip="날짜 찾기">⌕</button>
       <button class="hbtn" id="miniBtn" data-tip="항상 위 미니 창">⧉</button>
       <button class="hbtn txt" id="analyBtn" data-tip="추정 n+1 · 업무 사이클 분석">추정 n+1</button>
+      <button class="hbtn" id="dsBtn" data-tip="디자인 · 화면 구성 · 색상">◐</button>
       <button class="hbtn tip-r" id="setBtn" data-tip="동기화·알림 설정">⚙</button>
     </div>
   </div>
@@ -1232,7 +1337,9 @@ textarea.memo{background:transparent}
     <div class="weekdays"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
     <div class="grid" id="grid"></div>
   </div>
-  <div class="rightcol">
+  <div class="rightcol" id="rc" data-rt="status">
+  <div class="rt-tabs" id="rtTabs"><button data-rt="status">현황</button><button data-rt="day">선택한 날</button><button data-rt="time">시간표</button><button data-rt="memo">메모</button><button class="rt-x" id="rcClose" aria-label="닫기">✕</button></div>
+  <div class="card pane status-pane" id="stPane"><div id="stBody"></div></div>
   <div class="card pane list-pane">
     <div class="day-head"><h2 id="dayTitle"></h2><span class="cnt" id="dayCnt"></span>
       <button class="addbtn" id="addItemBtn">+ 추가</button>
@@ -1253,6 +1360,7 @@ textarea.memo{background:transparent}
   </div>
 </section>
 
+<div id="rcBack"></div><button id="rcOpen">현황 · 할 일 ▸</button>
 <section class="view" id="v-year"><div class="year-wrap" id="yearWrap"></div></section>
 <section class="view" id="v-decade"><div class="dec-wrap" id="decWrap"></div></section>
 
@@ -1302,6 +1410,16 @@ textarea.memo{background:transparent}
 </div>
 <input type="file" id="capFile" accept="image/*" style="display:none">
 
+<div class="sheet" id="dsSheet">
+  <div class="sheet-bar"><h2>디자인</h2><button data-close="dsSheet">완료</button></div>
+  <div class="sheet-body">
+    <div class="ds-h">화면 구성</div>
+    <div class="ds-grid" id="dsLay"></div>
+    <div class="ds-h">색상 시안</div>
+    <div class="ds-grid ds-themes" id="dsTheme"></div>
+    <div class="hint-txt" style="margin:14px 2px">시안은 여러 서비스의 디자인 원칙(색·여백·선)을 참고해 직접 구성한 것이며, 로고나 고유 요소는 쓰지 않았습니다. 고른 구성은 이 기기에 저장됩니다.</div>
+  </div>
+</div>
 <!-- 분석 -->
 <div class="sheet" id="anSheet">
   <div class="sheet-bar"><h2>추정 n+1</h2><button data-close="anSheet">닫기</button></div>
@@ -1402,6 +1520,7 @@ textarea.memo{background:transparent}
     <button id="freshBtn">최신으로 받기</button></div>
   <div class="setrow"><label>앱으로 설치</label><button id="instBtn">방법 보기</button></div>
   <div class="setrow"><label>분류 설정</label><button id="catSetBtn">열기</button></div>
+  <div class="setrow"><label>디자인 · 화면 구성</label><button id="setDs">열기</button></div>
   <div class="setrow phonly"><label>VOC 게시판</label><button id="setVoc">열기</button></div>
   <div class="setrow phonly"><label>추정 n+1</label><button id="setAn">열기</button></div>
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
@@ -2676,9 +2795,10 @@ $('yearWrap').addEventListener('mouseleave',()=>{zMonth=null;});
     miniBtn:S('<rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="6" rx="1"/>'),
     setBtn:S('<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>')
   };
+  IC.dsBtn=S('<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/>');
   IC.vocBtn=S('<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>');
   IC.analyBtn=S('<path d="M4 19V9M10 19V5M16 19v-7M3 19.5h18"/><path d="m4 7 5-3 4 3 7-4"/>');
-  const LB={viewBtn:'보기',tmBtn:'팀',vocBtn:'VOC',findBtn:'검색',miniBtn:'미니창',analyBtn:'추정 n+1',setBtn:'설정'};
+  const LB={viewBtn:'보기',tmBtn:'팀',dsBtn:'디자인',vocBtn:'VOC',findBtn:'검색',miniBtn:'미니창',analyBtn:'추정 n+1',setBtn:'설정'};
   Object.keys(LB).forEach(id=>{const b=document.getElementById(id);if(!b)return;
     b.classList.remove('txt');b.classList.add('seg');b.innerHTML=(IC[id]||'')+'<span>'+LB[id]+'</span>';});
   const cur=()=>document.documentElement.getAttribute('data-theme')||'light';
@@ -2692,6 +2812,102 @@ $('yearWrap').addEventListener('mouseleave',()=>{zMonth=null;});
   if(sel){sel.value=cur();sel.onchange=()=>apply(sel.value);}
   apply(cur());
 })();
+
+/* ===== v88 화면 구성 · 현황 · 디자인 시안 ===== */
+const HTMLEL=document.documentElement;
+let layout=HTMLEL.getAttribute('data-layout')||'focus';
+let rtab=(()=>{try{return localStorage.getItem('rt')||'status';}catch(e){return 'status';}})();
+function setRT(r){rtab=r;try{localStorage.setItem('rt',r);}catch(e){}
+  $('rc').dataset.rt=r;
+  $('rtTabs').querySelectorAll('[data-rt]').forEach(b=>b.classList.toggle('on',b.dataset.rt===r));
+  if(r==='status')renderStatus();}
+function openRC(on){document.body.classList.toggle('rc-open',!!on);}
+function setLayout(l){layout=l;HTMLEL.setAttribute('data-layout',l);try{localStorage.setItem('layout',l);}catch(e){}
+  openRC(false);
+  $('layBar').querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on',b.dataset.l===l));
+  if(typeof paintDs==='function')paintDs();
+  setTimeout(()=>{try{renderMonth();}catch(e){}},60);}
+$('layBar').onclick=e=>{const b=e.target.closest('[data-l]');if(b)setLayout(b.dataset.l);};
+$('rtTabs').onclick=e=>{const b=e.target.closest('[data-rt]');if(b)setRT(b.dataset.rt);};
+$('rcClose').onclick=()=>openRC(false);$('rcBack').onclick=()=>openRC(false);
+$('rcOpen').onclick=()=>{setRT('status');openRC(true);};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('rc-open'))openRC(false);});
+
+function renderStatus(){
+  const box=$('stBody');if(!box)return;
+  const seen=new Set(),done=[],late=[],tod=[],soon=[];let d7=0,n7=0;
+  const t0=fromYmd(TODAY),y7=ymd(dayAdd(t0,-7)),n7k=ymd(dayAdd(t0,7));
+  for(let o=-30;o<=14;o++){
+    const k=ymd(dayAdd(t0,o));
+    ordItems(k).forEach(i=>{
+      if(seen.has(i.id))return;seen.add(i.id);
+      const st=i.date,en=i.endDate||i.date;
+      const row={i,k:st,en};
+      if(i.done){if(en>=y7&&st<=TODAY)d7++;if(en>=ymd(dayAdd(t0,-14)))done.push(row);}
+      else if(en<TODAY)late.push(row);
+      else if(st<=TODAY)tod.push(row);
+      else{soon.push(row);if(st<=n7k)n7++;}
+    });
+  }
+  done.sort((a,b)=>b.k<a.k?-1:b.k>a.k?1:0);
+  const rowH=(r,cls)=>{const i=r.i,d=fromYmd(r.k);
+    return `<div class="st-row ${cls}${i.pri?' pri':''}" data-go="${r.k}" style="--c:${catColor(i)}"><span class="d">${md(r.k)}<small>${WD[d.getDay()]}</small></span><span class="t">${esc(i.title)}</span>${i.time?`<span class="tm">${i.time}</span>`:''}</div>`;};
+  const list=(arr,cls,max,empty)=>arr.length?arr.slice(0,max).map(r=>rowH(r,cls)).join('')+(arr.length>max?`<div class="st-more">외 ${arr.length-max}건</div>`:''):`<div class="st-empty">${empty}</div>`;
+  box.innerHTML=`<div class="st-tiles">
+    <div class="st-tile ok"><span>지난 7일 완료</span><b>${d7}</b></div>
+    <div class="st-tile${tod.length?' now':''}"><span>오늘 남은 일</span><b>${tod.length}</b></div>
+    <div class="st-tile${late.length?' warn':''}"><span>지연 · 미완료</span><b>${late.length}</b></div>
+    <div class="st-tile"><span>앞으로 7일</span><b>${n7}</b></div></div>
+  <div class="st-cols">
+    <section><h3 class="st-h"><span>해온 일</span><em>최근 14일 · 완료</em></h3>${list(done,'done',10,'아직 완료 표시한 일정이 없습니다.')}</section>
+    <section><h3 class="st-h"><span>해야 할 일</span><em>지연 → 오늘 → 예정</em></h3>${list(late,'late',6,'')}${list(tod,'today',8,late.length?'':'오늘 남은 일이 없습니다.')}${list(soon,'soon',10,'')}</section>
+  </div>`;
+}
+$('stBody').onclick=e=>{const r=e.target.closest('[data-go]');if(!r)return;
+  const k=r.dataset.go;goto(k);setRT('day');if(layout==='cal')openRC(true);};
+{const _rd=renderDay;renderDay=function(){_rd.apply(this,arguments);try{renderStatus();}catch(e){}};}
+
+/* 디자인 시트 */
+const SKINS=[
+  {key:'light',skin:'',mode:'light',name:'화이트',ref:'기본 · 선명한 흰 바탕',sw:['#f4f5f8','#ffffff','#0a0c12','#041a72','#cdd2de']},
+  {key:'dark',skin:'',mode:'dark',name:'다크',ref:'기본 · 검정 바탕',sw:['#000000','#0a0b0e','#f3f4f8','#3f72ff','#2b2e37']},
+  {key:'indigo',skin:'indigo',mode:'dark',name:'인디고 다크',ref:'Linear 참고 · 절제된 보라 포인트',sw:['#08090a','#101113','#f7f8f8','#5e6ad2','#26282d']},
+  {key:'stripe',skin:'stripe',mode:'light',name:'퍼플 라이트',ref:'Stripe 참고 · 푸른 회색 + 보라',sw:['#f6f9fc','#ffffff','#0a2540','#635bff','#d9e1ea']},
+  {key:'paper',skin:'paper',mode:'light',name:'웜 페이퍼',ref:'Notion 참고 · 따뜻한 종이 느낌',sw:['#f7f6f3','#ffffff','#37352f','#2383e2','#e3e2de']},
+  {key:'mono',skin:'mono',mode:'light',name:'모노',ref:'Vercel 참고 · 흑백 정밀',sw:['#fafafa','#ffffff','#000000','#000000','#d8d8d8']},
+  {key:'green',skin:'green',mode:'dark',name:'그린 다크',ref:'Spotify 참고 · 짙은 회색 + 초록',sw:['#0c0c0c','#161616','#ffffff','#1a9f4a','#2c2c2c']},
+  {key:'coral',skin:'coral',mode:'light',name:'코랄',ref:'Airbnb 참고 · 따뜻한 코랄 포인트',sw:['#f7f7f7','#ffffff','#222222','#ff385c','#dddddd']}
+];
+const LAYS=[
+  {k:'focus',n:'한눈에 보기',d:'달력은 크게, 오른쪽은 현황·선택한 날·시간표·메모를 탭으로 전환',t:'<i class="a"></i><i class="b"><u></u><u></u></i>'},
+  {k:'split',n:'분할하여 보기',d:'달력 · 일정 · 시간표 · 메모를 한 화면에 모두 나눠서 표시',t:'<i class="a"></i><i class="c"><u></u><u></u><u></u></i>'},
+  {k:'cal',n:'달력 확대',d:'달력만 크게. 날짜를 누르면 오른쪽에서 일정이 열립니다',t:'<i class="a full"></i><i class="dr"></i>'},
+  {k:'list',n:'목록 확대',d:'달력을 접고 현황과 할 일 목록을 크게 표시',t:'<i class="b full"><u></u><u></u></i>'}
+];
+function curSkinKey(){try{return localStorage.getItem('skin')||HTMLEL.getAttribute('data-theme')||'light';}catch(e){return 'light';}}
+function paintDs(){
+  const lc=$('dsLay'),tc=$('dsTheme');if(!lc||!tc)return;
+  lc.innerHTML=LAYS.map(l=>`<button class="ds-card${layout===l.k?' on':''}" data-lay="${l.k}"><div class="thumb lt-${l.k}">${l.t}</div><b>${l.n}</b><span>${l.d}</span></button>`).join('');
+  const ck=curSkinKey();
+  tc.innerHTML=SKINS.map(x=>`<button class="ds-card${ck===x.key?' on':''}" data-skin="${x.key}"><div class="thumb sw" style="background:${x.sw[0]};border-color:${x.sw[4]}"><i style="background:${x.sw[1]};border-color:${x.sw[4]}"></i><i style="background:${x.sw[1]};border-color:${x.sw[4]}"><u style="background:${x.sw[3]}"></u></i><s style="background:${x.sw[2]}"></s><s style="background:${x.sw[4]}"></s></div><b>${x.name}</b><span>${x.ref}</span></button>`).join('');
+}
+function applyLook(key){
+  const sk=SKINS.find(x=>x.key===key)||SKINS[0];
+  HTMLEL.setAttribute('data-theme',sk.mode);
+  if(sk.skin)HTMLEL.setAttribute('data-skin',sk.skin);else HTMLEL.removeAttribute('data-skin');
+  try{localStorage.setItem('theme2',sk.mode);localStorage.setItem('skin',sk.key);}catch(e){}
+  const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=sk.sw[0];
+  const ts=$('themeSel');if(ts)ts.value=(sk.key==='light'||sk.key==='dark')?sk.key:'';
+  paintDs();try{renderMonth();renderDay();}catch(e){}
+}
+$('themeSel').onchange=()=>{if($('themeSel').value)applyLook($('themeSel').value);};
+$('dsLay').onclick=e=>{const b=e.target.closest('[data-lay]');if(b)setLayout(b.dataset.lay);};
+$('dsTheme').onclick=e=>{const b=e.target.closest('[data-skin]');if(b)applyLook(b.dataset.skin);};
+$('dsBtn').onclick=()=>{closeFind();paintDs();$('dsSheet').classList.add('open');};
+$('setDs').onclick=()=>{closeFind();paintDs();$('dsSheet').classList.add('open');};
+(function(){const ts=$('themeSel');if(ts){const k=curSkinKey();ts.value=(k==='light'||k==='dark')?k:'';}})();
+setRT(rtab);setLayout(layout);paintDs();
+
 $('moBtn').onclick=()=>{if(tab==='cal'){yearView=view.getFullYear();setTab('year');}else if(tab==='decade')setTab('year');else setTab('cal');};
 function openYr(){
   const cur=tab==='year'?yearView:view.getFullYear();
@@ -2764,6 +2980,7 @@ $('yearWrap').onclick=e=>{const d=e.target.closest('[data-d]');if(d){goto(d.data
   const m=e.target.closest('[data-m]');if(m){view=new Date(yearView,+m.dataset.m,1);setTab('cal');}};
 $('grid').onclick=e=>{const b=e.target.closest('.cell');if(!b)return;
   sel=b.dataset.d;openNote=null;editItem=null;adding=false;
+  if(layout==='cal'){setRT('day');openRC(true);}else if(layout!=='split')setRT('day');
   renderMonth();renderDay();
   if(!CAN_HOVER)showTip($('grid').querySelector('.cell.sel'),true);};
 
@@ -3109,7 +3326,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v87';
+const APPVER=/*ver*/'v88';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
