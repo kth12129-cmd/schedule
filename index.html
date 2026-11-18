@@ -837,7 +837,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 <header>
   <div class="navbar">
     <div class="hsec hsec-cal">
-      <button class="mo-btn tip-l" id="moBtn" data-tip="연도 보기로 전환"><span id="mTitle">9월</span></button>
+      <button class="mo-btn tip-l" id="moBtn" data-tip="연도 보기로 전환 (트랙패드 축소 · Ctrl+휠)"><span id="mTitle">9월</span></button>
       <button class="yr-btn" id="yrBtn" data-tip="연도 선택"><span id="yTitle">2026</span><span class="cv">▾</span></button>
       <div class="arrows"><button class="arrow" id="prev" data-tip="이전">‹</button><button class="arrow" id="next" data-tip="다음">›</button></div>
       <span class="zlab"></span>
@@ -1870,6 +1870,37 @@ $('v-cal').addEventListener('dblclick',e=>{
   if(window.getSelection)window.getSelection().removeAllRanges();
   zoom(pane.classList.contains('cal-pane')?'cal':pane.classList.contains('list-pane')?'list':'memo');
 });
+
+/* ── 확대·축소 → 월 ↔ 연도 (맥 트랙패드 핀치 · 윈도우 Ctrl+휠 · Ctrl +/-) ── */
+let zAcc=0,zLock=0,zMonth=null;
+const zBusy=()=>!!document.querySelector('.sheet.open,#cropBox.on,#brief[style*="block"],.lbox.on,#lbox.on');
+function zoomStep(dir){
+  const now=Date.now();if(now<zLock||zBusy())return;
+  if(dir<0&&tab==='cal'){yearView=view.getFullYear();setTab('year');zAnim(dir,'v-year');}
+  else if(dir>0&&tab==='year'){
+    const m=zMonth!=null?zMonth:(yearView===today.getFullYear()?today.getMonth():0);
+    view=new Date(yearView,m,1);setTab('cal');zAnim(dir,'v-cal');}
+  else return;
+  zLock=now+420;zAcc=0;
+}
+function zAnim(dir,id){try{$(id).animate([{opacity:0,transform:`scale(${dir<0?1.06:.94})`},{opacity:1,transform:'scale(1)'}],{duration:280,easing:'cubic-bezier(.2,.8,.2,1)'});}catch(e){}}
+window.addEventListener('wheel',e=>{
+  if(!e.ctrlKey||zBusy())return;
+  e.preventDefault();zAcc+=e.deltaY;
+  if(zAcc>30)zoomStep(-1);else if(zAcc<-30)zoomStep(1);
+},{passive:false});
+window.addEventListener('keydown',e=>{
+  if(!(e.ctrlKey||e.metaKey)||e.altKey||zBusy())return;
+  if(/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
+  if(e.key==='-'||e.key==='_'){e.preventDefault();zoomStep(-1);}
+  else if(e.key==='='||e.key==='+'){e.preventDefault();zoomStep(1);}
+});
+let gDone=false;
+window.addEventListener('gesturestart',e=>{e.preventDefault();gDone=false;});
+window.addEventListener('gesturechange',e=>{e.preventDefault();if(gDone)return;
+  if(e.scale<0.82){gDone=true;zoomStep(-1);}else if(e.scale>1.22){gDone=true;zoomStep(1);}});
+$('yearWrap').addEventListener('mouseover',e=>{const m=e.target.closest('[data-m]');zMonth=m?+m.dataset.m:null;});
+$('yearWrap').addEventListener('mouseleave',()=>{zMonth=null;});
 $('moBtn').onclick=()=>{if(tab==='cal'){yearView=view.getFullYear();setTab('year');}else setTab('cal');};
 function openYr(){
   const cur=tab==='year'?yearView:view.getFullYear();
@@ -2264,7 +2295,7 @@ function renderShare(){
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v72';
+const APPVER=/*ver*/'v73';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
