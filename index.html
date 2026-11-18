@@ -653,6 +653,36 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .vcm .who button{background:none;border:0;color:var(--ink-2);font-size:12.5px}
 .vact{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .vadm{margin-top:18px;padding:12px;border:1px dashed var(--fieldline);border-radius:12px}
+.tmc{margin:0 0 12px;padding:14px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.tmh{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.tmh b{font-size:16.5px}.tmh .sp{flex:1}
+.tmb{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:700;background:var(--field);color:var(--ink-2)}
+.tmb.lead{background:#e6efff;color:#1d4fb8}.tmb.st-leave{background:#fff1d9;color:#9a5b00}.tmb.st-transfer{background:#fde8e6;color:#b3261e}.tmb.st-site{background:#e4f5ea;color:#1c7a3f}
+.tmi{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--hair);font-size:14.5px;line-height:1.45}.tmi:first-of-type{margin-top:10px}.tmc>.tmi:first-child{border-top:0;margin-top:0}
+.tmi .tt{flex:none;width:46px;color:var(--navy);font-weight:700;font-size:13px;padding-top:1px}.tmi .dd{flex:1;min-width:0;word-break:keep-all}.tmi.done .dd{text-decoration:line-through;color:var(--ink-2)}
+.tmi .dd i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}.tmi .nt{display:block;font-size:12.5px;color:var(--ink-2);margin-top:2px;white-space:pre-wrap}
+.tmempty{margin-top:10px;font-size:13.5px;color:var(--ink-2)}
+.tmgap{margin-top:10px;padding:10px 12px;border-radius:10px;background:#fff6e5;color:#7a4a00;font-size:13.5px;display:flex;gap:8px;align-items:center;justify-content:space-between}
+.tmday{display:flex;align-items:center;gap:8px;margin:12px 0}.tmday b{flex:1;text-align:center;font-size:16px}
+.tmcode{font-size:13px;color:var(--ink-2);margin:4px 0 0}.tmcode b{letter-spacing:.12em;color:var(--navy);font-size:15px}
+.tmlog{font-size:13px;line-height:1.55;padding:8px 0;border-bottom:1px solid var(--hair);color:var(--ink)}.tmlog small{color:var(--ink-2)}
+.tmdg{margin:16px 0 6px;font-size:13px;font-weight:700;color:var(--navy)}
+#tmMeet{display:none;position:fixed;inset:0;z-index:9100;background:#0f1219;color:#f2f4f8;overflow:auto;-webkit-overflow-scrolling:touch}
+#tmMeet.on{display:block}
+.mt-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:calc(22px + env(safe-area-inset-top,0px)) clamp(16px,3vw,44px) 14px}
+.mt-ttl small{display:block;font-size:clamp(13px,1.3vw,18px);color:#9aa6c8;font-weight:600;letter-spacing:.04em}
+.mt-ttl b{font-size:clamp(26px,3.6vw,52px);font-weight:800;line-height:1.15}.mt-ttl span{margin-left:14px;font-size:clamp(14px,1.6vw,22px);color:#9aa6c8}
+.mt-nav{display:flex;gap:8px}.mt-nav button{padding:10px 16px;border-radius:10px;background:#ffffff1a;color:#fff;font-size:16px;font-weight:700;border:0}
+.mt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:clamp(10px,1.4vw,20px);padding:6px clamp(16px,3vw,44px) 40px}
+.mt-col{background:#181c27;border-radius:18px;padding:clamp(14px,1.6vw,24px);border:1px solid #262c3b}
+.mt-col h3{margin:0;font-size:clamp(20px,2.2vw,32px);font-weight:800;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.mt-col h3 em{font-style:normal;font-size:clamp(12px,1.1vw,16px);padding:3px 10px;border-radius:8px;background:#ffffff1a;color:#cfd7ee;font-weight:700}
+.mt-col h3 em.lead{background:#2a3f8f}.mt-col h3 em.abs{background:#7a4a00;color:#ffe2b0}
+.mt-col .cnt{margin:4px 0 8px;color:#8b97ba;font-size:clamp(13px,1.2vw,17px)}
+.mt-it{display:flex;gap:12px;padding:clamp(8px,.9vw,13px) 0;border-top:1px solid #262c3b;font-size:clamp(16px,1.7vw,24px);line-height:1.4}
+.mt-it .t{flex:none;min-width:3.2em;color:#7f93e0;font-weight:800}.mt-it.done{opacity:.45;text-decoration:line-through}
+.mt-it small{display:block;font-size:.72em;color:#9aa6c8;margin-top:2px;white-space:pre-wrap;text-decoration:none}
+.mt-none{padding:14px 0;color:#6e7a9c;font-size:clamp(14px,1.3vw,18px)}
+.mt-gap{margin-top:8px;padding:10px 12px;border-radius:10px;background:#3a2a0a;color:#ffd998;font-size:clamp(14px,1.3vw,18px)}
 .capacts{margin:16px 16px 12px;display:flex;flex-direction:column;gap:8px}
 .capacts .hint-txt{margin:0;padding:0}
 .caprow{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font-size:13px;color:var(--ink-2)}
@@ -871,6 +901,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
     <div class="hsec hsec-memo">
       <span class="hspace"></span>
       <button class="hbtn" id="zoomOut" data-tip="원래 크기로">⤡</button>
+      <button class="hbtn" id="tmBtn" data-tip="팀 업무 현황">👥</button>
       <button class="hbtn" id="vocBtn" data-tip="VOC · 의견 게시판">✉</button>
       <button class="hbtn" id="findBtn" data-tip="날짜 찾기">⌕</button>
       <button class="hbtn" id="miniBtn" data-tip="항상 위 미니 창">⧉</button>
@@ -1017,6 +1048,13 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="sheet-bar"><h2>계정 · 동기화</h2><button data-close="authSheet">닫기</button></div>
   <div class="sheet-body"><div class="card" style="margin-top:12px" id="authBody"></div></div>
 </div>
+<div class="sheet" id="tmSheet">
+  <div class="sheet-bar"><h2>팀 업무 현황</h2><button data-close="tmSheet">닫기</button></div>
+  <div class="sheet-body" id="tmBody"></div>
+</div>
+<div id="tmMeet"><div class="mt-top"><div class="mt-ttl"><small id="mtTeam"></small><b id="mtDate"></b><span id="mtSum"></span></div>
+  <div class="mt-nav"><button id="mtPrev">‹</button><button id="mtToday">오늘</button><button id="mtNext">›</button><button id="mtClose">닫기</button></div></div>
+  <div class="mt-grid" id="mtGrid"></div></div>
 <div class="sheet" id="vocSheet">
   <div class="sheet-bar"><h2>VOC · 의견 게시판</h2><button data-close="vocSheet">닫기</button></div>
   <div class="sheet-body" id="vocBody"></div>
@@ -1042,6 +1080,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>아침 알림</label><button id="briefOpen">설정</button></div>
+  <div class="setrow"><label>팀 업무 현황</label><button id="tmOpen2">열기</button></div>
   <div class="setrow"><label>VOC 게시판</label><button id="vocOpen2">열기</button></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
   <div class="setrow"><label>버전</label><span id="verTxt" style="font-size:13px;color:var(--ink-2);margin-left:auto"></span>
@@ -1375,7 +1414,7 @@ function renderDay(){
              <div class="edit-tip">시간·날짜도 같이 고칠 수 있습니다. Enter 저장, Esc 취소</div>`
           :`<div class="title" data-act="open">${esc(i.title)}${has&&!isOpen?'<span class="caret">⌄</span>':''}</div>`}</div>
       <div class="acts"><button class="flag${i.pri?' on':''}" data-act="pri" data-tip="${i.pri?'중요 해제':'중요 표시'}">${i.pri?'★':'☆'}</button>
-        <button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'공유 해제':'상대방에게 보이기'}">👥</button>
+        <button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'팀에 공개 중 · 누르면 나만 보기':'나만 보기 · 누르면 팀에 공개'}">${isShared(i)?'👥 공개':'🔒 비공개'}</button>
         <button data-act="edit" data-tip="내용 수정">✎</button>
         <button class="note-btn${has?' has':''}" data-act="open" data-tip="메모">≡</button>
         <button data-act="img" data-tip="${i.img?'이미지 교체':'이미지 첨부'}"
@@ -1902,6 +1941,173 @@ $('v-cal').addEventListener('dblclick',e=>{
   zoom(pane.classList.contains('cal-pane')?'cal':pane.classList.contains('list-pane')?'list':'memo');
 });
 
+/* ── 팀 업무 공유 · 현황 · 인수인계 ── */
+const TS={active:'정상 근무',leave:'휴가',transfer:'타 팀 발령',site:'현장 발령'};
+let team=null,tmMembers=[],teamItems=[],handLog=[],tmDay=TODAY,tmView='board',tmCur=null,tmChan=null,tmT=null,tmMeetT=null;
+const tmMe=()=>session&&session.user.id;
+const onDay=(o,d)=>o.date===d||(o.endDate&&o.date<=d&&d<=o.endDate);
+const byTime=(a,b)=>(a.time||'99:99')<(b.time||'99:99')?-1:(a.time||'99:99')>(b.time||'99:99')?1:0;
+function tmItems(uid){
+  return uid===tmMe()?store.items.filter(isShared).map(i=>({...shareData(i),item_id:i.id,owner:uid})):teamItems.filter(o=>o.owner===uid);
+}
+const tmOnDay=(uid,d)=>tmItems(uid).filter(o=>onDay(o,d)).sort(byTime);
+const tmAbsent=(m,d)=>m.status!=='active'&&(!m.status_from||m.status_from<=d)&&(!m.status_to||d<=m.status_to);
+const tmUpcoming=uid=>tmItems(uid).filter(o=>(o.endDate||o.date)>=TODAY&&!o.done).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:byTime(a,b));
+const tmLabel=m=>{const f=x=>x?x.slice(5).replace('-','/'):'';const r=(m.status_from||m.status_to)?` ${f(m.status_from)}~${f(m.status_to)}`:'';return TS[m.status]+r+(m.status_note?' · '+m.status_note:'');};
+const tmOrder=()=>[...tmMembers].sort((a,b)=>(a.role==='leader'?-1:0)-(b.role==='leader'?-1:0)||(a.user_id===tmMe()?-1:0)-(b.user_id===tmMe()?-1:0)||(a.joined_at<b.joined_at?-1:1));
+const tmName=m=>m.name||'이름 없음';
+async function loadTeam(){
+  if(backend!=='sb'||!SB||!session){team=null;tmMembers=[];teamItems=[];tmRender();return;}
+  try{
+    const m=await SB.from('team_members').select('*').order('joined_at');
+    if(m.error||!m.data||!m.data.length){team=null;tmMembers=[];teamItems=[];handLog=[];tmRender();return;}
+    tmMembers=m.data;const tid=tmMembers[0].team_id;
+    const[t,si,h]=await Promise.all([
+      SB.from('teams').select('*').eq('id',tid).maybeSingle(),
+      SB.from('shared_items').select('owner_id,item_id,data').in('owner_id',tmMembers.map(x=>x.user_id)),
+      SB.from('handovers').select('*').eq('team_id',tid).order('created_at',{ascending:false}).limit(30)]);
+    team=t.data;
+    teamItems=(si.data||[]).filter(r=>r.owner_id!==tmMe()).map(r=>({owner:r.owner_id,item_id:r.item_id,...r.data}));
+    handLog=h.data||[];
+    if(!tmChan){const kick=()=>{clearTimeout(tmT);tmT=setTimeout(loadTeam,700);};
+      tmChan=SB.channel('team-'+tmMe()).on('postgres_changes',{event:'*',schema:'public',table:'shared_items'},kick)
+        .on('postgres_changes',{event:'*',schema:'public',table:'team_members'},kick)
+        .on('postgres_changes',{event:'*',schema:'public',table:'handovers'},kick).subscribe();}
+  }catch(e){}
+  tmRender();if($('tmMeet').classList.contains('on'))meetRender();
+}
+const itemRow=o=>`<div class="tmi${o.done?' done':''}"><span class="tt">${o.time||'종일'}</span><span class="dd"><i style="background:${esc(o.color||'#8a8f9e')}"></i>${esc(o.title)}${o.note?`<span class="nt">${esc(o.note)}</span>`:''}</span></div>`;
+function tmRender(){
+  const box=$('tmBody');if(!box||!$('tmSheet').classList.contains('open'))return;
+  if(backend!=='sb'||!session){box.innerHTML='<div class="vempty">팀 기능은 로그인 후에 쓸 수 있어요.<br>설정(⚙) → 계정 · 기기 연동에서 로그인해 주세요.</div>';return;}
+  if(!team)return tmNoTeam();
+  if(tmView==='detail')return tmDetail();
+  if(tmView==='status')return tmStatus();
+  const d=fromYmd(tmDay),me=tmMe(),amLeader=(tmMembers.find(x=>x.user_id===me)||{}).role==='leader';
+  const cards=tmOrder().map(m=>{
+    const its=tmOnDay(m.user_id,tmDay),abs=tmAbsent(m,tmDay),up=abs?tmUpcoming(m.user_id).length:0;
+    return `<div class="tmc"><div class="tmh"><b>${esc(tmName(m))}</b>${m.role==='leader'?'<span class="tmb lead">팀장</span>':''}${m.user_id===me?'<span class="tmb">나</span>':''}
+      ${abs?`<span class="tmb st-${m.status}">${esc(tmLabel(m))}</span>`:''}<span class="sp"></span>
+      <button class="vbtn alt sm" data-tmo="${m.user_id}">${m.user_id===me?'내 상태':'상세'}</button></div>
+      ${abs&&m.user_id!==me?`<div class="tmgap"><span>업무 공백 · ${up?`이어받을 일정 ${up}건`:'이어받을 일정 없음'}</span>${up?`<button class="vbtn sm" data-tmo="${m.user_id}">이어받기</button>`:''}</div>`:''}
+      ${its.length?its.map(itemRow).join(''):`<div class="tmempty">${m.user_id===me?'공개한 일정이 없어요. 일정의 🔒 버튼을 눌러 공개해 보세요.':'이날 공개된 일정이 없어요.'}</div>`}</div>`;}).join('');
+  const log=handLog.map(h=>`<div class="tmlog"><b>${esc(h.to_name||'팀원')}</b> 님이 <b>${esc(h.from_name||'팀원')}</b> 님의 「${esc(h.item_title)}」${h.item_date?` (${h.item_date.slice(5).replace('-','/')})`:''} 업무를 이어받음 <small>${vDate(h.created_at)}</small></div>`).join('');
+  box.innerHTML=`<div class="card" style="margin-top:12px;padding:14px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:17px;flex:1">${esc(team.name)}</b>
+      <button class="vbtn" id="tmMeetBtn">회의 화면</button></div>
+      <div class="tmcode">팀 코드 <b>${esc(team.code)}</b> · 팀원 ${tmMembers.length}명 <button class="vbtn alt sm" id="tmCopyCode" style="margin-left:6px">코드 복사</button></div></div>
+    <div class="tmday"><button class="vbtn alt sm" data-tmd="-1">‹</button><b>${d.getMonth()+1}월 ${d.getDate()}일 ${WD[d.getDay()]}요일${tmDay===TODAY?' · 오늘':''}</b><button class="vbtn alt sm" data-tmd="1">›</button>${tmDay!==TODAY?'<button class="vbtn sm" data-tmd="0">오늘</button>':''}</div>
+    ${cards}
+    <div class="tmdg">최근 인수인계</div>${log||'<div class="tmempty">아직 인수인계 기록이 없어요.</div>'}
+    <div class="vact" style="margin-top:22px"><button class="vbtn alt red" id="tmLeave" style="background:transparent;color:#c0392b;border:1px solid #c0392b">팀 나가기</button></div>`;
+}
+function tmNoTeam(){
+  $('tmBody').innerHTML=`<div class="vguide" style="margin-top:12px"><b>팀으로 일정을 공유해 보세요</b><ol><li>팀장이 팀을 만들고 <b>팀 코드</b>를 알려줘요</li><li>팀원은 코드로 가입해요</li><li>일정마다 <b>👥 공개 / 🔒 비공개</b>를 골라요. 비공개 일정은 아무에게도 보이지 않아요</li></ol></div>
+  <div class="card vf" style="padding:14px"><b>팀 만들기 (팀장)</b>
+    <label>팀 이름</label><input id="tmNew" maxlength="40" placeholder="예: 건설공사관리팀">
+    <label>내 이름</label><input id="tmMy1" maxlength="30" value="${esc(myName())}" placeholder="예: 김태현 대리">
+    <div class="vact"><button class="vbtn" id="tmCreate">팀 만들기</button></div></div>
+  <div class="card vf" style="padding:14px;margin-top:12px"><b>팀 가입 (팀원)</b>
+    <label>팀 코드</label><input id="tmCode" maxlength="12" placeholder="8자리 코드" style="text-transform:uppercase">
+    <label>내 이름</label><input id="tmMy2" maxlength="30" value="${esc(myName())}" placeholder="예: 박과장">
+    <div class="vact"><button class="vbtn" id="tmJoin">가입하기</button></div></div>
+  <p id="tmMsg" style="font-size:13px;color:var(--ink-2);margin:10px 2px"></p>`;
+}
+function tmDetail(){
+  const m=tmMembers.find(x=>x.user_id===tmCur);if(!m){tmView='board';return tmRender();}
+  const me=tmMe(),amLeader=(tmMembers.find(x=>x.user_id===me)||{}).role==='leader',mine=m.user_id===me,up=tmUpcoming(m.user_id);
+  const taken=o=>store.items.some(i=>i.src===m.user_id+':'+o.item_id);
+  const free=up.filter(o=>!taken(o));
+  let lastD='';const rows=up.map(o=>{const h=o.date!==lastD?`<div class="tmdg">${o.date.slice(5).replace('-','/')} (${WD[fromYmd(o.date).getDay()]})${o.endDate?` ~ ${o.endDate.slice(5).replace('-','/')}`:''}</div>`:'';lastD=o.date;
+    return h+`<div class="tmc" style="padding:10px 12px">${itemRow(o)}${mine?'':taken(o)?'<div class="tmempty">✔ 이어받음</div>':`<div class="vact" style="margin-top:6px"><button class="vbtn sm" data-tmt="${o.item_id}">내 일정으로 이어받기</button></div>`}</div>`;}).join('');
+  $('tmBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="tmBack">← 현황</button><span class="grow"></span>${(mine||amLeader)?`<button class="vbtn alt sm" id="tmSt" data-u="${m.user_id}">상태 변경</button>`:''}</div>
+    <div class="tmh"><b style="font-size:19px">${esc(tmName(m))}</b>${m.role==='leader'?'<span class="tmb lead">팀장</span>':''}${m.status!=='active'?`<span class="tmb st-${m.status}">${esc(tmLabel(m))}</span>`:''}</div>
+    <div class="tmempty" style="margin-bottom:6px">앞으로의 공개 일정 ${up.length}건${mine?' (내가 공개한 일정)':''}</div>
+    ${(!mine&&free.length)?`<button class="vbtn" id="tmTakeAll" style="width:100%;margin:8px 0">전체 이어받기 (${free.length}건)</button>`:''}
+    ${rows||'<div class="vempty">이어받을 공개 일정이 없어요.</div>'}`;
+}
+function tmStatus(){
+  const m=tmMembers.find(x=>x.user_id===tmCur);if(!m){tmView='board';return tmRender();}
+  $('tmBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="tmBack">← 뒤로</button><span class="grow"></span></div>
+  <div class="vf"><b style="font-size:17px">${esc(tmName(m))} · 근무 상태</b>
+    <label>상태</label><select id="tsSt">${Object.entries(TS).map(([k,n])=>`<option value="${k}"${m.status===k?' selected':''}>${n}</option>`).join('')}</select>
+    <label>기간 <small>(비우면 계속)</small></label><div style="display:flex;gap:8px"><input type="date" id="tsFrom" value="${m.status_from||''}"><input type="date" id="tsTo" value="${m.status_to||''}"></div>
+    <label>메모 <small>(예: ○○현장, 복귀 예정)</small></label><input id="tsNote" maxlength="100" value="${esc(m.status_note||'')}">
+    <div class="vact"><button class="vbtn" id="tsSave" style="flex:1">저장</button></div><p id="tsMsg" style="font-size:12.5px;color:var(--ink-2)"></p></div>`;
+}
+async function takeOver(uid,rows){
+  const m=tmMembers.find(x=>x.user_id===uid),from=m?tmName(m):'팀원',cats=addCats(),log=[];let n=0;
+  rows.forEach((o,k)=>{
+    if(store.items.some(i=>i.src===uid+':'+o.item_id))return;
+    store.items.push({id:(Date.now()+k).toString(36)+Math.random().toString(36).slice(2,6),date:o.date,endDate:o.endDate||null,time:o.time||null,endTime:o.endTime||null,
+      title:o.title,pri:false,cats:cats.slice(),cat:cats[0],note:`[${from} 님 업무 인수]`+(o.note?'\n'+o.note:''),done:false,doneAt:null,mt:NOW(),src:uid+':'+o.item_id});
+    log.push({team_id:team.id,from_user:uid,from_name:from,to_name:myName(),item_title:o.title,item_date:o.date});n++;});
+  if(!n){toastMsg('이미 모두 이어받았어요');return;}
+  save();redrawAll();
+  try{await SB.from('handovers').insert(log);}catch(e){}
+  toastMsg(`${n}건을 내 일정으로 이어받았어요`);loadTeam();
+}
+async function tmOpen(){closeFind();tmView='board';tmDay=TODAY;$('tmSheet').classList.add('open');tmRender();await loadTeam();}
+$('tmBtn').onclick=tmOpen;
+$('tmOpen2').onclick=()=>{try{$('setPop').classList.remove('open');$('popBack').classList.remove('open');}catch(e){}tmOpen();};
+$('tmBody').addEventListener('click',async e=>{
+  const t=e.target,bt=t.closest('button');if(!bt)return;const id=bt.id,me=tmMe();
+  if(bt.dataset.tmd!==undefined){const v=+bt.dataset.tmd;if(v===0)tmDay=TODAY;else{const d=fromYmd(tmDay);d.setDate(d.getDate()+v);tmDay=ymd(d);}return tmRender();}
+  if(bt.dataset.tmo){tmCur=bt.dataset.tmo;tmView=tmCur===me?'status':'detail';return tmRender();}
+  if(bt.dataset.tmt){const o=teamItems.find(x=>x.owner===tmCur&&x.item_id===bt.dataset.tmt);if(o)takeOver(tmCur,[o]);return tmRender();}
+  if(id==='tmBack'){tmView='board';return tmRender();}
+  if(id==='tmSt'){tmCur=bt.dataset.u;tmView='status';return tmRender();}
+  if(id==='tmTakeAll'){takeOver(tmCur,tmUpcoming(tmCur));return tmRender();}
+  if(id==='tmMeetBtn')return meetOpen();
+  if(id==='tmCopyCode')return vCopy(team.code);
+  if(id==='tsSave'){
+    const st=$('tsSt').value,f=$('tsFrom').value||null,to=$('tsTo').value||null;
+    const r=await SB.from('team_members').update({status:st,status_from:st==='active'?null:f,status_to:st==='active'?null:to,status_note:st==='active'?'':$('tsNote').value.trim()}).eq('user_id',tmCur);
+    if(r.error){$('tsMsg').textContent='저장하지 못했어요: '+r.error.message;return;}
+    tmView='board';toastMsg('저장했어요');return loadTeam();}
+  if(id==='tmLeave'){
+    const amL=(tmMembers.find(x=>x.user_id===me)||{}).role==='leader';
+    if(amL&&tmMembers.length>1){alert('팀장은 다른 팀원이 모두 나간 뒤에만 팀을 나갈 수 있어요.');return;}
+    if(!confirm('팀에서 나갈까요? 공개했던 일정은 더 이상 팀원에게 보이지 않아요.'))return;
+    const r=await SB.from('team_members').delete().eq('user_id',me);if(r.error){alert('나가지 못했어요.');return;}
+    if(amL)await SB.from('teams').delete().eq('id',team.id);
+    team=null;return loadTeam();}
+  if(id==='tmCreate'){
+    const nm=$('tmNew').value.trim(),my=$('tmMy1').value.trim();if(!nm||!my){$('tmMsg').textContent='팀 이름과 내 이름을 적어 주세요.';return;}
+    const r=await SB.rpc('create_team',{p_name:nm,p_my_name:my});
+    if(r.error){$('tmMsg').textContent='만들지 못했어요: '+r.error.message;return;}
+    store.settings=store.settings||{};if(!store.settings.name){store.settings.name=my;store.settingsMt=NOW();save();}
+    sharedHash={};syncShared();return loadTeam();}
+  if(id==='tmJoin'){
+    const c=$('tmCode').value.trim(),my=$('tmMy2').value.trim();if(!c||!my){$('tmMsg').textContent='팀 코드와 내 이름을 적어 주세요.';return;}
+    const r=await SB.rpc('join_team',{p_code:c,p_my_name:my});
+    if(r.error){$('tmMsg').textContent=/invalid/.test(r.error.message)?'팀 코드가 맞지 않아요. 다시 확인해 주세요.':'가입하지 못했어요: '+r.error.message;return;}
+    store.settings=store.settings||{};if(!store.settings.name){store.settings.name=my;store.settingsMt=NOW();save();}
+    sharedHash={};syncShared();toastMsg('팀에 가입했어요');return loadTeam();}
+});
+/* 회의 화면 */
+function meetRender(){
+  const d=fromYmd(tmDay),ord=tmOrder();let abs=0,tot=0;
+  $('mtTeam').textContent=team?team.name:'';
+  $('mtDate').textContent=`${d.getMonth()+1}월 ${d.getDate()}일 ${WD[d.getDay()]}요일${tmDay===TODAY?' · 오늘':''}`;
+  $('mtGrid').innerHTML=ord.map(m=>{
+    const its=tmOnDay(m.user_id,tmDay),a=tmAbsent(m,tmDay);if(a)abs++;tot+=its.length;
+    return `<div class="mt-col"><h3>${esc(tmName(m))}${m.role==='leader'?'<em class="lead">팀장</em>':''}${a?`<em class="abs">${esc(TS[m.status])}</em>`:''}</h3>
+      <div class="cnt">${its.length?`일정 ${its.length}건`:'공개된 일정 없음'}</div>
+      ${a?`<div class="mt-gap">${esc(tmLabel(m))} · 이어받을 일정 ${tmUpcoming(m.user_id).length}건</div>`:''}
+      ${its.map(o=>`<div class="mt-it${o.done?' done':''}"><span class="t">${o.time||'종일'}</span><span>${esc(o.title)}${o.note?`<small>${esc(o.note.split('\n')[0])}</small>`:''}</span></div>`).join('')}</div>`;}).join('');
+  $('mtSum').textContent=`총 ${tot}건${abs?` · 공백 ${abs}명`:''}`;
+}
+function meetOpen(){
+  tmDay=TODAY;$('tmMeet').classList.add('on');meetRender();
+  try{const el=document.documentElement;if(el.requestFullscreen&&!document.fullscreenElement)el.requestFullscreen().catch(()=>{});}catch(e){}
+  clearInterval(tmMeetT);tmMeetT=setInterval(()=>{loadTeam();},60000);
+}
+function meetClose(){$('tmMeet').classList.remove('on');clearInterval(tmMeetT);try{if(document.fullscreenElement)document.exitFullscreen();}catch(e){}}
+const meetDay=v=>{if(v===0)tmDay=TODAY;else{const d=fromYmd(tmDay);d.setDate(d.getDate()+v);tmDay=ymd(d);}meetRender();};
+$('mtPrev').onclick=()=>meetDay(-1);$('mtNext').onclick=()=>meetDay(1);$('mtToday').onclick=()=>meetDay(0);$('mtClose').onclick=meetClose;
+document.addEventListener('keydown',e=>{if(!$('tmMeet').classList.contains('on'))return;
+  if(e.key==='Escape')meetClose();else if(e.key==='ArrowLeft')meetDay(-1);else if(e.key==='ArrowRight')meetDay(1);});
+
 /* ── VOC 의견 게시판 ── */
 const VK={bug:'버그·오류',improve:'개선 요청',feature:'새 기능',complaint:'불만',etc:'기타'};
 const VS={new:'접수',review:'검토 중',done:'반영 완료',hold:'보류'};
@@ -2240,8 +2446,8 @@ $('list').onclick=e=>{
   else if(a==='share'){
     if(backend!=='sb'||!session){toastMsg('로그인하면 공유할 수 있습니다');return;}
     it.share=!isShared(it);touch(it);
-    if(it.share&&!myShares.length)toastMsg('공유할 사람을 먼저 추가하세요 (설정 → 일정 공유)');
-    else toastMsg(it.share?'공유했습니다':'공유를 해제했습니다');}
+    if(it.share&&!team&&!myShares.length)toastMsg('팀에 가입하거나 공유할 사람을 먼저 추가하세요 (👥 팀 업무 현황)');
+    else toastMsg(it.share?(team?'팀원에게 공개했어요':'공유했습니다'):'나만 보도록 바꿨어요');}
   else if(a==='del'){store.tomb[it.id]=NOW();store.items=store.items.filter(i=>i.id!==it.id);setTimeout(()=>toastMsg('일정을 삭제했습니다','되돌리기',undoDo),0);}
   else if(a==='open'){openNote=openNote===it.id?null:it.id;save();renderDay();return;}
   save();renderDay();renderMonth();renderBanner();};
@@ -2399,7 +2605,7 @@ let sharedServerIds=null,sharedHash={},shChan=null,shT=null;
 const myName=()=>((store.settings&&store.settings.name)||((session&&session.user.email)||'').split('@')[0]||'').trim();
 function shareData(i){const c=catsOf(i)[0];
   return{date:i.date,endDate:i.endDate||null,time:i.time||null,endTime:i.endTime||null,title:i.title,
-    done:!!i.done,cat:c?c.name:'',color:c?c.color:'#8a8f9e'};}
+    done:!!i.done,note:(i.note||'').slice(0,1500),cat:c?c.name:'',color:c?c.color:'#8a8f9e'};}
 async function syncShared(){
   if(backend!=='sb'||!SB||!session)return;
   const uid=session.user.id;
@@ -2457,7 +2663,7 @@ function renderShare(){
     <div class="shmsg">체크한 분류의 일정은 따로 누르지 않아도 공유됩니다. 일정 목록의 👥 버튼으로 일정마다 따로 켜고 끌 수 있습니다.</div></div>
   <div class="card"><h3>나에게 공유한 사람</h3>
     ${inShares.length?inShares.map(r=>`<label class="shrow"><input type="checkbox" data-shview="${r.owner_id}" ${viewOff.has(r.owner_id)?'':'checked'}><span class="nm">${esc(r.owner_name||'이름 없음')}</span><span class="sm">내 달력에 표시</span></label>`).join(''):'<div class="shmsg">아직 나에게 일정을 공유한 사람이 없습니다. 상대방이 내 이메일('+esc(me)+')을 추가하면 여기에 나타납니다.</div>'}</div>
-  <div class="card"><div class="shmsg">공유한 일정은 <b>제목·날짜·시간·분류</b>만 보입니다. 메모와 첨부 이미지는 보이지 않고, 상대방은 볼 수만 있습니다.</div></div>`;
+  <div class="card"><div class="shmsg">공개한 일정은 <b>제목·날짜·시간·분류·메모</b>가 보입니다(인수인계용). 첨부 이미지와 비공개 일정은 보이지 않고, 상대방은 볼 수만 있습니다.</div></div>`;
   $('shNameSave').onclick=async()=>{
     store.settings=store.settings||{};store.settings.name=$('shName').value.trim();store.settingsMt=NOW();save();
     try{await SB.from('shares').update({owner_name:myName()}).eq('owner_id',session.user.id);}catch(e){}
@@ -2482,7 +2688,7 @@ function renderShare(){
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v74';
+const APPVER=/*ver*/'v75';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -2548,7 +2754,7 @@ async function onAuth(){
     if(data&&data.data&&mergeRemote(data.data)){save(false);redrawAll();}
     setSync('on','동기화됨 · '+(session.user.email||''));
     dirty=true;doPush();
-    loadShares();startShareWatch();
+    loadShares();startShareWatch();loadTeam();
   }
   if(chan){try{SB.removeChannel(chan);}catch(e){}}
   chan=SB.channel('state-'+session.user.id)
