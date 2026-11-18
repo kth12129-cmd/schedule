@@ -1019,7 +1019,7 @@ header{background:color-mix(in srgb,var(--page) 90%,transparent)}
   .hsec-memo .hbtn,.hbtn{width:31px;height:31px}
   .hsec-memo{gap:3px}
   .hsec-memo .hbtn svg{width:16px;height:16px}
-  #miniBtn,#analyBtn{display:none}
+  #miniBtn,#analyBtn,#vocBtn{display:none}
   .hsec-memo{-webkit-mask-image:none;mask-image:none}
   .mo-btn,.yr-btn{font-size:21px}
   .yr-btn .cv{display:none}
@@ -1124,6 +1124,15 @@ textarea.memo{background:transparent}
 :root[data-theme="light"] .brandbar{border-bottom:1px solid var(--ink)}
 :root[data-theme="light"] .brandin .bt{color:var(--ink)}
 :root[data-theme="light"] .brandin .bs{color:var(--ink-2)}
+
+.cshare{flex:none;font-size:11px;font-weight:700;letter-spacing:.04em;padding:5px 9px;border-radius:14px;border:1px solid var(--line);color:var(--ink-2);background:transparent;white-space:nowrap}
+.cshare.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.csm{margin-left:auto;font-style:normal;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--ink-3);padding-left:8px}
+.csm.on{color:var(--navy)}
+.catmenu .csm+.ck{margin-left:6px}
+.hbtn.act{border-color:var(--navy);color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
+.cell.past{background-image:none;background-color:color-mix(in srgb,var(--ink) 4%,var(--surface))}
+.cell.past .ev{opacity:.6}
 </style>
 </head>
 <body>
@@ -1146,6 +1155,7 @@ textarea.memo{background:transparent}
     <div class="hsec hsec-memo">
       <span class="hspace"></span>
       <button class="hbtn" id="zoomOut" data-tip="원래 크기로">⤡</button>
+      <button class="hbtn" id="viewBtn" data-tip="누구의 일정을 볼지 선택">👥</button>
       <button class="hbtn" id="tmBtn" data-tip="팀 업무 현황">👥</button>
       <button class="hbtn" id="vocBtn" data-tip="VOC · 의견 게시판">✉</button>
       <button class="hbtn" id="findBtn" data-tip="날짜 찾기">⌕</button>
@@ -1265,10 +1275,14 @@ textarea.memo{background:transparent}
   <div class="pop-title">분류 선택</div>
   <div class="catmenu" id="catMenu"></div>
 </div>
+<div class="pop left" id="viewPop">
+  <div class="pop-title">보기 대상</div>
+  <div class="catmenu" id="viewMenu"></div>
+</div>
 <div class="sheet" id="catSheet">
   <div class="sheet-bar"><h2>분류 설정</h2><button data-close="catSheet">완료</button></div>
   <div class="sheet-body"><div class="card" style="margin-top:12px">
-    <div class="hint-txt">분류를 추가하면 색이 자동으로 배정됩니다. 바꾸고 싶을 때만 색 상자를 누르세요.
+    <div class="hint-txt">분류마다 <b>공유 / 비공개</b>를 정하면, 그 분류의 일정은 따로 누르지 않아도 자동으로 따릅니다. 분류를 추가하면 색이 자동으로 배정됩니다. 바꾸고 싶을 때만 색 상자를 누르세요.
       ✎ 를 누르거나 글자를 클릭하면 이름을, ↑ 로 순서를 바꾸고, × 로 삭제합니다.</div>
     <div id="catList"></div>
     <div class="crow"><button id="addCat" style="color:var(--indigo);font-size:14.5px;font-weight:600">분류 추가</button></div>
@@ -1522,7 +1536,9 @@ const isShared=i=>i.share!==undefined&&i.share!==null?!!i.share:catsOf(i).some(c
 let otherItems=[],myShares=[],inShares=[];
 const viewOff=new Set((()=>{try{return JSON.parse(localStorage.getItem('sh-off')||'[]');}catch(e){return [];}})());
 const ownerName=o=>o.owner_name||o.owner_label||'';
-const othersFor=day=>otherItems.filter(o=>!viewOff.has(o.owner)&&(o.date===day||(o.endDate&&o.date<=day&&day<=o.endDate)))
+let viewWho=(()=>{try{return localStorage.getItem('viewWho')||'me';}catch(e){return 'me';}})();
+const showOwner=o=>viewWho==='me'?false:viewWho==='all'?!viewOff.has(o.owner):o.owner===viewWho;
+const othersFor=day=>otherItems.filter(o=>showOwner(o)&&(o.date===day||(o.endDate&&o.date<=day&&day<=o.endDate)))
   .sort((a,b)=>((a.time||'99:99')<(b.time||'99:99')?-1:1));
 const hasAny=day=>othersFor(day).length>0||ordItems(day).length>0||deadlinesOn(day).length>0||!!(store.memos[day]||'').trim();
 
@@ -2559,6 +2575,7 @@ $('yearWrap').addEventListener('mouseleave',()=>{zMonth=null;});
   const S=d=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+d+'</svg>';
   const IC={
     zoomOut:S('<path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/>'),
+    viewBtn:S('<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/>'),
     tmBtn:S('<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.4c1.7.8 3 2.7 3 5.6"/>'),
     vocBtn:S('<path d="M4 5h16v11H9l-5 4z"/>'),
     findBtn:S('<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>'),
@@ -2699,6 +2716,7 @@ function closeFind(){
   const sp=$('setPop');if(sp)sp.classList.remove('open');
   const yp=$('yrPop');if(yp)yp.classList.remove('open');
   const cp=$('catPop');if(cp)cp.classList.remove('open');
+  const vp=$('viewPop');if(vp)vp.classList.remove('open');
   $('popBack').classList.remove('open');}
 $('popBack').onclick=closeFind;
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeFind();
@@ -2919,7 +2937,7 @@ async function loadShares(){
     myShares=a.data||[];inShares=b.data||[];
     const nmOf={};inShares.forEach(r=>nmOf[r.owner_id]=r.owner_name);
     otherItems=(c.data||[]).map(r=>({id:r.owner_id+':'+r.item_id,owner:r.owner_id,owner_name:(r.data&&r.data.owner)||nmOf[r.owner_id]||'',...r.data}));
-    redrawAll();
+    redrawAll();try{paintView();}catch(_){}
     if($('shSheet').classList.contains('open'))renderShare();
   }catch(e){}
 }
@@ -2969,10 +2987,33 @@ function renderShare(){
     try{localStorage.setItem('sh-off',JSON.stringify([...viewOff]));}catch(e){}
     redrawAll();});
 }
+
+/* ── 보기 대상: 나 / 팀 전체 / 특정 팀원 ── */
+function viewOwners(){
+  const m={};
+  (tmMembers||[]).forEach(x=>{if(x.user_id!==(session&&session.user.id))m[x.user_id]=tmName(x);});
+  otherItems.forEach(o=>{if(!m[o.owner])m[o.owner]=ownerName(o)||'이름 없음';});
+  return Object.keys(m).map(id=>({id,name:m[id],n:otherItems.filter(o=>o.owner===id).length}));
+}
+function paintView(){
+  const ow=viewOwners();
+  const row=(v,label,sub)=>`<button data-v="${v}" class="${viewWho===v?'on':''}"><i style="background:${v==='me'?'var(--ink-3)':v==='all'?'var(--navy)':'var(--moss)'}"></i>${esc(label)}<em class="csm">${sub||''}</em><span class="ck">${viewWho===v?'✓':''}</span></button>`;
+  $('viewMenu').innerHTML=row('me','나만 보기','')+row('all','팀 전체 보기',otherItems.length?otherItems.length+'건':'')
+    +(ow.length?'<div class="kbd">팀원별로 보기</div>':'<div class="kbd">공유된 팀원 일정이 아직 없습니다.</div>')
+    +ow.map(o=>row(o.id,o.name,o.n+'건')).join('');
+  const b=$('viewBtn');b.classList.toggle('act',viewWho!=='me');
+  b.dataset.tip=viewWho==='me'?'내 일정만 표시 중 · 눌러서 팀 일정 보기':viewWho==='all'?'팀 전체 일정 표시 중':'선택한 팀원 일정 표시 중';
+}
+$('viewBtn').onclick=()=>{closeFind();paintView();$('viewPop').classList.add('open');$('popBack').classList.add('open');};
+$('viewMenu').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;
+  viewWho=b.dataset.v;try{localStorage.setItem('viewWho',viewWho);}catch(_){}
+  paintView();closeFind();redrawAll();
+  toastMsg(viewWho==='me'?'내 일정만 표시합니다':viewWho==='all'?'팀 전체 일정을 함께 표시합니다':'선택한 팀원의 일정을 함께 표시합니다');};
+paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v80';
+const APPVER=/*ver*/'v81';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -3218,7 +3259,7 @@ function paintCatMenu(){
   const sel2=curSel(),nav=catNav();
   $('catMenu').innerHTML=(catTarget?'':`<button data-c="__all" class="${allMode()?'on':''}${nav[catIdx]==='__all'?' cur':''}"><i style="background:#8a8f9e"></i>전체<span class="ck">${allMode()?'✓':''}</span></button>`)+store.cats.map((c,i)=>
     `<button data-c="${c.id}" class="${sel2.includes(c.id)?'on':''}${nav[catIdx]===c.id?' cur':''}">
-      <i style="background:${c.color}"></i>${esc(c.name)}<span class="ck">${sel2.includes(c.id)?'✓':''}</span></button>`).join('')
+      <i style="background:${c.color}"></i>${esc(c.name)}<em class="csm${c.share?' on':''}">${c.share?'공유':'비공개'}</em><span class="ck">${sel2.includes(c.id)?'✓':''}</span></button>`).join('')
     +`<button data-c="__multi" class="multi${multiCat?' on':''}"><span class="mk">${multiCat?'☑':'☐'}</span>다중 선택</button>`
     +'<div class="kbd">↑ ↓ 로 옮기고 Enter 로 선택</div>'
     +'<button data-c="__edit" style="color:var(--navy);font-size:13px;font-weight:600">분류 설정…</button>'
@@ -3291,6 +3332,7 @@ function renderCats(){
   $('catList').innerHTML=store.cats.map((c,i)=>`<div class="crow">
     <input type="color" value="${c.color}" data-i="${i}" data-f="color" title="색 바꾸기">
     <input type="text" value="${esc(c.name)}" data-i="${i}" data-f="name" data-name="${i}">
+    <button class="cshare${c.share?' on':''}" data-csh="${i}" title="${c.share?'팀에 공유 중 · 누르면 비공개':'비공개 · 누르면 팀에 공유'}">${c.share?'공유':'비공개'}</button>
     <button class="cbtn2" data-cedit="${i}" title="이름 수정">✎</button>
     <button class="cbtn2" data-cup="${i}" title="위로">↑</button>
     <button class="cbtn2" data-cdel="${i}" title="삭제">×</button></div>`).join('');
@@ -3300,6 +3342,9 @@ $('catList').oninput=e=>{const t=e.target;if(t.dataset.i===undefined)return;
   if(t.dataset.f==='name')c.name=t.value;else c.color=t.value;
   store.catsMt=NOW();save();paintCatBtn();};
 $('catList').onclick=e=>{
+  const sh=e.target.closest('[data-csh]');
+  if(sh){const c=store.cats[+sh.dataset.csh];c.share=!c.share;store.catsMt=NOW();save();renderCats();
+    try{redrawAll();}catch(_){}toastMsg(c.share?`'${c.name}' 분류의 일정이 팀에 공유됩니다`:`'${c.name}' 분류의 일정은 나만 봅니다`);return;}
   const ed=e.target.closest('[data-cedit]');
   if(ed){const inp=$('catList').querySelector(`input[data-name="${ed.dataset.cedit}"]`);
     if(inp){inp.focus();inp.select();}return;}
