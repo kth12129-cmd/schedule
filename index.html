@@ -683,6 +683,21 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .mt-it small{display:block;font-size:.72em;color:#9aa6c8;margin-top:2px;white-space:pre-wrap;text-decoration:none}
 .mt-none{padding:14px 0;color:#6e7a9c;font-size:clamp(14px,1.3vw,18px)}
 .mt-gap{margin-top:8px;padding:10px 12px;border-radius:10px;background:#3a2a0a;color:#ffd998;font-size:clamp(14px,1.3vw,18px)}
+/* 지난 일정은 옅게 · 중요 일정은 깜빡임 (1초에 1번 미만, 눈 부담 줄임) */
+.cell.past .ev,.cell.past .evmore{opacity:.5}.cell.past .num{opacity:.55}.cell.past .holname{opacity:.6}.cell.past .priflag{opacity:.4}
+@keyframes priPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,176,32,0)}50%{box-shadow:0 0 0 2px rgba(255,176,32,.75),0 0 12px 2px rgba(255,176,32,.6)}}
+@keyframes priDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.9);opacity:.45}}
+@keyframes priRow{0%,100%{background-color:transparent}50%{background-color:color-mix(in srgb,var(--amber) 17%,transparent)}}
+@keyframes mtFlash{0%,100%{background:rgba(255,196,60,.07);box-shadow:0 0 0 0 rgba(255,200,70,0)}50%{background:rgba(255,196,60,.3);box-shadow:0 0 0 2px rgba(255,200,70,.95),0 0 28px 4px rgba(255,190,50,.55)}}
+.cell:not(.past) .ev.pri:not(.done){animation:priPulse 1.4s ease-in-out infinite;border-radius:4px}
+.cell:not(.past) .priflag{animation:priDot 1.4s ease-in-out infinite}
+.item.pri:not(.done){animation:priRow 1.6s ease-in-out infinite}
+.mt-it.pri:not(.done){animation:mtFlash 1.2s ease-in-out infinite;border-radius:12px;padding-left:12px;padding-right:12px;margin:2px -12px;border-top-color:transparent}
+.mt-it .mstar{color:#ffc43c;font-size:.8em;letter-spacing:.02em}
+@media (prefers-reduced-motion:reduce){
+  .cell:not(.past) .ev.pri:not(.done),.cell:not(.past) .priflag,.item.pri:not(.done),.mt-it.pri:not(.done){animation:none}
+  .mt-it.pri:not(.done){background:rgba(255,196,60,.22);box-shadow:0 0 0 2px #ffc43c}
+  .cell:not(.past) .ev.pri:not(.done){box-shadow:0 0 0 2px rgba(255,176,32,.8)}}
 .capacts{margin:16px 16px 12px;display:flex;flex-direction:column;gap:8px}
 .capacts .hint-txt{margin:0;padding:0}
 .caprow{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font-size:13px;color:var(--ink-2)}
@@ -1344,6 +1359,7 @@ function renderMonth(){
     if(d.getDay()===6)cl.push('sat');
     const hol=holOf(k);
     if(hol)cl.push('hol');
+    if(k<TODAY)cl.push('past');
     if(k===TODAY)cl.push('today');
     if(k===sel)cl.push('sel');
     if(dls.length)cl.push('hasdl');else if(its.length||memo)cl.push('has');
@@ -1407,14 +1423,14 @@ function renderDay(){
       ${editItem===i.id?'':`draggable="true" data-drag="${i.id}"`}>
       <button class="check" data-act="toggle"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></button>
       <div class="body"><div class="meta"><span class="no">${n}</span><span class="mdate">${md(i.date)}${i.endDate?'~'+md(i.endDate):''}</span>
-        ${i.time?`<span class="mtime">${i.time}${i.endTime?'~'+i.endTime:''}</span>`:''}${i.pri?'<span class="mtag pri">중요</span>':''}${isShared(i)?'<span class="mtag sh">공유</span>':''}
+        ${i.time?`<span class="mtime">${i.time}${i.endTime?'~'+i.endTime:''}</span>`:''}${i.pri?'<span class="mtag pri">중요</span>':''}${isShared(i)?'<span class="mtag sh">팀 공개</span>':'<span class="mtag" style="opacity:.6">🔒 비공개</span>'}
         ${catsOf(i).map(c=>`<button class="cattag" data-act="cat" data-tip="분류 변경" style="--c:${c.color}">${esc(c.name)}</button>`).join('')}</div>
         ${editItem===i.id
           ?`<input class="edit-in" data-edit="${i.id}" value="${esc((i.endDate?md(i.date)+'~'+md(i.endDate)+' ':'')+(i.time?i.time+(i.endTime?'~'+i.endTime:'')+' ':'')+i.title)}">
              <div class="edit-tip">시간·날짜도 같이 고칠 수 있습니다. Enter 저장, Esc 취소</div>`
           :`<div class="title" data-act="open">${esc(i.title)}${has&&!isOpen?'<span class="caret">⌄</span>':''}</div>`}</div>
       <div class="acts"><button class="flag${i.pri?' on':''}" data-act="pri" data-tip="${i.pri?'중요 해제':'중요 표시'}">${i.pri?'★':'☆'}</button>
-        <button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'팀에 공개 중 · 누르면 나만 보기':'나만 보기 · 누르면 팀에 공개'}">${isShared(i)?'👥 공개':'🔒 비공개'}</button>
+        <button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'팀에 공개 중 · 누르면 나만 보기':'나만 보기 · 누르면 팀에 공개'}">${isShared(i)?'👥':'🔒'}</button>
         <button data-act="edit" data-tip="내용 수정">✎</button>
         <button class="note-btn${has?' has':''}" data-act="open" data-tip="메모">≡</button>
         <button data-act="img" data-tip="${i.img?'이미지 교체':'이미지 첨부'}"
@@ -1976,7 +1992,7 @@ async function loadTeam(){
   }catch(e){}
   tmRender();if($('tmMeet').classList.contains('on'))meetRender();
 }
-const itemRow=o=>`<div class="tmi${o.done?' done':''}"><span class="tt">${o.time||'종일'}</span><span class="dd"><i style="background:${esc(o.color||'#8a8f9e')}"></i>${esc(o.title)}${o.note?`<span class="nt">${esc(o.note)}</span>`:''}</span></div>`;
+const itemRow=o=>`<div class="tmi${o.done?' done':''}"><span class="tt">${o.time||'종일'}</span><span class="dd"><i style="background:${esc(o.color||'#8a8f9e')}"></i>${o.pri&&!o.done?'<b style="color:var(--amber)">★ </b>':''}${esc(o.title)}${o.note?`<span class="nt">${esc(o.note)}</span>`:''}</span></div>`;
 function tmRender(){
   const box=$('tmBody');if(!box||!$('tmSheet').classList.contains('open'))return;
   if(backend!=='sb'||!session){box.innerHTML='<div class="vempty">팀 기능은 로그인 후에 쓸 수 있어요.<br>설정(⚙) → 계정 · 기기 연동에서 로그인해 주세요.</div>';return;}
@@ -2094,7 +2110,7 @@ function meetRender(){
     return `<div class="mt-col"><h3>${esc(tmName(m))}${m.role==='leader'?'<em class="lead">팀장</em>':''}${a?`<em class="abs">${esc(TS[m.status])}</em>`:''}</h3>
       <div class="cnt">${its.length?`일정 ${its.length}건`:'공개된 일정 없음'}</div>
       ${a?`<div class="mt-gap">${esc(tmLabel(m))} · 이어받을 일정 ${tmUpcoming(m.user_id).length}건</div>`:''}
-      ${its.map(o=>`<div class="mt-it${o.done?' done':''}"><span class="t">${o.time||'종일'}</span><span>${esc(o.title)}${o.note?`<small>${esc(o.note.split('\n')[0])}</small>`:''}</span></div>`).join('')}</div>`;}).join('');
+      ${its.map(o=>`<div class="mt-it${o.done?' done':''}${o.pri?' pri':''}"><span class="t">${o.time||'종일'}</span><span>${o.pri&&!o.done?'<b class="mstar">★ 중요</b> ':''}${esc(o.title)}${o.note?`<small>${esc(o.note.split('\n')[0])}</small>`:''}</span></div>`).join('')}</div>`;}).join('');
   $('mtSum').textContent=`총 ${tot}건${abs?` · 공백 ${abs}명`:''}`;
 }
 function meetOpen(){
@@ -2605,7 +2621,7 @@ let sharedServerIds=null,sharedHash={},shChan=null,shT=null;
 const myName=()=>((store.settings&&store.settings.name)||((session&&session.user.email)||'').split('@')[0]||'').trim();
 function shareData(i){const c=catsOf(i)[0];
   return{date:i.date,endDate:i.endDate||null,time:i.time||null,endTime:i.endTime||null,title:i.title,
-    done:!!i.done,note:(i.note||'').slice(0,1500),cat:c?c.name:'',color:c?c.color:'#8a8f9e'};}
+    done:!!i.done,pri:!!i.pri,note:(i.note||'').slice(0,1500),cat:c?c.name:'',color:c?c.color:'#8a8f9e'};}
 async function syncShared(){
   if(backend!=='sb'||!SB||!session)return;
   const uid=session.user.id;
@@ -2688,7 +2704,7 @@ function renderShare(){
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v75';
+const APPVER=/*ver*/'v76';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
