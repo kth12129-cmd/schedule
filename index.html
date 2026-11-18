@@ -628,6 +628,31 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .srow .unit{font-size:12.5px;color:var(--ink-2)}
 .srow .mv{color:var(--ink-3);font-size:16px;padding:4px 5px}
 .hint-txt{padding:14px 16px;font-size:12.5px;color:var(--ink-2);line-height:1.65}
+.voc-top{display:flex;gap:8px;align-items:center;margin:12px 0 10px}.voc-top .grow{white-space:nowrap}.voc-top .grow{flex:1}
+.voc-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px}
+.voc-chips button{flex:none;padding:6px 12px;border-radius:999px;background:var(--field);color:var(--ink-2);font-size:13px;font-weight:600;border:0}
+.voc-chips button.on{background:var(--navy);color:#fff}
+.vbtn{padding:10px 16px;border-radius:10px;background:var(--navy);color:#fff;font-size:14.5px;font-weight:700;border:0}
+.vbtn.alt{background:var(--field);color:var(--navy)}.vbtn.sm{padding:7px 12px;font-size:13px}.vbtn.red{background:#c0392b;color:#fff}
+.vrow{display:block;width:100%;text-align:left;padding:13px 14px;border-bottom:1px solid var(--hair);background:var(--surface)}
+.vrow .vt{font-size:15px;font-weight:600;color:var(--ink);line-height:1.4;word-break:keep-all}
+.vrow .vm{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px;font-size:12.5px;color:var(--ink-2);align-items:center}
+.vtag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:700;background:var(--field);color:var(--ink-2)}
+.vtag.k-bug{background:#fde8e6;color:#b3261e}.vtag.k-improve{background:#e6efff;color:#1d4fb8}.vtag.k-feature{background:#e4f5ea;color:#1c7a3f}.vtag.k-complaint{background:#fff1d9;color:#9a5b00}
+.vtag.s-review{background:#e6efff;color:#1d4fb8}.vtag.s-done{background:#e4f5ea;color:#1c7a3f}.vtag.s-hold{background:#eceef3;color:#5b6272}.vtag.s-new{background:#fff1d9;color:#9a5b00}
+.vempty{padding:34px 14px;text-align:center;color:var(--ink-2);font-size:14px;line-height:1.7}
+.vguide{margin:0 0 14px;padding:13px 14px;border-radius:12px;background:color-mix(in srgb,var(--navy) 7%,var(--surface));border:1px solid var(--line);font-size:13.5px;line-height:1.65;color:var(--ink)}
+.vguide b{color:var(--navy)}.vguide ol{margin:6px 0 0;padding-left:18px}.vguide .ex{margin-top:8px;padding:9px 11px;border-radius:8px;background:var(--surface);font-size:12.5px;color:var(--ink-2);white-space:pre-line}
+.vf label{display:block;font-size:13px;font-weight:700;margin:14px 0 6px;color:var(--ink)}.vf label small{font-weight:500;color:var(--ink-2)}
+.vf input,.vf select,.vf textarea{width:100%;font:inherit;font-size:15px;padding:11px 12px;border-radius:10px;background:var(--field);border:1px solid var(--fieldline);color:var(--ink)}
+.vf textarea{min-height:96px;resize:vertical;line-height:1.55}.vf .env{font-size:12.5px;color:var(--ink-2);margin-top:12px}
+.vd h3{font-size:18px;line-height:1.45;margin:6px 0 8px;word-break:keep-all}.vd .meta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--ink-2);align-items:center}
+.vd .blk{margin-top:16px}.vd .blk h5{margin:0 0 5px;font-size:12.5px;color:var(--navy);font-weight:700}.vd .blk p{margin:0;font-size:15px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.vreply{margin-top:16px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--navy) 9%,var(--surface));border-left:3px solid var(--navy)}
+.vcm{padding:11px 0;border-bottom:1px solid var(--hair);font-size:14.5px;line-height:1.6}.vcm .who{font-size:12.5px;color:var(--ink-2);margin-bottom:2px;display:flex;justify-content:space-between}
+.vcm .who button{background:none;border:0;color:var(--ink-2);font-size:12.5px}
+.vact{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.vadm{margin-top:18px;padding:12px;border:1px dashed var(--fieldline);border-radius:12px}
 .capacts{margin:16px 16px 12px;display:flex;flex-direction:column;gap:8px}
 .capacts .hint-txt{margin:0;padding:0}
 .caprow{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font-size:13px;color:var(--ink-2)}
@@ -846,6 +871,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
     <div class="hsec hsec-memo">
       <span class="hspace"></span>
       <button class="hbtn" id="zoomOut" data-tip="원래 크기로">⤡</button>
+      <button class="hbtn" id="vocBtn" data-tip="VOC · 의견 게시판">✉</button>
       <button class="hbtn" id="findBtn" data-tip="날짜 찾기">⌕</button>
       <button class="hbtn" id="miniBtn" data-tip="항상 위 미니 창">⧉</button>
       <button class="hbtn" id="analyBtn" data-tip="업무 사이클 분석">◱</button>
@@ -991,6 +1017,10 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="sheet-bar"><h2>계정 · 동기화</h2><button data-close="authSheet">닫기</button></div>
   <div class="sheet-body"><div class="card" style="margin-top:12px" id="authBody"></div></div>
 </div>
+<div class="sheet" id="vocSheet">
+  <div class="sheet-bar"><h2>VOC · 의견 게시판</h2><button data-close="vocSheet">닫기</button></div>
+  <div class="sheet-body" id="vocBody"></div>
+</div>
 <div class="sheet" id="briefSheet">
   <div class="sheet-bar"><h2>아침 알림</h2><button data-close="briefSheet">닫기</button></div>
   <div class="sheet-body">
@@ -1012,6 +1042,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
   <div class="setrow"><label>아침 알림</label><button id="briefOpen">설정</button></div>
+  <div class="setrow"><label>VOC 게시판</label><button id="vocOpen2">열기</button></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
   <div class="setrow"><label>버전</label><span id="verTxt" style="font-size:13px;color:var(--ink-2);margin-left:auto"></span>
     <button id="freshBtn">최신으로 받기</button></div>
@@ -1871,6 +1902,162 @@ $('v-cal').addEventListener('dblclick',e=>{
   zoom(pane.classList.contains('cal-pane')?'cal':pane.classList.contains('list-pane')?'list':'memo');
 });
 
+/* ── VOC 의견 게시판 ── */
+const VK={bug:'버그·오류',improve:'개선 요청',feature:'새 기능',complaint:'불만',etc:'기타'};
+const VS={new:'접수',review:'검토 중',done:'반영 완료',hold:'보류'};
+let vocV='list',vocKind='all',vocSort='new',vocPosts=[],vocCm={},vocVt={},vocMe=null,vocCur=null,vocBusy=false;
+const vEsc=x=>esc(String(x==null?'':x));
+const vDate=t=>{const d=new Date(t),z=n=>String(n).padStart(2,'0');return `${z(d.getMonth()+1)}.${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`;};
+function vEnv(){
+  const u=navigator.userAgent,dev=/iPhone|iPad/.test(u)?'아이폰':/Android/.test(u)?'안드로이드':/Mac/.test(u)?'맥':/Windows/.test(u)?'윈도우':'기타';
+  const br=/Edg\//.test(u)?'엣지':/Chrome\//.test(u)?'크롬':/Safari\//.test(u)?'사파리':'브라우저';
+  const app=(matchMedia('(display-mode: standalone)').matches||navigator.standalone)?'설치 앱':'웹';
+  return `${dev} · ${br} · ${app} · ${typeof APPVER!=='undefined'?APPVER:''}`;
+}
+function vName(){const n=(store.settings&&store.settings.name||'').trim();return n||'익명';}
+async function vocLoad(){
+  if(!SB){vocMe=null;return;}
+  const{data:{user}}=await SB.auth.getUser();
+  if(!user){vocMe=null;return;}
+  const adm=await SB.rpc('voc_is_admin');
+  vocMe={id:user.id,admin:adm.data===true};
+  const[p,c,v]=await Promise.all([
+    SB.from('voc_posts').select('*').order('created_at',{ascending:false}).limit(200),
+    SB.from('voc_comments').select('post_id'),
+    SB.from('voc_votes').select('post_id,user_id')]);
+  if(p.error)throw p.error;
+  vocPosts=p.data||[];vocCm={};vocVt={};
+  (c.data||[]).forEach(x=>vocCm[x.post_id]=(vocCm[x.post_id]||0)+1);
+  (v.data||[]).forEach(x=>{(vocVt[x.post_id]=vocVt[x.post_id]||[]).push(x.user_id);});
+}
+function vocPack(list){
+  const one=pst=>`[VOC #${pst.id.slice(0,4).toUpperCase()} · ${VK[pst.kind]}]
+제목: ${pst.title}
+위치(화면): ${pst.area||'(미기재)'}
+지금 상황: ${pst.body}
+원하는 모습: ${pst.expect||'(미기재)'}
+환경: ${pst.env||'(미기재)'}
+작성자: ${pst.author||'익명'} · 공감 ${(vocVt[pst.id]||[]).length}`;
+  return list.map(one).join('\n\n---\n\n')+'\n\n→ 위 VOC 내용대로 앱을 수정하고, 수정한 내용을 한 줄씩 알려 주세요.';
+}
+async function vCopy(text){
+  try{await navigator.clipboard.writeText(text);toastMsg('복사했어요. Claude 대화창에 붙여넣으세요');}
+  catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();try{document.execCommand('copy');toastMsg('복사했어요. Claude 대화창에 붙여넣으세요');}catch(_){alert(text);}t.remove();}
+}
+function vocRender(){
+  const b=$('vocBody');
+  if(!SB){b.innerHTML='<div class="vempty">이 화면에서는 게시판을 쓸 수 없어요.<br>설치한 앱이나 웹 주소로 열어 주세요.</div>';return;}
+  if(!vocMe){b.innerHTML='<div class="vempty">의견을 남기려면 먼저 로그인해 주세요.<br>설정(⚙)에서 로그인할 수 있어요.</div>';return;}
+  if(vocV==='write')return vocWrite();
+  if(vocV==='detail')return vocDetail();
+  let list=vocPosts.filter(x=>vocKind==='all'||x.kind===vocKind);
+  if(vocSort==='vote')list=[...list].sort((a,c)=>(vocVt[c.id]||[]).length-(vocVt[a.id]||[]).length||(a.created_at<c.created_at?1:-1));
+  const chips=[['all','전체'],...Object.entries(VK)].map(([k,n])=>`<button data-k="${k}" class="${vocKind===k?'on':''}">${n}</button>`).join('');
+  const rows=list.map(x=>`<button class="vrow" data-id="${x.id}"><div class="vt">${vEsc(x.title)}</div>
+    <div class="vm"><span class="vtag k-${x.kind}">${VK[x.kind]}</span><span class="vtag s-${x.status}">${VS[x.status]}</span>
+    <span>${vEsc(x.author||'익명')}</span><span>${vDate(x.created_at)}</span><span>♥ ${(vocVt[x.id]||[]).length}</span><span>댓글 ${vocCm[x.id]||0}</span></div></button>`).join('');
+  const nNew=vocPosts.filter(x=>x.status==='new').length;
+  b.innerHTML=`<div class="voc-top"><span class="grow" style="font-size:13.5px;color:var(--ink-2)">총 ${vocPosts.length}건${nNew?` · 접수 ${nNew}건`:''}</span>
+    <button class="vbtn alt sm" id="vSort">${vocSort==='new'?'최신순':'공감순'}</button><button class="vbtn sm" id="vWrite">글쓰기</button></div>
+    <div class="voc-chips" id="vChips">${chips}</div>
+    ${vocMe.admin&&nNew?`<button class="vbtn alt sm" id="vAllCopy" style="margin-bottom:10px">접수 ${nNew}건 모두 Claude용으로 복사</button>`:''}
+    <div class="card" style="overflow:hidden">${rows||'<div class="vempty">아직 글이 없어요.<br>불편한 점이나 바라는 점을 첫 글로 남겨 보세요.</div>'}</div>`;
+}
+function vocWrite(){
+  $('vocBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="vBack">← 목록</button><span class="grow"></span></div>
+  <div class="vguide"><b>이렇게 적어 주시면 바로 반영할 수 있어요</b>
+    <ol><li><b>어디서</b> 화면과 버튼 이름 (예: 일정 목록 › 체크 원)</li><li><b>지금 상황</b> 눌렀더니 어떻게 되는지</li><li><b>원하는 모습</b> 어떻게 되면 좋은지</li></ol>
+    <div class="ex">제목  일정 목록에서 완료 체크가 한 번에 안 돼요
+어디서  일정 목록 › 체크 원
+지금  두 번 눌러야 체크가 돼요
+원하는 모습  한 번 누르면 바로 완료되고, 취소는 다시 누르기</div></div>
+  <div class="vf">
+    <label>분류</label><select id="vfKind">${Object.entries(VK).map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}</select>
+    <label>제목 <small>(80자 이내)</small></label><input id="vfTitle" maxlength="80" placeholder="한 줄로 요약해 주세요">
+    <label>어디서 <small>화면 · 버튼 이름</small></label><input id="vfArea" maxlength="60" placeholder="예: 캘린더 › 월 보기">
+    <label>지금 상황</label><textarea id="vfBody" maxlength="4000" placeholder="어떻게 되는지 적어 주세요"></textarea>
+    <label>원하는 모습 <small>(선택)</small></label><textarea id="vfExpect" maxlength="2000" placeholder="어떻게 되면 좋을까요?"></textarea>
+    <div class="env">기기·버전은 자동으로 함께 저장돼요 — ${vEsc(vEnv())}</div>
+    <div class="vact"><button class="vbtn" id="vPost" style="flex:1">등록</button></div>
+    <p id="vMsg" style="font-size:12.5px;color:var(--ink-2);margin:8px 2px"></p>
+  </div>`;
+}
+function vocDetail(){
+  const x=vocPosts.find(q=>q.id===vocCur);if(!x){vocV='list';return vocRender();}
+  const mine=vocMe.id===x.user_id,votes=vocVt[x.id]||[],voted=votes.includes(vocMe.id);
+  $('vocBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="vBack">← 목록</button><span class="grow"></span></div>
+  <div class="vd"><div class="meta"><span class="vtag k-${x.kind}">${VK[x.kind]}</span><span class="vtag s-${x.status}">${VS[x.status]}</span></div>
+    <h3>${vEsc(x.title)}</h3><div class="meta"><span>${vEsc(x.author||'익명')}</span><span>${vDate(x.created_at)}</span></div>
+    ${x.area?`<div class="blk"><h5>어디서</h5><p>${vEsc(x.area)}</p></div>`:''}
+    <div class="blk"><h5>지금 상황</h5><p>${vEsc(x.body)}</p></div>
+    ${x.expect?`<div class="blk"><h5>원하는 모습</h5><p>${vEsc(x.expect)}</p></div>`:''}
+    ${x.env?`<div class="blk"><h5>환경</h5><p>${vEsc(x.env)}</p></div>`:''}
+    ${x.reply?`<div class="vreply"><h5 style="margin:0 0 4px;font-size:12.5px;color:var(--navy)">운영자 답변</h5><p style="margin:0;font-size:15px;line-height:1.65;white-space:pre-wrap">${vEsc(x.reply)}</p></div>`:''}
+    <div class="vact"><button class="vbtn ${voted?'':'alt'}" id="vVote">♥ 공감 ${votes.length}</button>
+      <button class="vbtn alt" id="vCopyOne">Claude용으로 복사</button>
+      ${(mine||vocMe.admin)?'<button class="vbtn red" id="vDel">삭제</button>':''}</div>
+    ${vocMe.admin?`<div class="vadm vf"><label style="margin-top:0">처리 상태</label><select id="vaSt">${Object.entries(VS).map(([k,n])=>`<option value="${k}"${x.status===k?' selected':''}>${n}</option>`).join('')}</select>
+      <label>운영자 답변</label><textarea id="vaRe" maxlength="2000">${vEsc(x.reply)}</textarea><div class="vact"><button class="vbtn sm" id="vaSave">저장</button></div></div>`:''}
+    <div class="blk"><h5>댓글</h5><div id="vcList"><div class="vcm" style="color:var(--ink-2)">불러오는 중…</div></div>
+      <div class="vf"><textarea id="vcIn" maxlength="1000" style="min-height:64px" placeholder="댓글을 남겨 보세요"></textarea>
+      <div class="vact"><button class="vbtn sm" id="vcSend">댓글 등록</button></div></div></div></div>`;
+  vocComments();
+}
+async function vocComments(){
+  const{data,error}=await SB.from('voc_comments').select('*').eq('post_id',vocCur).order('created_at');
+  const box=$('vcList');if(!box)return;
+  if(error){box.innerHTML='<div class="vcm">댓글을 불러오지 못했어요.</div>';return;}
+  box.innerHTML=(data||[]).map(c=>`<div class="vcm"><div class="who"><span>${vEsc(c.author||'익명')} · ${vDate(c.created_at)}</span>${(c.user_id===vocMe.id||vocMe.admin)?`<button data-cd="${c.id}">삭제</button>`:''}</div>${vEsc(c.body)}</div>`).join('')||'<div class="vcm" style="color:var(--ink-2)">첫 댓글을 남겨 보세요.</div>';
+}
+async function vocOpen(){
+  closeFind();$('vocSheet').classList.add('open');vocV='list';
+  $('vocBody').innerHTML='<div class="vempty">불러오는 중…</div>';
+  try{await vocLoad();}catch(e){$('vocBody').innerHTML='<div class="vempty">게시판을 불러오지 못했어요.<br>잠시 뒤 다시 열어 주세요.</div>';return;}
+  vocRender();
+}
+async function vRefresh(){try{await vocLoad();}catch(e){}vocRender();}
+$('vocBtn').onclick=vocOpen;
+$('vocOpen2').onclick=()=>{try{$('setPop').classList.remove('open');$('popBack').classList.remove('open');}catch(e){}vocOpen();};
+$('vocBody').addEventListener('click',async e=>{
+  const t=e.target,bt=t.closest('button'),id=bt&&bt.id;
+  if(t.closest('#vChips')&&t.dataset.k){vocKind=t.dataset.k;return vocRender();}
+  const row=t.closest('.vrow');if(row){vocCur=row.dataset.id;vocV='detail';return vocRender();}
+  const cd=t.closest('[data-cd]');
+  if(cd){if(!confirm('댓글을 삭제할까요?'))return;await SB.from('voc_comments').delete().eq('id',cd.dataset.cd);
+    vocCm[vocCur]=Math.max(0,(vocCm[vocCur]||1)-1);return vocComments();}
+  if(id==='vSort'){vocSort=vocSort==='new'?'vote':'new';return vocRender();}
+  if(id==='vWrite'){vocV='write';return vocRender();}
+  if(id==='vBack'){vocV='list';return vRefresh();}
+  if(id==='vAllCopy'){return vCopy(vocPack(vocPosts.filter(x=>x.status==='new').reverse()));}
+  if(id==='vCopyOne'){const x=vocPosts.find(q=>q.id===vocCur);return x&&vCopy(vocPack([x]));}
+  if(id==='vPost'){
+    const g=k=>$(k).value.trim(),title=g('vfTitle'),body=g('vfBody');
+    if(!title||!body){$('vMsg').textContent='제목과 "지금 상황"은 꼭 적어 주세요.';return;}
+    if(vocBusy)return;vocBusy=true;$('vPost').disabled=true;
+    const r=await SB.from('voc_posts').insert({author:vName(),kind:g('vfKind'),title,area:g('vfArea'),body,expect:g('vfExpect'),env:vEnv()});
+    vocBusy=false;
+    if(r.error){$('vPost').disabled=false;$('vMsg').textContent='등록하지 못했어요: '+r.error.message;return;}
+    vocV='list';toastMsg('등록했어요');return vRefresh();}
+  if(id==='vVote'){
+    const v=vocVt[vocCur]||[],has=v.includes(vocMe.id);
+    const r=has?await SB.from('voc_votes').delete().eq('post_id',vocCur).eq('user_id',vocMe.id):await SB.from('voc_votes').insert({post_id:vocCur});
+    if(!r.error){vocVt[vocCur]=has?v.filter(q=>q!==vocMe.id):[...v,vocMe.id];vocRender();}return;}
+  if(id==='vDel'){if(!confirm('이 글을 삭제할까요? 댓글도 함께 지워져요.'))return;
+    const r=await SB.from('voc_posts').delete().eq('id',vocCur);if(r.error){alert('삭제하지 못했어요.');return;}
+    vocV='list';toastMsg('삭제했어요');return vRefresh();}
+  if(id==='vaSave'){
+    const st=$('vaSt').value,re=$('vaRe').value.trim();
+    const r=await SB.from('voc_posts').update({status:st,reply:re}).eq('id',vocCur);
+    if(r.error){alert('저장하지 못했어요: '+r.error.message);return;}
+    const x=vocPosts.find(q=>q.id===vocCur);if(x){x.status=st;x.reply=re;}
+    toastMsg('저장했어요');return vocRender();}
+  if(id==='vcSend'){
+    const body=$('vcIn').value.trim();if(!body)return;
+    const r=await SB.from('voc_comments').insert({post_id:vocCur,author:vName(),body});
+    if(r.error){alert('댓글을 등록하지 못했어요.');return;}
+    vocCm[vocCur]=(vocCm[vocCur]||0)+1;$('vcIn').value='';return vocComments();}
+});
+
 /* ── 확대·축소 → 월 ↔ 연도 (맥 트랙패드 핀치 · 윈도우 Ctrl+휠 · Ctrl +/-) ── */
 let zAcc=0,zLock=0,zMonth=null;
 const zBusy=()=>!!document.querySelector('.sheet.open,#cropBox.on,#brief[style*="block"],.lbox.on,#lbox.on');
@@ -2295,7 +2482,7 @@ function renderShare(){
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v73';
+const APPVER=/*ver*/'v74';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
