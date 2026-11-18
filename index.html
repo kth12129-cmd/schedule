@@ -1149,6 +1149,23 @@ textarea.memo{background:transparent}
 .caphead button,.caphead2 button{font-size:12.5px;font-weight:700;padding:6px 12px;border:1px solid var(--line);border-radius:16px;color:var(--ink)}
 .caphead2{display:flex;gap:8px;justify-content:center;margin-top:12px}
 .capcardwrap{background:none!important;border:0!important;padding:0!important}
+
+/* v83 연속 스크롤 달력 */
+#grid.grid{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:none;grid-auto-rows:var(--rowh,90px);
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;align-content:start}
+#grid.grid::-webkit-scrollbar{display:none}
+.cell.mo-odd{background:color-mix(in srgb,var(--ink) 3%,var(--surface))}
+.cell.past{background-color:color-mix(in srgb,var(--ink) 5%,var(--surface))}
+.cell.past.mo-odd{background-color:color-mix(in srgb,var(--ink) 8%,var(--surface))}
+.cell.today{background:color-mix(in srgb,var(--navy) 10%,var(--surface))}
+.cell.mt{box-shadow:inset 0 2px 0 var(--ink-2)}
+.cell.m1{box-shadow:inset 0 2px 0 var(--ink-2),inset 2px 0 0 var(--ink-2)}
+.cell.today,.cell.today.mt,.cell.today.m1{box-shadow:inset 0 0 0 2px var(--navy)}
+.cell.sel:not(.today){box-shadow:inset 0 0 0 1.5px var(--ink)}
+.mlab{position:absolute;left:calc(var(--numsz) + 12px);top:8px;font-size:11px;font-weight:800;letter-spacing:.02em;color:var(--navy);pointer-events:none}
+:root[data-theme="dark"] .mlab{color:var(--navy-2)}
+.cell.dim .num{color:inherit}
+.mlab{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1608,16 +1625,32 @@ function parseInput(raw,baseYmd){
 }
 
 /* ── 달력 ── */
+/* 연속 스크롤 달력: 주 단위로 위→아래 이어져 있고, 마우스 휠로 자연스럽게 넘어갑니다 */
+let calStart=null,calWeeks=0,calRowH=90,calKey=-1,calRaf=0;
+const dayAdd=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+const sunOf=d=>dayAdd(new Date(d.getFullYear(),d.getMonth(),d.getDate()),-d.getDay());
+function weekIdx(d){return Math.round((sunOf(d)-calStart)/604800000);}
 function renderMonth(){
-  const y=view.getFullYear(),m=view.getMonth();
-  $('mTitle').textContent=(m+1)+'월';$('yTitle').textContent=y;
-  const f=new Date(y,m,1),start=new Date(f);start.setDate(start.getDate()-f.getDay());
+  const g=$('grid');
+  const vk=view.getFullYear()*12+view.getMonth();
+  const H=g.clientHeight||540;
+  const rowH=Math.max(78,Math.floor(H/6));
+  let c,off=0;
+  if(calStart&&vk===calKey){ // 스크롤 위치 유지 (일정 수정 등)
+    const r=Math.floor(g.scrollTop/calRowH);off=g.scrollTop-r*calRowH;
+    c=dayAdd(calStart,r*7);
+  }else{c=new Date(view.getFullYear(),view.getMonth(),1);}
+  calKey=vk;calRowH=rowH;
+  calStart=dayAdd(sunOf(c),-26*7);calWeeks=58;
+  g.style.setProperty('--rowh',rowH+'px');
   let h='';
-  for(let i=0;i<42;i++){
-    const d=new Date(start);d.setDate(start.getDate()+i);
+  for(let i=0;i<calWeeks*7;i++){
+    const d=dayAdd(calStart,i);
     const k=ymd(d),its=ordItems(k),dls=deadlinesOn(k),memo=(store.memos[k]||'').trim();
     const cl=['cell'];
-    if(d.getMonth()!==m)cl.push('dim');
+    if(d.getMonth()%2)cl.push('mo-odd');
+    if(d.getDate()<=7)cl.push('mt');
+    if(d.getDate()===1)cl.push('m1');
     if(d.getDay()===0)cl.push('sun');
     if(d.getDay()===6)cl.push('sat');
     const hol=holOf(k);
@@ -1640,11 +1673,35 @@ function renderMonth(){
         rest.slice(0,6).map(e=>`<i style="background:${e.dl?'var(--red)':(e.c||'var(--ink-3)')}"></i>`).join('')+
         (rest.length>6?'<b>+</b>':'')+'</span>';}
     h+=`<button class="${cl.join(' ')}" data-d="${k}">${evs.some(e=>e.pri)?'<i class="priflag"></i>':''}`+
-       `<span class="num">${d.getDate()}</span>${hol?`<span class="holname">${esc(hol)}</span>`:''}`+
+       `<span class="num">${d.getDate()}</span>${d.getDate()===1?`<span class="mlab">${d.getMonth()===0?"'"+String(d.getFullYear()).slice(2)+' ':''}${d.getMonth()+1}월</span>`:''}${hol?`<span class="holname">${esc(hol)}</span>`:''}`+
        `<span class="evs">${ev}</span></button>`;
   }
-  $('grid').innerHTML=h;
+  g.innerHTML=h;
+  g.scrollTop=weekIdx(c)*rowH+off;
+  $('mTitle').textContent=(view.getMonth()+1)+'월';$('yTitle').textContent=view.getFullYear();
 }
+function calSync(){
+  const g=$('grid');if(tab!=='cal'||!calStart)return;
+  const idx=Math.round(g.scrollTop/calRowH);
+  const d=dayAdd(calStart,(idx+1)*7+4);
+  const k=d.getFullYear()*12+d.getMonth();
+  if(k!==calKey){calKey=k;view=new Date(d.getFullYear(),d.getMonth(),1);
+    $('mTitle').textContent=(d.getMonth()+1)+'월';$('yTitle').textContent=d.getFullYear();}
+  if(g.scrollTop<calRowH*5||g.scrollTop>g.scrollHeight-g.clientHeight-calRowH*5)renderMonth();
+}
+$('grid').addEventListener('scroll',()=>{if(calRaf)return;calRaf=requestAnimationFrame(()=>{calRaf=0;calSync();});},{passive:true});
+function scrollToMonth(d){
+  const g=$('grid');d=new Date(d.getFullYear(),d.getMonth(),1);
+  if(calStart){const i=weekIdx(d);
+    if(i>=6&&i<calWeeks-12){g.scrollTo({top:i*calRowH,behavior:'smooth'});return;}}
+  view=d;renderMonth();
+}
+function calShow(k){
+  const g=$('grid');if(!calStart)return;
+  const i=weekIdx(fromYmd(k)),top=i*calRowH;
+  if(top<g.scrollTop||top+calRowH>g.scrollTop+g.clientHeight)g.scrollTo({top:Math.max(0,top-calRowH*2),behavior:'smooth'});
+}
+let calRz=null;addEventListener('resize',()=>{clearTimeout(calRz);calRz=setTimeout(()=>{if(tab==='cal')renderMonth();},150);});
 function miniMonth(y,m,mark){
   const f=new Date(y,m,1),start=new Date(f);start.setDate(start.getDate()-f.getDay());
   let g='';
@@ -2200,7 +2257,9 @@ function renderStages(){
 }
 
 /* ── 이벤트 ── */
-function goto(k){sel=k;openNote=null;const d=fromYmd(k);view=new Date(d.getFullYear(),d.getMonth(),1);setTab('cal');renderDay();}
+function goto(k){sel=k;openNote=null;const d=fromYmd(k);
+  const same=tab==='cal'&&calStart&&Math.abs(weekIdx(d)*calRowH-$('grid').scrollTop)<calRowH*40;
+  if(!same)view=new Date(d.getFullYear(),d.getMonth(),1);setTab('cal');renderDay();calShow(k);}
 function setTab(t){tab=t;
   ['cal','year','decade'].forEach(v=>$('v-'+v).classList.toggle('on',v===t));
   if(t==='cal')renderMonth();else if(t==='year')renderYear();else renderDecade();}
@@ -2623,8 +2682,8 @@ $('yrList').onclick=e=>{const b=e.target.closest('[data-y]');if(!b)return;
   const y=+b.dataset.y;closeFind();
   if(tab==='year'){yearView=y;renderYear();}
   else{view.setFullYear(y);renderMonth();}};
-$('prev').onclick=()=>{if(tab==='decade'){yearView-=12;renderDecade();}else if(tab==='year'){yearView--;renderYear();}else{view.setMonth(view.getMonth()-1);renderMonth();}};
-$('next').onclick=()=>{if(tab==='decade'){yearView+=12;renderDecade();}else if(tab==='year'){yearView++;renderYear();}else{view.setMonth(view.getMonth()+1);renderMonth();}};
+$('prev').onclick=()=>{if(tab==='decade'){yearView-=12;renderDecade();}else if(tab==='year'){yearView--;renderYear();}else{scrollToMonth(new Date(view.getFullYear(),view.getMonth()-1,1));}};
+$('next').onclick=()=>{if(tab==='decade'){yearView+=12;renderDecade();}else if(tab==='year'){yearView++;renderYear();}else{scrollToMonth(new Date(view.getFullYear(),view.getMonth()+1,1));}};
 
 $('analyBtn').onclick=()=>{renderChips();runQuery($('q').value||'');$('anSheet').classList.add('open');};
 $('findBtn').onclick=()=>openFind(false);$('findBtn2').onclick=()=>openFind(true);
@@ -2681,8 +2740,7 @@ $('qResult').addEventListener('keydown',e=>{
 $('yearWrap').onclick=e=>{const d=e.target.closest('[data-d]');if(d){goto(d.dataset.d);return;}
   const m=e.target.closest('[data-m]');if(m){view=new Date(yearView,+m.dataset.m,1);setTab('cal');}};
 $('grid').onclick=e=>{const b=e.target.closest('.cell');if(!b)return;
-  sel=b.dataset.d;openNote=null;editItem=null;adding=false;const d=fromYmd(sel);
-  if(d.getMonth()!==view.getMonth()||d.getFullYear()!==view.getFullYear())view=new Date(d.getFullYear(),d.getMonth(),1);
+  sel=b.dataset.d;openNote=null;editItem=null;adding=false;
   renderMonth();renderDay();
   if(!CAN_HOVER)showTip($('grid').querySelector('.cell.sel'),true);};
 
@@ -2845,7 +2903,7 @@ $('addStage').onclick=()=>{store.stages.push({id:'s'+Date.now().toString(36),nam
 let sx=0,sy=0;
 document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
 $('grid').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
-  if(Math.abs(dx)>60&&Math.abs(dy)<45){view.setMonth(view.getMonth()+(dx<0?1:-1));renderMonth();}},{passive:true});
+  if(Math.abs(dx)>60&&Math.abs(dy)<45){scrollToMonth(new Date(view.getFullYear(),view.getMonth()+(dx<0?1:-1),1));}},{passive:true});
 
 /* ── 기기 간 동기화 ── */
 let DB=null,UID=null,docRef=null,pushT=null,pushing=false,dirty=false;
@@ -3028,7 +3086,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v82';
+const APPVER=/*ver*/'v83';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -4017,7 +4075,7 @@ addEventListener('resize',hideTip);
 function shiftMonth(n){hideTip();
   if(tab==='decade'){yearView+=n>0?12:-12;renderDecade();}
   else if(tab==='year'){yearView+=n;renderYear();}
-  else{view.setMonth(view.getMonth()+n);renderMonth();}}
+  else{scrollToMonth(new Date(view.getFullYear(),view.getMonth()+n,1));}}
 document.addEventListener('keydown',e=>{
   if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.target.isContentEditable)return;
   if(e.metaKey||e.ctrlKey||e.altKey)return;
