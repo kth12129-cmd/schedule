@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="업무 일정">
-<script>try{var __t=localStorage.getItem("theme")||"dark";document.documentElement.setAttribute("data-theme",__t)}catch(e){document.documentElement.setAttribute("data-theme","dark")}</script>
-<meta name="theme-color" content="#000000">
+<script>try{var __t=localStorage.getItem("theme2")||"light";document.documentElement.setAttribute("data-theme",__t)}catch(e){document.documentElement.setAttribute("data-theme","light")}</script>
+<meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -1078,6 +1078,34 @@ textarea.memo{background:transparent}
 @media (prefers-reduced-motion:no-preference){
   .cell,.ymon,.item,.hbtn,.arrow{transition:background .15s,border-color .15s,color .15s}
 }
+
+/* v78: 가독성 + 오늘 칸 강조 */
+:root[data-theme="light"]{--page:#f4f5f8;--surface:#fff;--ink:#0a0c12;--ink-2:#4a4f5d;--ink-3:#8c92a1;--line:#cdd2de;--hair:#e3e6ee}
+:root[data-theme="dark"]{--ink-2:#b4b9c6;--ink-3:#7a808e}
+.grid{background:var(--surface)}
+.cell{background:var(--surface)}
+.cell.dim{background:color-mix(in srgb,var(--ink) 3%,var(--surface))}
+.ev{font-size:11px;line-height:1.4;padding:2px 5px}
+.ev .evt{color:var(--ink);font-weight:600}
+.ev .evn{font-size:9.5px}
+.cell .num{font-weight:400;color:var(--ink)}
+.cell.dim .num{color:var(--ink-3)}
+.cell.sun .num,.cell.hol .num{color:var(--red)}
+.cell.sat .num{color:var(--sat)}
+.cell.past .num{color:var(--ink-3)}
+/* 오늘: 동그라미 대신 칸 전체를 테두리+배경으로 */
+.cell.today{background:color-mix(in srgb,var(--navy) 10%,var(--surface));box-shadow:inset 0 0 0 2px var(--navy);z-index:1}
+.cell.today .num{background:none;color:var(--navy);box-shadow:none;font-weight:800;border-radius:0;width:auto;padding:0 2px}
+:root[data-theme="dark"] .cell.today .num{color:#fff}
+.cell.today::before{content:"오늘";right:auto;left:auto;top:0;right:0;font-size:10px;font-weight:700;letter-spacing:.04em;
+ background:var(--navy);color:#fff;padding:2px 7px 3px;border-radius:0 0 0 4px}
+.cell.sel .num,.cell.today.sel .num{background:none;box-shadow:none;color:inherit;text-decoration:underline;text-underline-offset:4px}
+.cell.sel:not(.today){box-shadow:inset 0 0 0 1.5px var(--ink)}
+.yd.tod{background:var(--navy);color:#fff;box-shadow:none}
+.item,.item .title{color:var(--ink)}
+.tlev .n{font-weight:600}
+@media (max-width:660px){.ev{font-size:9.5px}.cell.today::before{display:block;font-size:8px;padding:1px 4px 2px}}
+.cell.today .priflag{right:40px;top:7px}
 </style>
 </head>
 <body>
@@ -1278,7 +1306,7 @@ textarea.memo{background:transparent}
 <div class="pop" id="setPop">
   <div class="pop-title">동기화 · 알림</div>
   <div class="sync"><i id="syncDot"></i><span id="syncTxt">확인 중…</span></div>
-  <div class="setrow"><label>화면 테마</label><select id="themeSel"><option value="dark">다크 · 미션컨트롤</option><option value="light">라이트</option></select></div>
+  <div class="setrow"><label>화면 테마</label><select id="themeSel"><option value="light">화이트 (기본)</option><option value="dark">다크 모드</option></select></div>
   <div class="setrow"><label>아침 알림</label><button id="briefOpen">설정</button></div>
   <div class="setrow"><label>팀 업무 현황</label><button id="tmOpen2">열기</button></div>
   <div class="setrow"><label>VOC 게시판</label><button id="vocOpen2">열기</button></div>
@@ -2508,11 +2536,11 @@ $('yearWrap').addEventListener('mouseleave',()=>{zMonth=null;});
     setBtn:S('<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>')
   };
   Object.keys(IC).forEach(id=>{const b=document.getElementById(id);if(b)b.innerHTML=IC[id];});
-  const cur=()=>document.documentElement.getAttribute('data-theme')||'dark';
+  const cur=()=>document.documentElement.getAttribute('data-theme')||'light';
   function apply(t){
     document.documentElement.setAttribute('data-theme',t);
-    try{localStorage.setItem('theme',t)}catch(e){}
-    const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#f3f4f7':'#000000';
+    try{localStorage.setItem('theme2',t)}catch(e){}
+    const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#ffffff':'#000000';
     const sel=document.getElementById('themeSel');if(sel)sel.value=t;
   }
   const sel=document.getElementById('themeSel');
@@ -2913,7 +2941,7 @@ function renderShare(){
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v77';
+const APPVER=/*ver*/'v78';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
