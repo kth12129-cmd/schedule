@@ -1133,6 +1133,22 @@ textarea.memo{background:transparent}
 .hbtn.act{border-color:var(--navy);color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
 .cell.past{background-image:none;background-color:color-mix(in srgb,var(--ink) 4%,var(--surface))}
 .cell.past .ev{opacity:.6}
+
+.imgbtn.txtcap{width:auto;padding:0 12px;font-size:12.5px;font-weight:700;letter-spacing:.04em;border-radius:6px}
+.capmodes{display:grid;gap:10px;margin-top:2px}
+.cmode{display:flex;align-items:center;gap:14px;text-align:left;padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);width:100%;transition:border-color .15s,background .15s}
+.cmode:hover{border-color:var(--ink)}
+.cmode>i{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--ink);display:grid;place-items:center;font-style:normal;font-weight:700;font-size:13px}
+.cmode b{display:block;font-size:15.5px;font-weight:700;margin-bottom:3px}
+.cmode span{display:block;font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.cmode.alt{border-style:dashed}
+.cmode select{margin:6px 8px 0 0;font-size:12px;padding:3px 6px;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--ink)}
+.cmode label{font-size:12px}
+.caphead{display:flex;align-items:center;justify-content:space-between;margin:14px 2px 8px}
+.caphead b{font-size:15px}
+.caphead button,.caphead2 button{font-size:12.5px;font-weight:700;padding:6px 12px;border:1px solid var(--line);border-radius:16px;color:var(--ink)}
+.caphead2{display:flex;gap:8px;justify-content:center;margin-top:12px}
+.capcardwrap{background:none!important;border:0!important;padding:0!important}
 </style>
 </head>
 <body>
@@ -1177,7 +1193,7 @@ textarea.memo{background:transparent}
   <div class="card pane list-pane">
     <div class="day-head"><h2 id="dayTitle"></h2><span class="cnt" id="dayCnt"></span>
       <button class="addbtn" id="addItemBtn">+ 추가</button>
-      <button class="imgbtn" id="imgBtn" title="캡처 이미지로 일정 만들기">📷</button></div>
+      <button class="imgbtn txtcap" id="imgBtn" title="화면을 캡처해서 일정 목록 만들기">캡처</button></div>
     <div class="tlall" id="tlall"></div>
     <ul class="list" id="list"></ul>
   </div>
@@ -1216,21 +1232,20 @@ textarea.memo{background:transparent}
 <div class="sheet" id="capSheet">
   <div class="sheet-bar"><h2>캡처</h2><button data-close="capSheet">닫기</button></div>
   <div class="sheet-body">
-    <div class="card" style="margin-top:12px">
-      <div class="capacts">
-        <button class="bp-btn" id="capGrab">🖥 화면 캡처 시작</button>
-        <div class="caprow" id="capGrabOpt">
-          <label>찍는 시점 <select id="capDelay"><option value="0">바로</option><option value="3">3초 뒤</option><option value="5">5초 뒤</option><option value="10">10초 뒤</option><option value="15">15초 뒤</option></select></label>
-          <label id="capPipL"><input type="checkbox" id="capPip" checked> 작은 찍기 창 띄우기</label>
-        </div>
-        <div class="hint-txt" id="capGrabHint">화면·창·탭을 고르면 찍기 창이 뜹니다. <b>작은 찍기 창</b>을 켜 두면 다른 앱으로 넘어가서도 <b>📸 찍기</b>를 누를 수 있어요(크롬·엣지). 찍은 뒤 필요한 부분만 끌어서 자릅니다.</div>
-        <button class="bp-btn" id="capShotBtn">📱 스크린샷 불러와서 자르기</button>
-        <button class="bp-btn alt2" id="capAway">다른 앱에서 찍고 오기</button>
-        <div class="hint-txt" id="capAwayHint">휴대폰은 앱이 화면을 직접 찍을 수 없어요. 전원+음량 버튼으로 스크린샷을 찍은 뒤 이 앱에서 불러와 자르세요.</div>
+    <div class="card capcardwrap" id="capCard" style="margin-top:12px">
+      <div class="capmodes">
+        <button class="cmode" id="capGrab"><i>1</i><div><b>화면·창 전체 캡처</b><span>고른 화면을 그대로 읽어 일정 목록을 만들어요</span></div></button>
+        <button class="cmode" id="capRegion"><i>2</i><div><b>화면 일부 캡처</b><span>화면을 찍은 뒤, 필요한 부분만 끌어서 선택해요</span></div></button>
+        <div class="cmode" id="capTimed" role="button" tabindex="0"><i>3</i><div><b>시간 두고 캡처</b><span>다른 앱으로 이동해 둔 뒤 자동으로 찍어요
+          <select id="capDelay" onclick="event.stopPropagation()"><option value="3">3초 뒤</option><option value="5" selected>5초 뒤</option><option value="10">10초 뒤</option><option value="15">15초 뒤</option></select>
+          <label id="capPipL" onclick="event.stopPropagation()"><input type="checkbox" id="capPip" checked> 작은 찍기 창</label></span></div></div>
+        <button class="cmode" id="capShotBtn"><i>1</i><div><b>스크린샷 불러와서 자르기</b><span>휴대폰에서 찍은 스크린샷에서 필요한 부분만 골라요</span></div></button>
+        <button class="cmode alt" id="capAway"><i>2</i><div><b>다른 앱에서 찍고 오기</b><span>이 앱에서 나가 스크린샷을 찍고 돌아오면 바로 불러와요</span></div></button>
+        <button class="cmode" id="capDrop"><i>＋</i><div><b>파일·사진 불러오기</b><span>눌러서 선택 · 끌어다 놓기 · Ctrl+V / ⌘V 붙여넣기</span></div></button>
       </div>
-      <div class="capshots" id="capShots"></div>
-      <div class="capdrop" id="capDrop"><b>파일 업로드 · 붙여넣기</b>눌러서 파일 선택 · 끌어다 놓기 · Ctrl+V / ⌘V</div>
-      <img class="capprev" id="capPrev" alt="">
+      <div class="capshots" id="capShots" style="display:none"></div>
+      <div class="hint-txt" id="capGrabHint" style="display:none"></div><div class="hint-txt" id="capAwayHint" style="display:none"></div><div id="capGrabOpt" style="display:none"></div>
+      <img class="capprev" id="capPrev" alt="" style="display:none">
       <div class="capbusy" id="capBusy" style="display:none"><i></i><span id="capMsg"></span></div>
     </div>
     <div id="capList"></div>
@@ -1241,10 +1256,10 @@ textarea.memo{background:transparent}
   </div>
 </div>
 <div id="cropBox" style="display:none">
-  <div class="cr-top"><button id="crCancel">취소</button><b>자를 부분을 끌어 정하세요</b><button id="crReset">전체</button></div>
+  <div class="cr-top"><button id="crCancel">취소</button><b>읽을 부분을 끌어서 선택하세요</b><button id="crReset">전체</button></div>
   <div class="cr-stage" id="crStage"><div class="cr-wrap" id="crWrap"><img id="crImg" alt="" draggable="false">
     <div class="cr-rect" id="crRect"><i data-h="nw"></i><i data-h="n"></i><i data-h="ne"></i><i data-h="e"></i><i data-h="se"></i><i data-h="s"></i><i data-h="sw"></i><i data-h="w"></i></div></div></div>
-  <div class="cr-bot"><button class="alt3" id="crSave">이미지로 저장</button><button id="crOk">글자 읽어 일정 만들기</button></div>
+  <div class="cr-bot"><button class="alt3" id="crSave">이미지로 저장</button><button id="crOk">이 부분으로 일정 만들기</button></div>
 </div>
 <input type="file" id="capFile" accept="image/*" style="display:none">
 
@@ -3013,7 +3028,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v81';
+const APPVER=/*ver*/'v82';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -3542,24 +3557,37 @@ function prepOCR(file,cb){
   r.onerror=()=>alert('파일을 읽지 못했습니다.');
   r.readAsDataURL(file);
 }
-const DT_RE=/(\d{1,2}\s*[\/월.]\s*\d{1,2})|(\d{1,2}\s*:\s*\d{2})|(\d{1,2}\s*시)|(오전|오후)|(오늘|내일|모레|글피)|([일월화수목금토]요일)|(\d{1,2}\s*일\b)/;
-function buildCaps(text){
-  const lines=(text||'').split(/\n+/).map(x=>x.replace(/\s+/g,' ').trim())
-    .filter(x=>x.length>=2&&/[가-힣A-Za-z0-9]/.test(x)).slice(0,40);
-  capCands=lines.map(line=>{
+const DT2=/(\d{4}\s*[-.\/]\s*\d{1,2}\s*[-.\/]\s*\d{1,2})|(\d{1,2}\s*월\s*\d{1,2}\s*일?)|(\d{1,2}\s*\/\s*\d{1,2})|(\b\d{1,2}\.\d{1,2}\b)|(\d{1,2}\s*:\s*\d{2})|((오전|오후)\s*\d{1,2}\s*시)|(\d{1,2}\s*시\s*(\d{1,2}\s*분)?)|(오늘|내일|모레|글피)|([일월화수목금토]요일)/;
+let capLast=null,capSkipped=0;
+function buildCaps(data,allowUndated){
+  capLast=data;
+  let lines=[];
+  if(data&&data.lines&&data.lines.length)lines=data.lines.filter(l=>l.confidence==null||l.confidence>=45).map(l=>l.text);
+  else lines=((data&&data.text)||'').split(/\n+/);
+  lines=lines.map(x=>x.replace(/[|｜\\_~`ㅁ□■]+/g,' ').replace(/\s+/g,' ').trim()).filter(x=>x.length>=3&&/[가-힣A-Za-z]/.test(x));
+  const seen=new Set(),out=[];let skipped=0;
+  lines.slice(0,80).forEach(line=>{
+    const dated=DT2.test(line);
+    if(!dated&&!allowUndated){skipped++;return;}
     const p=parseInput(line,sel);
-    return{on:DT_RE.test(line),raw:line,date:p.date,endDate:p.endDate,
-      time:p.time,endTime:p.endTime,pri:p.pri,
-      cat:p.cat||addCats()[0]||store.cats[0].id,title:p.title};
+    let t=(p.title||line).replace(/^\s*[\(\[]?\d{1,2}[\)\]\.]\s+/,'').replace(/\(\s*[일월화수목금토]\s*\)/g,'')
+      .replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').replace(/[:：\s]+$/,'').trim();
+    if(t.length<2){skipped++;return;}
+    const key=p.date+'|'+(p.time||'')+'|'+t;if(seen.has(key))return;seen.add(key);
+    out.push({on:dated,raw:line,date:p.date,endDate:p.endDate,time:p.time,endTime:p.endTime,pri:p.pri,
+      cat:p.cat||addCats()[0]||store.cats[0].id,title:t});
   });
-  renderCaps();
+  capCands=out;capSkipped=skipped;renderCaps();
 }
 function renderCaps(){
   const box=$('capList');
-  if(!capCands.length){box.innerHTML='<div class="card capnone">읽어낸 글자에서 일정으로 볼 만한 줄을 찾지 못했습니다.<br>더 또렷하게 캡처해 보세요.</div>';
+  $('capCard').style.display=capCands.length||capLast?'none':'';
+  if(!capCands.length){
+    box.innerHTML='<div class="card capnone">날짜나 시간이 적힌 일정을 찾지 못했습니다.<br>일정이 있는 부분만 골라 다시 캡처하면 더 잘 읽어요.'
+      +'<div class="caphead2"><button id="capAgain">다시 캡처</button>'+(capSkipped?'<button id="capUndated" class="alt">날짜 없는 줄 '+capSkipped+'개 보기</button>':'')+'</div></div>';
     $('capBar').style.display='none';return;}
   const opts=c=>store.cats.map(x=>`<option value="${x.id}"${x.id===c?' selected':''}>${esc(x.name)}</option>`).join('');
-  box.innerHTML=capCands.map((c,i)=>`<div class="capcard${c.on?' on':''}" data-i="${i}">
+  box.innerHTML='<div class="caphead"><b>일정 '+capCands.length+'건을 찾았어요</b><button id="capAgain">다시 캡처</button></div>'+capCands.map((c,i)=>`<div class="capcard${c.on?' on':''}" data-i="${i}">
     <input type="checkbox" class="cc" data-f="on"${c.on?' checked':''}>
     <div class="cb">
       <input type="text" data-f="title" value="${esc(c.title)}">
@@ -3569,7 +3597,6 @@ function renderCaps(){
         <select data-f="cat">${opts(c.cat)}</select>
         <label class="pl"><input type="checkbox" data-f="pri"${c.pri?' checked':''}>중요</label>
       </div>
-      <div class="raw">읽은 글자 · ${esc(c.raw)}</div>
     </div></div>`).join('');
   const n=capCands.filter(c=>c.on).length;
   $('capBar').style.display='grid';
@@ -3577,6 +3604,11 @@ function renderCaps(){
   $('capSave').disabled=!n;
   $('capAll').textContent=n===capCands.length?'전체 해제':'전체 선택';
 }
+function capReset(){capCands=[];capLast=null;capSkipped=0;$('capList').innerHTML='';$('capBar').style.display='none';
+  $('capCard').style.display='';capSay('');}
+$('capList').addEventListener('click',e=>{
+  if(e.target.id==='capAgain')capReset();
+  else if(e.target.id==='capUndated')buildCaps(capLast,true);});
 $('capList').addEventListener('input',e=>{
   const card=e.target.closest('[data-i]');if(!card)return;
   const c=capCands[+card.dataset.i],f=e.target.dataset.f;if(!c||!f)return;
@@ -3602,16 +3634,14 @@ $('capSave').onclick=()=>{
   save();
   const first=pick[0].date;
   $('capSheet').classList.remove('open');
-  capCands=[];$('capList').innerHTML='';$('capBar').style.display='none';
-  $('capPrev').classList.remove('on');capSay('');
+  capReset();
   goto(first);renderBanner();
 };
 async function capRun(file){
   if(capBusy||!file||!/^image\//.test(file.type||''))return;
-  capBusy=true;capCands=[];$('capList').innerHTML='';$('capBar').style.display='none';
+  capBusy=true;capReset();
   capSay('이미지를 준비하는 중…');
   prepOCR(file,async(forOcr,shown)=>{
-    $('capPrev').src=shown;$('capPrev').classList.add('on');
     try{
       capSay('글자 인식 준비 중…');
       const T=await loadTess();
@@ -3619,17 +3649,17 @@ async function capRun(file){
         if(m.status==='recognizing text')capSay('글자 읽는 중… '+Math.round((m.progress||0)*100)+'%');
         else if(/traineddata|loading language/i.test(m.status||''))capSay('한국어 인식 자료 받는 중… (처음 한 번만, 1~2분)');
       }});
+      try{await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});}catch(_){}
       const res=await worker.recognize(forOcr);
       await worker.terminate();
       capSay('');
-      buildCaps(res&&res.data?res.data.text:'');
+      buildCaps(res&&res.data?res.data:null,false);
     }catch(err){capSay('');alert('글자를 읽지 못했습니다.\n'+(err&&err.message||''));}
     capBusy=false;
   });
 }
 function openCap(){
-  capCands=[];$('capList').innerHTML='';$('capBar').style.display='none';
-  $('capPrev').classList.remove('on');capSay('');
+  capReset();
   closeFind();capUI();$('capSheet').classList.add('open');
 }
 $('capDrop').onclick=()=>$('capFile').click();
@@ -3667,11 +3697,11 @@ const isTouchDev=matchMedia('(pointer:coarse)').matches&&!canGrab;
 let capShots=[],grab=null,awaiting=false;
 const toFile=(c,n)=>new Promise(r=>c.toBlob(b=>r(new File([b],n||'capture.png',{type:'image/png'})),'image/png'));
 function capUI(){
-  $('capGrab').style.display=canGrab?'':'none';$('capGrabOpt').style.display=canGrab?'':'none';$('capGrabHint').style.display=canGrab?'':'none';
-  $('capPipL').style.display=('documentPictureInPicture'in window)?'':'none';
-  $('capShotBtn').style.display=canGrab?'none':'';$('capAway').style.display=canGrab?'none':'';$('capAwayHint').style.display=canGrab?'none':'';
-  $('capShotBtn').textContent=awaiting?'👉 방금 찍은 스크린샷 불러오기':'📱 스크린샷 불러와서 자르기';
-  $('capShots').innerHTML=capShots.slice(-6).map((x,i,a)=>`<img src="${x.url}" data-k="${capShots.length-a.length+i}" alt="">`).join('');
+  const sh=(id,v)=>{const e=$(id);if(e)e.style.display=v?'':'none';};
+  sh('capGrab',canGrab);sh('capRegion',canGrab);sh('capTimed',canGrab);
+  sh('capPipL',canGrab&&('documentPictureInPicture'in window));
+  sh('capShotBtn',!canGrab);sh('capAway',!canGrab);
+  const sb=$('capShotBtn');if(sb)sb.querySelector('b').textContent=awaiting?'방금 찍은 스크린샷 불러오기':'스크린샷 불러와서 자르기';
 }
 $('capShots').onclick=e=>{const im=e.target.closest('img');if(im&&capShots[+im.dataset.k])openCrop(capShots[+im.dataset.k].file);};
 async function shootOne(){
@@ -3696,9 +3726,24 @@ function pipUI(pip){
   d.getElementById('e').onclick=()=>grabEnd(true);
   pip.addEventListener('pagehide',()=>grabEnd(true));
 }
-$('capGrab').onclick=async()=>{
+async function startGrab(mode){
   if(grab)return;
-  const delay=+$('capDelay').value||0,wantPip=$('capPip').checked&&('documentPictureInPicture'in window);
+  let stream;
+  try{stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});}catch(e){return;}
+  const v=document.createElement('video');v.muted=true;v.playsInline=true;v.srcObject=stream;
+  try{await v.play();}catch(e){}
+  await new Promise(r=>setTimeout(r,700));
+  grab={stream,video:v,pip:null};
+  const ok=await shootOne();
+  try{stream.getTracks().forEach(t=>t.stop());}catch(e){}
+  grab=null;capUI();try{window.focus();}catch(e){}
+  if(!ok||!capShots.length){toastMsg('화면을 찍지 못했습니다. 다시 시도해 주세요');return;}
+  const f=capShots[capShots.length-1].file;
+  if(mode==='region')openCrop(f);else capRun(f);
+}
+async function startTimed(){
+  if(grab)return;
+  const delay=+$('capDelay').value||5,wantPip=$('capPip').checked&&('documentPictureInPicture'in window);
   let pip=null;
   if(wantPip){try{pip=await documentPictureInPicture.requestWindow({width:270,height:120});}catch(e){pip=null;}}
   let stream;
@@ -3717,7 +3762,10 @@ $('capGrab').onclick=async()=>{
     await new Promise(r=>setTimeout(r,350));
     await shootOne();grabEnd(true);};
   tick();
-};
+}
+$('capGrab').onclick=()=>startGrab('full');
+$('capRegion').onclick=()=>startGrab('region');
+$('capTimed').onclick=()=>startTimed();
 $('capShotBtn').onclick=()=>{awaiting=false;capUI();$('capFile').click();};
 $('capAway').onclick=()=>{awaiting=true;capUI();
   alert('이 앱을 두고 캡처할 화면으로 이동해 스크린샷을 찍으세요.\n(아이폰: 전원+음량 올리기 / 안드로이드: 전원+음량 내리기)\n\n다시 이 앱으로 돌아오면 "방금 찍은 스크린샷 불러오기" 버튼이 준비돼 있어요.');};
@@ -3763,7 +3811,7 @@ async function crOut(){
   c.getContext('2d').drawImage(im,cr.x*k,cr.y*k,cr.w*k,cr.h*k,0,0,c.width,c.height);
   return toFile(c,'crop-'+Date.now()+'.png');
 }
-$('crOk').onclick=async()=>{const f=await crOut();closeCrop();capRun(f);};
+$('crOk').onclick=async()=>{const f=await crOut();closeCrop();$('capSheet').classList.add('open');capRun(f);};
 $('crSave').onclick=async()=>{const f=await crOut();closeCrop();attachImage(f,null);toastMsg('이미지로 저장했어요');};
 let lbId=null;
 function openLB(id){
