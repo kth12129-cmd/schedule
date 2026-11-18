@@ -1106,6 +1106,19 @@ textarea.memo{background:transparent}
 .tlev .n{font-weight:600}
 @media (max-width:660px){.ev{font-size:9.5px}.cell.today::before{display:block;font-size:8px;padding:1px 4px 2px}}
 .cell.today .priflag{right:40px;top:7px}
+
+#v-decade.on{display:block;overflow-y:auto;padding-bottom:12px}
+.dec-wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:2px}
+@media (max-width:560px){.dec-wrap{grid-template-columns:repeat(3,1fr);gap:8px}}
+.dcard{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:2px;min-height:clamp(86px,16vh,150px);
+ padding:14px;border:1px solid var(--line);border-radius:6px;background:var(--surface);text-align:left;transition:border-color .15s}
+.dcard:hover{border-color:var(--ink-2)}
+.dcard b{font-size:clamp(24px,3.4vw,40px);font-weight:300;letter-spacing:-.04em;color:var(--ink)}
+.dcard i{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--ink-3);min-height:12px}
+.dcard span{font-size:12px;color:var(--ink-2)}
+.dcard.past b{color:var(--ink-3)}
+.dcard.cur{border-color:var(--navy);box-shadow:inset 0 0 0 2px var(--navy);background:color-mix(in srgb,var(--navy) 8%,var(--surface))}
+.dcard.cur i{color:var(--navy)}
 </style>
 </head>
 <body>
@@ -1167,6 +1180,7 @@ textarea.memo{background:transparent}
 </section>
 
 <section class="view" id="v-year"><div class="year-wrap" id="yearWrap"></div></section>
+<section class="view" id="v-decade"><div class="dec-wrap" id="decWrap"></div></section>
 
 <div class="composer">
   <div class="composer-inner">
@@ -2152,8 +2166,18 @@ function renderStages(){
 /* ── 이벤트 ── */
 function goto(k){sel=k;openNote=null;const d=fromYmd(k);view=new Date(d.getFullYear(),d.getMonth(),1);setTab('cal');renderDay();}
 function setTab(t){tab=t;
-  ['cal','year'].forEach(v=>$('v-'+v).classList.toggle('on',v===t));
-  if(t==='cal')renderMonth();else renderYear();}
+  ['cal','year','decade'].forEach(v=>$('v-'+v).classList.toggle('on',v===t));
+  if(t==='cal')renderMonth();else if(t==='year')renderYear();else renderDecade();}
+function renderDecade(){
+  const st=yearView-(((yearView%12)+12)%12);
+  $('mTitle').textContent=st+' – '+(st+11);$('yTitle').textContent='';
+  const cnt={};(store.items||[]).forEach(i=>{const y=(i.date||'').slice(0,4);cnt[y]=(cnt[y]||0)+1;});
+  let h='';
+  for(let y=st;y<st+12;y++){const c=cnt[y]||0,cls=(y===today.getFullYear()?' cur':'')+(y<today.getFullYear()?' past':'');
+    h+=`<button class="dcard${cls}" data-y="${y}"><b>${y}</b><i>${y===today.getFullYear()?'올해':(y<today.getFullYear()?'지난 해':'')}</i><span>${c?c+'건':'일정 없음'}</span></button>`;}
+  $('decWrap').innerHTML=h;
+}
+$('decWrap').onclick=e=>{const b=e.target.closest('[data-y]');if(!b)return;yearView=+b.dataset.y;setTab('year');zAnim(1,'v-year');};
 function zoom(name){
   const cur=document.body.dataset.zoom||'',next=cur===name?'':name;
   if(next)document.body.dataset.zoom=next;else document.body.removeAttribute('data-zoom');
@@ -2499,6 +2523,8 @@ const zBusy=()=>!!document.querySelector('.sheet.open,#cropBox.on,#brief[style*=
 function zoomStep(dir){
   const now=Date.now();if(now<zLock||zBusy())return;
   if(dir<0&&tab==='cal'){yearView=view.getFullYear();setTab('year');zAnim(dir,'v-year');}
+  else if(dir<0&&tab==='year'){setTab('decade');zAnim(dir,'v-decade');}
+  else if(dir>0&&tab==='decade'){setTab('year');zAnim(dir,'v-year');}
   else if(dir>0&&tab==='year'){
     const m=zMonth!=null?zMonth:(yearView===today.getFullYear()?today.getMonth():0);
     view=new Date(yearView,m,1);setTab('cal');zAnim(dir,'v-cal');}
@@ -2547,7 +2573,7 @@ $('yearWrap').addEventListener('mouseleave',()=>{zMonth=null;});
   if(sel){sel.value=cur();sel.onchange=()=>apply(sel.value);}
   apply(cur());
 })();
-$('moBtn').onclick=()=>{if(tab==='cal'){yearView=view.getFullYear();setTab('year');}else setTab('cal');};
+$('moBtn').onclick=()=>{if(tab==='cal'){yearView=view.getFullYear();setTab('year');}else if(tab==='decade')setTab('year');else setTab('cal');};
 function openYr(){
   const cur=tab==='year'?yearView:view.getFullYear();
   let h='';
@@ -2555,13 +2581,13 @@ function openYr(){
   $('yrList').innerHTML=h;
   $('yrPop').classList.add('open');$('popBack').classList.add('open');
 }
-$('yrBtn').onclick=openYr;
+$('yrBtn').onclick=()=>{if(tab==='year'||tab==='decade'){closeFind();setTab('decade');}else openYr();};
 $('yrList').onclick=e=>{const b=e.target.closest('[data-y]');if(!b)return;
   const y=+b.dataset.y;closeFind();
   if(tab==='year'){yearView=y;renderYear();}
   else{view.setFullYear(y);renderMonth();}};
-$('prev').onclick=()=>{if(tab==='year'){yearView--;renderYear();}else{view.setMonth(view.getMonth()-1);renderMonth();}};
-$('next').onclick=()=>{if(tab==='year'){yearView++;renderYear();}else{view.setMonth(view.getMonth()+1);renderMonth();}};
+$('prev').onclick=()=>{if(tab==='decade'){yearView-=12;renderDecade();}else if(tab==='year'){yearView--;renderYear();}else{view.setMonth(view.getMonth()-1);renderMonth();}};
+$('next').onclick=()=>{if(tab==='decade'){yearView+=12;renderDecade();}else if(tab==='year'){yearView++;renderYear();}else{view.setMonth(view.getMonth()+1);renderMonth();}};
 
 $('analyBtn').onclick=()=>{renderChips();runQuery($('q').value||'');$('anSheet').classList.add('open');};
 $('findBtn').onclick=()=>openFind(false);$('findBtn2').onclick=()=>openFind(true);
@@ -2941,7 +2967,7 @@ function renderShare(){
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v78';
+const APPVER=/*ver*/'v79';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -3891,7 +3917,8 @@ addEventListener('resize',hideTip);
 
 /* ── 방향키 · 트랙패드 ── */
 function shiftMonth(n){hideTip();
-  if(tab==='year'){yearView+=n;renderYear();}
+  if(tab==='decade'){yearView+=n>0?12:-12;renderDecade();}
+  else if(tab==='year'){yearView+=n;renderYear();}
   else{view.setMonth(view.getMonth()+n);renderMonth();}}
 document.addEventListener('keydown',e=>{
   if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.target.isContentEditable)return;
