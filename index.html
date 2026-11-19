@@ -1458,6 +1458,21 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .org-ta{width:100%;min-height:90px;border:1px solid var(--hair);border-radius:8px;padding:10px;font-size:13px;background:var(--field);box-sizing:border-box}
 .org-s{font-size:12.5px;color:var(--ink-2)}
 @media (max-width:760px){.org{grid-template-columns:1fr}.org-tree{position:static;max-height:230px}.om-r .om-s{display:none}}
+/* v102 디자인 시트: 옆 패널로 열어 실제 화면에서 바로 미리보기 */
+#dsSheet{box-shadow:-18px 0 48px rgba(10,20,50,.16);border-left:1px solid var(--line)}
+#dsSheet .sheet-body{max-width:none;padding:0 16px 24px}
+#dsSheet .ds-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+#dsSheet .ds-card{padding:9px}#dsSheet .ds-card b{font-size:13.5px;margin:8px 0 2px}#dsSheet .ds-card span{font-size:11px}
+@media (min-width:761px){
+  #dsSheet{inset:0 0 0 auto;width:min(420px,46vw);transform:translateX(105%)}
+  #dsSheet.open{transform:none}
+}
+@media (max-width:760px){
+  #dsSheet{inset:auto 0 0 0;height:48vh;border-radius:18px 18px 0 0;border-left:0;box-shadow:0 -14px 40px rgba(10,20,50,.2);transform:translateY(105%)}
+  #dsSheet.open{transform:none}
+}
+/* v102 팝업이 화면보다 길면 안에서 스크롤 */
+.pop{max-height:calc(100dvh - 72px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 </style>
 </head>
 <body>
@@ -3811,7 +3826,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v101';
+const APPVER=/*ver*/'v102';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
