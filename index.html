@@ -1432,6 +1432,32 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .vst.st-hold{background:#eceef3;color:#5b6272;border-color:#d2d6e0}
 .vadmbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
 @media (max-width:560px){.vtiles{grid-template-columns:repeat(2,1fr)}.voc-top{flex-wrap:wrap}.voc-top .grow{flex:1 0 100%}}
+/* v101 조직도 */
+#tmBody{max-width:1040px!important}
+.org{display:grid;grid-template-columns:270px 1fr;gap:16px;margin-top:14px;align-items:start}
+.org-tree{border:1px solid var(--hair);border-radius:12px;background:var(--surface);padding:12px;position:sticky;top:64px;max-height:calc(100vh - 90px);overflow:auto}
+.org-q{width:100%;height:38px;padding:0 12px;border:1px solid var(--hair);border-radius:8px;background:var(--field);font-size:13.5px;margin-bottom:10px;box-sizing:border-box}
+.ot-r{display:flex;align-items:center;border-radius:7px}.ot-r.on{background:var(--ink)}.ot-r.on .ot-l,.ot-r.on .ot-c{color:var(--page)}
+.ot-c{flex:none;width:22px;height:30px;font-size:12px;color:var(--ink-3);background:none}
+.ot-l{flex:1;display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:30px;padding:0 8px 0 2px;text-align:left;font-size:13.5px;color:var(--ink);background:none}
+.ot-l i{font-style:normal;font-size:11px;opacity:.6}
+.ot-r:not(.on):hover{background:var(--field)}
+.org-main{min-width:0}
+.org-bc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px;color:var(--ink-3);margin-bottom:12px}.org-bc i{font-style:normal;opacity:.5}.org-bc .cur{color:var(--ink);font-weight:700}
+.org-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--hair)}
+.org-tabs{display:flex;gap:4px}.org-tabs button{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink-3);background:none;border:1px solid transparent}
+.org-tabs button.on{color:var(--ink);border-color:var(--hair);background:var(--surface)}
+.org-sub{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-3)}
+.org-note{margin:12px 0;padding:12px 14px;border:1px solid var(--hair);border-radius:10px;font-size:12.5px;color:var(--ink-2);background:var(--surface);line-height:1.6}
+.om{display:flex;align-items:center;gap:14px;padding:14px 4px;border-bottom:1px solid var(--hair)}
+.om-av{flex:none;width:44px;height:44px;border-radius:50%;background:var(--field);color:var(--ink-2);display:grid;place-items:center;font-size:16px;font-weight:600}
+.om-b{flex:1;min-width:0}.om-n{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:15px}.om-n b{font-weight:700}.om-n span{color:var(--ink-3);font-size:13.5px}
+.om-d{width:8px;height:8px;border-radius:50%;background:var(--hair);display:inline-block}.om-d.on{background:var(--moss)}
+.om-p{margin-top:3px;font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.om-r{display:flex;align-items:center;gap:10px;flex:none}.om-s{font-size:12.5px;color:var(--ink-2)}.om-s.dim{color:var(--ink-3)}
+.org-ta{width:100%;min-height:90px;border:1px solid var(--hair);border-radius:8px;padding:10px;font-size:13px;background:var(--field);box-sizing:border-box}
+.org-s{font-size:12.5px;color:var(--ink-2)}
+@media (max-width:760px){.org{grid-template-columns:1fr}.org-tree{position:static;max-height:230px}.om-r .om-s{display:none}}
 </style>
 </head>
 <body>
@@ -2605,6 +2631,7 @@ const tmOrder=()=>[...tmMembers].sort((a,b)=>(a.role==='leader'?-1:0)-(b.role===
 const tmName=m=>m.name||'이름 없음';
 async function loadTeam(){
   if(backend!=='sb'||!SB||!session){team=null;tmMembers=[];teamItems=[];tmRender();return;}
+  await orgJoin();
   try{
     const m=await SB.from('team_members').select('*').order('joined_at');
     if(m.error||!m.data||!m.data.length){team=null;tmMembers=[];teamItems=[];handLog=[];tmRender();return;}
@@ -2627,9 +2654,13 @@ const itemRow=o=>`<div class="tmi${o.done?' done':''}"><span class="tt">${o.time
 function tmRender(){
   const box=$('tmBody');if(!box||!$('tmSheet').classList.contains('open'))return;
   if(backend!=='sb'||!session){box.innerHTML='<div class="vempty">팀 기능은 로그인 후에 쓸 수 있어요.<br>설정(⚙) → 계정 · 기기 연동에서 로그인해 주세요.</div>';return;}
-  if(!team)return tmNoTeam();
+  if(tmView==='code'&&!team)return tmNoTeam();
   if(tmView==='detail')return tmDetail();
   if(tmView==='status')return tmStatus();
+  return orgRender();
+}
+function tmBoard(){
+  if(!team)return '<div class="vempty">아직 속한 팀이 없어요.<br>회사 이메일이 조직도에 등록되면 자동으로 배정돼요.</div>';
   const d=fromYmd(tmDay),me=tmMe(),amLeader=(tmMembers.find(x=>x.user_id===me)||{}).role==='leader';
   const cards=tmOrder().map(m=>{
     const its=tmOnDay(m.user_id,tmDay),abs=tmAbsent(m,tmDay),up=abs?tmUpcoming(m.user_id).length:0;
@@ -2639,7 +2670,7 @@ function tmRender(){
       ${abs&&m.user_id!==me?`<div class="tmgap"><span>업무 공백 · ${up?`이어받을 일정 ${up}건`:'이어받을 일정 없음'}</span>${up?`<button class="vbtn sm" data-tmo="${m.user_id}">이어받기</button>`:''}</div>`:''}
       ${its.length?its.map(itemRow).join(''):`<div class="tmempty">${m.user_id===me?'공개한 일정이 없어요. 일정의 🔒 버튼을 눌러 공개해 보세요.':'이날 공개된 일정이 없어요.'}</div>`}</div>`;}).join('');
   const log=handLog.map(h=>`<div class="tmlog"><b>${esc(h.to_name||'팀원')}</b> 님이 <b>${esc(h.from_name||'팀원')}</b> 님의 「${esc(h.item_title)}」${h.item_date?` (${h.item_date.slice(5).replace('-','/')})`:''} 업무를 이어받음 <small>${vDate(h.created_at)}</small></div>`).join('');
-  box.innerHTML=`<div class="card" style="margin-top:12px;padding:14px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:17px;flex:1">${esc(team.name)}</b>
+  return `<div class="card" style="margin-top:12px;padding:14px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:17px;flex:1">${esc(team.name)}</b>
       <button class="vbtn" id="tmMeetBtn">회의 화면</button></div>
       <div class="tmcode">팀 코드 <b>${esc(team.code)}</b> · 팀원 ${tmMembers.length}명 <button class="vbtn alt sm" id="tmCopyCode" style="margin-left:6px">코드 복사</button></div></div>
     <div class="tmday"><button class="vbtn alt sm" data-tmd="-1">‹</button><b>${d.getMonth()+1}월 ${d.getDate()}일 ${WD[d.getDay()]}요일${tmDay===TODAY?' · 오늘':''}</b><button class="vbtn alt sm" data-tmd="1">›</button>${tmDay!==TODAY?'<button class="vbtn sm" data-tmd="0">오늘</button>':''}</div>
@@ -2648,7 +2679,7 @@ function tmRender(){
     <div class="vact" style="margin-top:22px"><button class="vbtn alt red" id="tmLeave" style="background:transparent;color:#c0392b;border:1px solid #c0392b">팀 나가기</button></div>`;
 }
 function tmNoTeam(){
-  $('tmBody').innerHTML=`<div class="vguide" style="margin-top:12px"><b>팀으로 일정을 공유해 보세요</b><ol><li>팀장이 팀을 만들고 <b>팀 코드</b>를 알려줘요</li><li>팀원은 코드로 가입해요</li><li>일정마다 <b>👥 공개 / 🔒 비공개</b>를 골라요. 비공개 일정은 아무에게도 보이지 않아요</li></ol></div>
+  $('tmBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="tmCodeBack">← 조직도</button><span class="grow"></span></div><div class="vguide" style="margin-top:12px"><b>팀으로 일정을 공유해 보세요</b><ol><li>팀장이 팀을 만들고 <b>팀 코드</b>를 알려줘요</li><li>팀원은 코드로 가입해요</li><li>일정마다 <b>👥 공개 / 🔒 비공개</b>를 골라요. 비공개 일정은 아무에게도 보이지 않아요</li></ol></div>
   <div class="card vf" style="padding:14px"><b>팀 만들기 (팀장)</b>
     <label>팀 이름</label><input id="tmNew" maxlength="40" placeholder="예: 건설공사관리팀">
     <label>내 이름</label><input id="tmMy1" maxlength="30" value="${esc(myName())}" placeholder="예: 김태현 대리">
@@ -2693,6 +2724,85 @@ async function takeOver(uid,rows){
   try{await SB.from('handovers').insert(log);}catch(e){}
   toastMsg(`${n}건을 내 일정으로 이어받았어요`);loadTeam();
 }
+
+/* ===== v101 조직도 · 자동 배정 ===== */
+let orgD=null,orgSel=null,orgOpen=new Set(),orgQ='',orgSub=true,orgTab='mem',orgJoined=false,orgAdmin=false,orgMsg='';
+async function orgJoin(){
+  if(orgJoined||backend!=='sb'||!SB||!session)return;orgJoined=true;
+  try{const r=await SB.rpc('org_auto_join');
+    if(r.data&&r.data.matched){
+      store.settings=store.settings||{};
+      if(store.settings.name!==r.data.name){store.settings.name=r.data.name;store.settingsMt=Date.now();save();}
+      orgMsg=r.data.joined?`${r.data.name} ${r.data.title}님, ${r.data.unit}에 자동 배정되었어요`:'';
+      if(orgMsg)toastMsg(orgMsg);}
+  }catch(e){}
+}
+async function orgLoad(){
+  if(backend!=='sb'||!SB||!session)return;
+  try{const[r,a]=await Promise.all([SB.rpc('org_tree'),SB.rpc('voc_is_admin')]);orgAdmin=a.data===true;
+    if(r.data){orgD=r.data;
+      if(orgSel==null){const me=tmMe(),mp=orgD.people.find(x=>x.user_id===me);
+        orgSel=mp?mp.unit_id:((orgD.units.find(u=>orgD.people.some(p=>p.unit_id===u.id))||orgD.units[0]||{}).id||null);
+        let u=orgD.units.find(x=>x.id===orgSel);while(u&&u.parent_id){orgOpen.add(u.parent_id);u=orgD.units.find(x=>x.id===u.parent_id);}}}
+  }catch(e){}
+}
+const orgPath=id=>{const o=[];let u=orgD.units.find(x=>x.id===id);while(u){o.unshift(u);u=orgD.units.find(x=>x.id===u.parent_id);}return o;};
+const orgKids=id=>orgD.units.filter(u=>u.parent_id===id);
+const orgSubIds=id=>{const o=[id];orgKids(id).forEach(k=>o.push(...orgSubIds(k.id)));return o;};
+function orgTreeHTML(pid,depth){
+  return orgKids(pid).map(u=>{const k=orgKids(u.id),open=orgOpen.has(u.id),n=orgD.people.filter(p=>p.unit_id===u.id).length;
+    return `<div class="ot-n"><div class="ot-r${orgSel===u.id?' on':''}" style="padding-left:${8+depth*16}px">
+      <button class="ot-c" data-ot="${u.id}" ${k.length?'':'disabled'} aria-label="펼치기">${k.length?(open?'▾':'▸'):''}</button>
+      <button class="ot-l" data-os="${u.id}"><span>${esc(u.name)}</span>${n?`<i>${n}</i>`:''}</button></div>${k.length&&open?orgTreeHTML(u.id,depth+1):''}</div>`;}).join('');
+}
+function orgMembersHTML(){
+  const me=tmMe(),ids=orgSub?orgSubIds(orgSel):[orgSel],q=orgQ.trim();
+  let ppl=q?orgD.people.filter(p=>p.name.includes(q)||(p.title||'').includes(q)):orgD.people.filter(p=>ids.includes(p.unit_id));
+  if(!ppl.length)return '<div class="vempty">이 조직에는 아직 등록된 구성원이 없어요.</div>';
+  return ppl.map(p=>{
+    const m=p.user_id?tmMembers.find(x=>x.user_id===p.user_id):null,abs=m&&tmAbsent(m,TODAY),n=m?tmOnDay(m.user_id,TODAY).length:0;
+    const path=orgPath(p.unit_id).slice(-3).map(u=>u.name).join(' › ');
+    return `<div class="om"><span class="om-av">${esc(p.name.charAt(0))}</span>
+      <div class="om-b"><div class="om-n"><i class="om-d${p.user_id?' on':''}" title="${p.user_id?'앱 사용 중':'미가입'}"></i><b>${esc(p.name)}</b><span>${esc(p.title||'')}</span>
+        ${p.is_leader?'<em class="tmb lead">팀장</em>':''}${p.user_id===me?'<em class="tmb">나</em>':''}${abs?`<em class="tmb st-${m.status}">${esc(tmLabel(m))}</em>`:''}</div>
+        <div class="om-p">${esc(path)}</div></div>
+      <div class="om-r">${p.user_id?`<span class="om-s">${n?`오늘 일정 ${n}건`:'오늘 공개 일정 없음'}</span>${m?`<button class="vbtn alt sm" data-tmo="${p.user_id}">${p.user_id===me?'내 상태':'상세'}</button>`:''}`:'<span class="om-s dim">미가입</span>'}</div></div>`;}).join('');
+}
+function orgRender(){
+  const box=$('tmBody');
+  if(!orgD){box.innerHTML='<div class="vempty">조직도를 불러오는 중…</div>';orgLoad().then(()=>{if($('tmSheet').classList.contains('open')&&tmView==='board')orgRender();});return;}
+  const u=orgD.units.find(x=>x.id===orgSel),path=u?orgPath(u.id):[];
+  const tabs=[['mem','구성원'],['plan','일정'],['log','인수인계']].map(([k,n])=>`<button data-ot2="${k}" class="${orgTab===k?'on':''}">${n}</button>`).join('');
+  let main='';
+  if(orgTab==='mem')main=orgMembersHTML();
+  else if(orgTab==='plan')main=tmBoard();
+  else main=handLog.length?handLog.map(h=>`<div class="tmlog"><b>${esc(h.to_name||'팀원')}</b> 님이 <b>${esc(h.from_name||'팀원')}</b> 님의 「${esc(h.item_title)}」${h.item_date?` (${h.item_date.slice(5).replace('-','/')})`:''} 업무를 이어받음</div>`).join(''):'<div class="vempty">아직 인수인계 기록이 없어요.</div>';
+  const mine=team?`<span class="oc-t">${esc(team.name)} · 팀원 ${tmMembers.length}명</span>`:'';
+  box.innerHTML=`<div class="org">
+   <aside class="org-tree"><input class="org-q" id="orgQ" type="search" placeholder="이름 검색" value="${esc(orgQ)}" autocomplete="off">
+     <div class="ot-root">${orgTreeHTML(null,0)}</div></aside>
+   <section class="org-main">
+     <div class="org-bc">${path.map((x,i)=>`<span${i===path.length-1?' class="cur"':''}>${esc(x.name)}</span>`).join('<i>›</i>')}</div>
+     <div class="org-bar"><div class="org-tabs">${tabs}</div><label class="org-sub"><input type="checkbox" id="orgSub" ${orgSub?'checked':''}> 하위부서 포함</label>
+       <span style="flex:1"></span>${team?'<button class="vbtn alt sm" id="tmMeetBtn">회의 화면</button>':''}</div>
+     ${orgTab==='mem'&&!team?`<div class="org-note">${orgMsg||'회사 이메일이 조직도에 등록되면 팀에 자동 배정돼요. 등록 전에는 팀 코드로 직접 참여할 수 있어요.'} <button class="lnk" id="tmCodeGo">팀 코드로 참여</button></div>`:''}
+     <div class="org-list">${main}</div>
+     ${orgAdmin?`<details class="adv"><summary>운영자 · 이메일 등록</summary><div class="adv-b"><textarea id="orgEm" class="org-ta" placeholder="이름,이메일 (한 줄에 한 명)&#10;예: 홍길동,hong@tongyanginc.co.kr"></textarea>
+        <button class="vbtn sm" id="orgEmSave">저장</button><span id="orgEmMsg" class="org-s"></span></div></details>`:''}
+     ${team&&orgTab==='mem'?`<div class="tmcode" style="margin-top:14px">팀 코드 <b>${esc(team.code)}</b> <button class="vbtn alt sm" id="tmCopyCode" style="margin-left:6px">코드 복사</button></div>`:''}
+   </section></div>`;
+}
+$('tmBody').addEventListener('click',async e=>{
+  const t=e.target;let b;
+  if(b=t.closest('[data-ot]')){const id=+b.dataset.ot;orgOpen.has(id)?orgOpen.delete(id):orgOpen.add(id);return orgRender();}
+  if(b=t.closest('[data-os]')){orgSel=+b.dataset.os;orgQ='';const k=orgKids(orgSel);if(k.length)orgOpen.add(orgSel);return orgRender();}
+  if(b=t.closest('[data-ot2]')){orgTab=b.dataset.ot2;return orgRender();}
+  if(t.id==='tmCodeGo'){tmView='code';return tmRender();}
+  if(t.id==='tmCodeBack'){tmView='board';return tmRender();}
+  if(t.id==='orgEmSave'){const r=await SB.rpc('org_set_emails',{p_csv:$('orgEm').value});$('orgEmMsg').textContent=r.error?'저장하지 못했어요':`${r.data}명 등록했어요`;orgD=null;await orgLoad();return;}
+});
+$('tmBody').addEventListener('input',e=>{if(e.target.id==='orgQ'){orgQ=e.target.value;const pos=e.target.selectionStart;orgRender();const q=$('orgQ');if(q){q.focus();q.setSelectionRange(pos,pos);}if(orgQ)orgTab='mem';}});
+$('tmBody').addEventListener('change',e=>{if(e.target.id==='orgSub'){orgSub=e.target.checked;orgRender();}});
 async function tmOpen(){closeFind();tmView='board';tmDay=TODAY;$('tmSheet').classList.add('open');tmRender();await loadTeam();}
 $('tmBtn').onclick=tmOpen;
 $('tmOpen2').onclick=()=>{try{$('setPop').classList.remove('open');$('popBack').classList.remove('open');}catch(e){}tmOpen();};
@@ -3701,7 +3811,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v100';
+const APPVER=/*ver*/'v101';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
