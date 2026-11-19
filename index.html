@@ -1316,6 +1316,27 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .calx .frow2{display:flex;gap:8px;margin-top:8px}.calx .frow2 input{flex:1;min-width:0;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--fieldline);background:var(--page);color:var(--ink);font-size:13px}
 .calx .feed{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--fieldline)}.calx .feed:last-child{border:0}
 .calx .feed b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.calx .feed small{color:var(--ink-2)}
+/* v91 폰 여백 */
+@media (max-width:660px){
+  .view{padding:0 16px 24px}
+  #banner{padding:0 16px}
+  .card{border-radius:16px;box-shadow:0 1px 3px rgba(10,20,60,.06)}
+  .cal-pane{height:58vh;margin-bottom:16px;padding:6px 8px 4px}
+  .list-pane,.tl-pane,.memo-pane{margin-bottom:16px}
+  .weekdays{padding:8px 0 6px}
+  .grid .cell{border-color:color-mix(in srgb,var(--line) 45%,transparent)}
+  .cell .evs{gap:2px;padding:0 3px 3px}
+  .cell .ev{background:transparent!important;border:0!important;border-left:2px solid var(--c,var(--navy))!important;border-radius:0;
+    padding:0 0 0 4px;font-size:10px;line-height:1.35;box-shadow:none}
+  .cell .ev .evn{display:none}
+  .cell .ev.done{opacity:.45}
+  .clegend{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:8px 4px 6px;border-top:0;scrollbar-width:none}
+  .clegend::-webkit-scrollbar{display:none}
+  .clegend .lgt,.clegend .lgnote{display:none}
+  .lgchip{height:26px;padding:0 10px;font-size:11.5px;white-space:nowrap;flex:0 0 auto}
+  .hsec-memo{margin-left:6px}
+  .rtabs,#rtTabs{margin-bottom:12px}
+}
 </style>
 </head>
 <body>
@@ -3531,7 +3552,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v90';
+const APPVER=/*ver*/'v91';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
