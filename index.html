@@ -1599,7 +1599,6 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
   <div class="setrow"><label>아침 알림</label><button id="briefOpen">설정</button></div>
   <div class="setrow"><label>팀 업무 현황</label><button id="tmOpen2">열기</button></div>
   <div class="setrow"><label>VOC 게시판</label><button id="vocOpen2">열기</button></div>
-  <div class="setrow" id="instRow"><label>앱으로 설치</label><button id="instBtn">설치</button></div>
   <div class="setrow"><label>캘린더 연동</label><button id="calOpen2">열기</button></div>
   <div class="setrow"><label>휴가ㆍ외근</label><a id="vacOpen2" href="https://tongyang-dashboard.vercel.app/" target="_blank" rel="noopener noreferrer" style="margin-left:auto;font-weight:600;color:var(--navy)">열기</a></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
@@ -3183,18 +3182,6 @@ renderDay=function(){_rd89.apply(this,arguments);
       li.style.cssText='list-style:none;margin:6px 0;padding:8px 11px;border:1px dashed var(--fieldline);border-left:3px solid '+e.c+';border-radius:8px;font-size:13px;color:var(--ink-2)';
       li.textContent=e.t;L.appendChild(li);});}catch(x){}
 };
-/* ---- 앱 설치 ---- */
-let instEv=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;});
-if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true){const r=$('instRow');if(r)r.style.display='none';}
-$('instBtn').onclick=async()=>{
-  if(instEv){instEv.prompt();try{await instEv.userChoice;}catch(e){}instEv=null;return;}
-  const ua=navigator.userAgent;
-  if(/iPhone|iPad/.test(ua))alert('아이폰·아이패드: 사파리에서 이 페이지를 열고 아래 공유 버튼 → "홈 화면에 추가"를 누르세요.');
-  else if(/Android/.test(ua))alert('안드로이드: 크롬 오른쪽 위 ⋮ → "홈 화면에 추가" 또는 "앱 설치"를 누르세요.');
-  else if(/Macintosh/.test(ua)&&/Safari/.test(ua)&&!/Chrome/.test(ua))alert('맥(사파리): 공유 버튼 → "Dock에 추가"를 누르세요.');
-  else alert('크롬·엣지: 주소창 오른쪽의 설치 아이콘, 또는 메뉴 → "앱으로 설치"를 누르세요.');
-};
 paintLegend();
 setTimeout(()=>{extRebuild();extRefreshAll(false);},2500);
 setInterval(()=>{if(!document.hidden)extRefreshAll(false);},30*60e3);
@@ -3617,7 +3604,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v96';
+const APPVER=/*ver*/'v97';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
