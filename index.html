@@ -3854,7 +3854,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v107';
+const APPVER=/*ver*/'v108';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -3898,6 +3898,7 @@ const sbCfg=()=>{let c=null;try{c=JSON.parse(localStorage.getItem(SBCFG)||'null'
   if(/^https?:$/.test(location.protocol)&&!/claude|anthropic/i.test(location.hostname))return SB_DEFAULT;
   return null;};
 const RECOV=/type=recovery/.test(location.hash);
+const LINKERR=/error_code=otp_expired|error=access_denied/.test(location.hash);
 function sbInit(){
   const cfg=sbCfg();
   if(!cfg||!cfg.url||!cfg.key)return false;
@@ -3907,7 +3908,7 @@ function sbInit(){
   }catch(e){setSync('','서버 설정 오류');return false;}
   backend='sb';
   SB.auth.onAuthStateChange((ev,sess)=>{session=sess;if(ev==='PASSWORD_RECOVERY'){recovering=true;try{renderAuth();$('authSheet').classList.add('open');}catch(_){}}onAuth();});
-  SB.auth.getSession().then(({data})=>{session=data.session;if(RECOV&&session){recovering=true;try{renderAuth();$('authSheet').classList.add('open');}catch(_){}}onAuth();});
+  SB.auth.getSession().then(({data})=>{session=data.session;if(LINKERR){try{history.replaceState(null,'',location.pathname);renderAuth();$('authSheet').classList.add('open');const m=$('aMsg');if(m)m.textContent='메일 링크가 만료되었거나 이미 사용된 링크입니다.\n→ 위 이메일 칸에 주소를 적고 [비밀번호를 잊으셨나요?]를 다시 눌러, 새로 온 메일(가장 최근 것)의 링크를 한 번만 누르세요.';}catch(_){}}if(RECOV&&session){recovering=true;try{renderAuth();$('authSheet').classList.add('open');}catch(_){}}onAuth();});
   return true;
 }
 async function onAuth(){
