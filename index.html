@@ -3604,7 +3604,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v97';
+const APPVER=/*ver*/'v98';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -3722,8 +3722,8 @@ function renderAuth(){
   }
   if(!session){
     box.innerHTML=`<div class="hint-txt"><b style="color:var(--navy)">아직 로그인하지 않았습니다 — 그래서 다른 기기와 연동되지 않습니다.</b><br>
-      처음이면 이메일·비밀번호를 적고 <b>가입</b>을 먼저 누르세요. 그 다음 다른 기기에서 <b>같은 계정으로 로그인</b>하면 맞춰집니다.</div>
-      <div class="frow"><input id="aEmail" type="email" placeholder="이메일" autocomplete="username"></div>
+      <b>회사 이메일(@tongyanginc.co.kr)</b>로만 가입할 수 있습니다. 처음이면 이메일·비밀번호를 적고 <b>가입</b>을 먼저 누르세요. 그 다음 다른 기기에서 <b>같은 계정으로 로그인</b>하면 맞춰집니다.</div>
+      <div class="frow"><input id="aEmail" type="email" placeholder="회사 이메일 (@tongyanginc.co.kr)" autocomplete="username"></div>
       <div class="frow"><input id="aPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"></div>
       <div class="frow btns"><button class="go2" id="aIn">로그인</button>
         <button class="go2 alt" id="aUp">가입</button></div>
@@ -3741,9 +3741,11 @@ function renderAuth(){
       if(/Invalid login/i.test(error.message))m+='\n→ 아직 계정을 만들지 않았다면 먼저 [가입]을 누르세요.';
       if(/not confirmed|confirm/i.test(error.message))m+='\n→ 메일함의 확인 링크를 누르거나, Supabase의 Authentication → Sign In / Providers → Email 에서 "Confirm email"을 끄세요.';
       msg(m);};
-    $('aUp').onclick=async()=>{msg('가입 중…');
+    $('aUp').onclick=async()=>{
+      if(!/^[^@\s]+@tongyanginc\.co\.kr$/i.test(creds().email)){msg('회사 이메일(@tongyanginc.co.kr)만 가입할 수 있습니다.');return;}
+      msg('가입 중…');
       const {error}=await SB.auth.signUp(creds());
-      if(error){msg('가입 실패: '+error.message
+      if(error){msg('가입 실패: '+(/database error|P0001|tongyanginc/i.test(error.message)?'회사 이메일(@tongyanginc.co.kr)만 가입할 수 있습니다.':error.message)
         +(/already/i.test(error.message)?'\n→ 이미 만든 계정입니다. [로그인]을 누르세요.':''));return;}
       msg('가입되었습니다. 바로 로그인되지 않으면 [로그인]을 누르세요. 확인 메일이 왔다면 링크를 먼저 누르세요.');};
     $('aPw').onkeydown=e=>{if(e.key==='Enter')$('aIn').click();};
