@@ -3854,7 +3854,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v106';
+const APPVER=/*ver*/'v107';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -4029,10 +4029,13 @@ function renderAuth(){
     $('aForgot').onclick=async()=>{
       const em=creds().email;
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){msg('위에 가입한 이메일을 먼저 적고 다시 누르세요.');return;}
+      msg('확인 중…');
+      let st='';try{const r=await SB.rpc('acct_state',{p_email:em});st=r.data||'';}catch(_){}
+      if(st==='missing'){const t=typo(em);msg('등록되지 않은 아이디입니다. 메일을 보내지 않았습니다.'+(t?'\n→ 혹시 '+t+' 아닌가요? 이메일 철자를 확인하세요.':'\n→ 가입할 때 쓴 이메일인지 확인하세요.'));return;}
       msg('메일을 보내는 중…');
       const {error}=await SB.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});
       if(error){msg(/rate|seconds|too many/i.test(error.message)?'잠시 후(1분 뒤) 다시 시도하세요. 메일은 짧은 시간에 여러 번 보낼 수 없습니다.':'메일을 보내지 못했습니다: '+error.message);return;}
-      msg('가입된 이메일이면 재설정 링크가 발송됩니다. 메일함(스팸함 포함)을 확인하고, 링크를 누르면 새 비밀번호를 정할 수 있습니다.');};
+      msg('재설정 메일을 보냈습니다. 메일함(스팸함 포함)을 확인하고, 링크를 누르면 새 비밀번호를 정할 수 있습니다. 1~2분 걸릴 수 있어요.');};
     $('aUp').onclick=async()=>{
       if(!/^[^@\s]+@tongyanginc\.co\.kr$/i.test(creds().email)){msg('회사 이메일(@tongyanginc.co.kr)만 가입할 수 있습니다.');return;}
       msg('가입 중…');
