@@ -1019,7 +1019,7 @@ header{background:color-mix(in srgb,var(--page) 90%,transparent)}
   .hsec-memo .hbtn,.hbtn{width:31px;height:31px}
   .hsec-memo{gap:3px}
   .hsec-memo .hbtn svg{width:16px;height:16px}
-  #miniBtn,#analyBtn,#vocBtn,#calBtn,#vacBtn{display:none}
+  #miniBtn{display:none}
   .hsec-memo{-webkit-mask-image:none;mask-image:none}
   .mo-btn,.yr-btn{font-size:21px}
   .yr-btn .cv{display:none}
@@ -1352,6 +1352,24 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .st-ck.on{background:var(--moss);border-color:var(--moss)}.st-ck.on svg{opacity:1}
 .st-fold{display:flex;align-items:center;width:100%;gap:8px;margin:0 0 12px;padding:10px 12px;border:1px solid var(--red);border-radius:8px;background:color-mix(in srgb,var(--red) 7%,var(--surface));color:var(--red);font-size:12.5px;font-weight:700;cursor:pointer;text-align:left}
 .st-fold i{margin-left:auto;font-style:normal;font-weight:600}
+/* v94 툴바: 항상 글자 표시, 좁으면 아래 줄로 */
+@media (max-width:1100px){
+  .navbar{flex-wrap:wrap;row-gap:8px}
+  .hsec-memo{order:9;flex:1 1 100%!important;justify-content:flex-start!important;margin:0!important;
+    overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-mask-image:none!important;mask-image:none!important;touch-action:pan-x}
+  .hsec-memo::-webkit-scrollbar{display:none}
+  .hsec-memo .hspace{display:none}
+  .hsec-memo .hbtn.seg{flex:0 0 auto;white-space:nowrap}
+  .hsec-memo .hbtn.seg span{display:inline!important}
+}
+@media (max-width:660px){
+  .hsec-memo{gap:6px;padding:0 0 2px;border:0!important;background:transparent!important;box-shadow:none!important}
+  .hsec-memo .hbtn.seg{width:auto!important;height:34px!important;padding:0 14px!important;border:1px solid var(--line)!important;
+    border-radius:17px!important;background:var(--surface)!important;font-size:13px;font-weight:600}
+  .hsec-memo .hbtn.seg svg{display:none}
+  .hsec-memo .hbtn.seg:first-child{border-left:1px solid var(--line)!important}
+  #lgLink{display:none}
+}
 </style>
 </head>
 <body>
@@ -3586,7 +3604,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v93';
+const APPVER=/*ver*/'v94';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
