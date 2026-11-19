@@ -1337,6 +1337,21 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
   .hsec-memo{margin-left:6px}
   .rtabs,#rtTabs{margin-bottom:12px}
 }
+/* v93 현황 날짜별 목록 */
+.st-day{margin:0 0 14px}
+.st-dh{display:flex;align-items:baseline;gap:8px;padding:2px 2px 6px;font-size:12px;color:var(--ink-2)}
+.st-dh b{font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.st-dh.sun b{color:var(--red)}.st-dh.sat b{color:var(--sat)}
+.st-dh em{font-style:normal;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:9px;background:var(--navy);color:#fff}
+.st-dh em.tag{background:var(--red)}
+.st-dh i{margin-left:auto;font-style:normal;font-size:11px;color:var(--ink-3)}
+.st-row{padding:10px 10px 10px 8px!important;gap:11px!important;margin-bottom:5px!important}
+.st-row::after{display:none!important}
+.st-ck{flex:none;width:24px;height:24px;border-radius:50%;border:1.8px solid var(--ink-3);background:transparent;display:grid;place-items:center;cursor:pointer;padding:0}
+.st-ck svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.st-ck.on{background:var(--moss);border-color:var(--moss)}.st-ck.on svg{opacity:1}
+.st-fold{display:flex;align-items:center;width:100%;gap:8px;margin:0 0 12px;padding:10px 12px;border:1px solid var(--red);border-radius:8px;background:color-mix(in srgb,var(--red) 7%,var(--surface));color:var(--red);font-size:12.5px;font-weight:700;cursor:pointer;text-align:left}
+.st-fold i{margin-left:auto;font-style:normal;font-weight:600}
 </style>
 </head>
 <body>
@@ -2906,20 +2921,39 @@ function renderStatus(){
     });
   }
   done.sort((a,b)=>b.k<a.k?-1:b.k>a.k?1:0);
-  const rowH=(r,cls)=>{const i=r.i,d=fromYmd(r.k);
-    return `<div class="st-row ${cls}${i.pri?' pri':''}" data-go="${r.k}" style="--c:${catColor(i)}"><span class="d">${md(r.k)}<small>${WD[d.getDay()]}</small></span><span class="t">${esc(i.title)}</span>${i.time?`<span class="tm">${i.time}</span>`:''}</div>`;};
-  const list=(arr,cls,max,empty)=>arr.length?arr.slice(0,max).map(r=>rowH(r,cls)).join('')+(arr.length>max?`<div class="st-more">외 ${arr.length-max}건</div>`:''):`<div class="st-empty">${empty}</div>`;
+  late.sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:0);
+  const lo=(()=>{try{return localStorage.getItem('st-late')==='1';}catch(e){return false;}})();
+  const rowH=(r,cls)=>{const i=r.i,c=catColor(i);
+    return `<div class="st-row ${cls}${i.pri?' pri':''}" data-go="${r.k}" style="--c:${c}">
+      <button class="st-ck${i.done?' on':''}" data-tg="${i.id}" aria-label="${i.done?'완료 취소':'완료 표시'}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button>
+      <span class="t">${esc(i.title)}</span>${i.time?`<span class="tm">${esc(i.time)}</span>`:''}</div>`;};
+  const WK=k=>WD[fromYmd(k).getDay()];
+  const grp=(arr,cls,tag)=>{
+    const g=[];arr.forEach(r=>{const l=g[g.length-1];if(l&&l.k===r.k)l.rows.push(r);else g.push({k:r.k,rows:[r]});});
+    return g.map(x=>{const dd=fromYmd(x.k),dw=dd.getDay();
+      const lab=x.k===TODAY?'오늘':x.k===ymd(dayAdd(fromYmd(TODAY),1))?'내일':'';
+      return `<div class="st-day"><div class="st-dh${dw===0?' sun':dw===6?' sat':''}"><b>${md(x.k)}</b><span>${WD[dw]}요일</span>${lab?`<em class="lab">${lab}</em>`:''}${tag?`<em class="tag">${tag}</em>`:''}<i>${x.rows.length}건</i></div>${x.rows.map(r=>rowH(r,cls)).join('')}</div>`;}).join('');};
+  const empty=t=>`<div class="st-empty">${t}</div>`;
   box.innerHTML=`<div class="st-tiles">
     <div class="st-tile ok"><span>지난 7일 완료</span><b>${d7}</b></div>
     <div class="st-tile${tod.length?' now':''}"><span>오늘 남은 일</span><b>${tod.length}</b></div>
-    <div class="st-tile${late.length?' warn':''}"><span>지연 · 미완료</span><b>${late.length}</b></div>
+    <div class="st-tile${late.length?' warn':''}" ${late.length?'data-late="1" style="cursor:pointer"':''}><span>기한 지난 미완료</span><b>${late.length}</b></div>
     <div class="st-tile"><span>앞으로 7일</span><b>${n7}</b></div></div>
   <div class="st-cols">
-    <section><h3 class="st-h"><span>해온 일</span><em>최근 14일 · 완료</em></h3>${list(done,'done',10,'아직 완료 표시한 일정이 없습니다.')}</section>
-    <section><h3 class="st-h"><span>해야 할 일</span><em>지연 → 오늘 → 예정</em></h3>${list(late,'late',6,'')}${list(tod,'today',8,late.length?'':'오늘 남은 일이 없습니다.')}${list(soon,'soon',10,'')}</section>
+    <section><h3 class="st-h"><span>해야 할 일</span><em>날짜별 · 체크하면 완료</em></h3>
+      ${late.length?`<button class="st-fold${lo?' open':''}" data-fold="1"><span>기한이 지났는데 아직 완료 표시 안 한 일 ${late.length}건</span><i>${lo?'접기':'펼치기'}</i></button>${lo?grp(late,'late','지남'):''}`:''}
+      ${tod.length||soon.length?grp(tod.concat(soon),'',''):empty(late.length?'오늘 이후 예정된 일이 없습니다.':'오늘 남은 일이 없습니다.')}</section>
+    <section><h3 class="st-h"><span>해온 일</span><em>최근 14일 · 완료 처리한 일</em></h3>${done.length?grp(done,'done',''):empty('아직 완료 표시한 일정이 없습니다. 위 일정의 체크를 누르면 여기로 옮겨집니다.')}</section>
   </div>`;
 }
-$('stBody').onclick=e=>{const r=e.target.closest('[data-go]');if(!r)return;
+$('stBody').onclick=e=>{
+  const tg=e.target.closest('[data-tg]');
+  if(tg){const it=store.items.find(x=>x.id===tg.dataset.tg);if(!it)return;
+    it.done=!it.done;it.doneAt=it.done?new Date().toISOString().slice(0,16).replace('T',' '):null;touch(it);save();
+    try{renderMonth();renderDay();renderBanner();}catch(_){}return;}
+  const fd=e.target.closest('[data-fold],[data-late]');
+  if(fd){let o=false;try{o=localStorage.getItem('st-late')==='1';localStorage.setItem('st-late',o?'0':'1');}catch(x){}renderStatus();return;}
+  const r=e.target.closest('[data-go]');if(!r)return;
   const k=r.dataset.go;goto(k);setRT('day');if(layout==='cal')openRC(true);};
 {const _rd=renderDay;renderDay=function(){_rd.apply(this,arguments);try{renderStatus();}catch(e){}};}
 
@@ -3552,7 +3586,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v92';
+const APPVER=/*ver*/'v93';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
