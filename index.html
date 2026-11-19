@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="업무 일정">
+<meta name="apple-mobile-web-app-title" content="TY-Scheduler">
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus")}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
@@ -1551,7 +1551,7 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
       <div class="setrow"><label>이 기기</label><span id="pushState" style="font-size:13px;color:var(--ink-2);margin-left:auto"></span><button id="pushBtn">받기</button></div>
     </div>
     <div class="bp-h">이렇게 도착해요 <span id="bpWhen"></span></div>
-    <div class="bp-n"><div class="bp-ic">㈜</div><div class="bp-tx"><div class="bp-a"><b>업무 일정</b><span>지금</span></div><div class="bp-t" id="bpT"></div><div class="bp-b" id="bpB"></div></div></div>
+    <div class="bp-n"><div class="bp-ic">㈜</div><div class="bp-tx"><div class="bp-a"><b>TY-Scheduler</b><span>지금</span></div><div class="bp-t" id="bpT"></div><div class="bp-b" id="bpB"></div></div></div>
     <div class="bp-h">알림을 누르면 이 화면이 열려요</div>
     <button id="briefNow" class="bp-btn">오늘 일정 화면 미리보기</button>
     <button id="pushTest" class="bp-btn" style="margin-top:8px">지금 이 기기로 테스트 보내기</button>
@@ -3552,7 +3552,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v91';
+const APPVER=/*ver*/'v92';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -3984,7 +3984,7 @@ async function openMini(){
   document.querySelectorAll('style').forEach(st=>{
     const c=pipWin.document.createElement('style');c.textContent=st.textContent;
     pipWin.document.head.appendChild(c);});
-  pipWin.document.title='업무 일정';
+  pipWin.document.title='TY-Scheduler';
   pipWin.document.body.className='mini-body';
   pipHost=pipWin.document.createElement('div');pipHost.id='miniRoot';
   pipWin.document.body.appendChild(pipHost);

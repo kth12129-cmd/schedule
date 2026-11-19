@@ -1,6 +1,6 @@
 {
-  "name": "업무 일정",
-  "short_name": "일정",
+  "name": "TY-Scheduler",
+  "short_name": "TY-Scheduler",
   "description": "달력·할 일·메모와 업무 사이클 분석을 한 화면에서 다루는 일정 앱",
   "lang": "ko",
   "start_url": "./",
