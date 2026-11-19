@@ -3854,7 +3854,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v108';
+const APPVER=/*ver*/'v109';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -3908,7 +3908,7 @@ function sbInit(){
   }catch(e){setSync('','서버 설정 오류');return false;}
   backend='sb';
   SB.auth.onAuthStateChange((ev,sess)=>{session=sess;if(ev==='PASSWORD_RECOVERY'){recovering=true;try{renderAuth();$('authSheet').classList.add('open');}catch(_){}}onAuth();});
-  SB.auth.getSession().then(({data})=>{session=data.session;if(LINKERR){try{history.replaceState(null,'',location.pathname);renderAuth();$('authSheet').classList.add('open');const m=$('aMsg');if(m)m.textContent='메일 링크가 만료되었거나 이미 사용된 링크입니다.\n→ 위 이메일 칸에 주소를 적고 [비밀번호를 잊으셨나요?]를 다시 눌러, 새로 온 메일(가장 최근 것)의 링크를 한 번만 누르세요.';}catch(_){}}if(RECOV&&session){recovering=true;try{renderAuth();$('authSheet').classList.add('open');}catch(_){}}onAuth();});
+  SB.auth.getSession().then(({data})=>{session=data.session;if(LINKERR){try{history.replaceState(null,'',location.pathname);window._linkMsg='⚠ 방금 누른 메일 링크는 이미 사용했거나 더 새로운 메일이 와서 무효가 된 링크입니다.\n→ 위 이메일 칸에 주소를 적고 [비밀번호를 잊으셨나요?]를 한 번만 누른 뒤, Gmail에서 맨 아래(가장 최근) 메일의 링크만 누르세요. 이전 메일은 삭제하세요.';renderAuth();$('authSheet').classList.add('open');}catch(_){}}if(RECOV&&session){recovering=true;try{renderAuth();$('authSheet').classList.add('open');}catch(_){}}onAuth();});
   return true;
 }
 async function onAuth(){
@@ -4002,6 +4002,7 @@ function renderAuth(){
       <div class="frow"><button class="lnk" id="sbReset">서버 연결 정보 지우기</button></div>`;
     $('aDiag').onclick=()=>runDiag($('diagOut'));
     const msg=t=>$('aMsg').textContent=t;
+    if(window._linkMsg){msg(window._linkMsg);window._linkMsg=null;}
     const creds=()=>({email:$('aEmail').value.trim(),password:$('aPw').value});
     const typo=e=>{const d=(e.split('@')[1]||'').toLowerCase();
       const fx={'gamil.com':'gmail.com','gmial.com':'gmail.com','gmai.com':'gmail.com','gmail.co':'gmail.com','naver.co':'naver.com','tongyanginc.com':'tongyanginc.co.kr','tongyang.co.kr':'tongyanginc.co.kr'};
