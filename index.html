@@ -3854,7 +3854,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v105';
+const APPVER=/*ver*/'v106';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -3897,6 +3897,7 @@ const sbCfg=()=>{let c=null;try{c=JSON.parse(localStorage.getItem(SBCFG)||'null'
   if(c&&c.url&&c.key)return c;
   if(/^https?:$/.test(location.protocol)&&!/claude|anthropic/i.test(location.hostname))return SB_DEFAULT;
   return null;};
+const RECOV=/type=recovery/.test(location.hash);
 function sbInit(){
   const cfg=sbCfg();
   if(!cfg||!cfg.url||!cfg.key)return false;
@@ -3906,7 +3907,7 @@ function sbInit(){
   }catch(e){setSync('','서버 설정 오류');return false;}
   backend='sb';
   SB.auth.onAuthStateChange((ev,sess)=>{session=sess;if(ev==='PASSWORD_RECOVERY'){recovering=true;try{renderAuth();$('authSheet').classList.add('open');}catch(_){}}onAuth();});
-  SB.auth.getSession().then(({data})=>{session=data.session;onAuth();});
+  SB.auth.getSession().then(({data})=>{session=data.session;if(RECOV&&session){recovering=true;try{renderAuth();$('authSheet').classList.add('open');}catch(_){}}onAuth();});
   return true;
 }
 async function onAuth(){
@@ -3962,8 +3963,9 @@ function renderAuth(){
     box.innerHTML=`<div class="hint-txt"><b style="color:var(--navy)">새 비밀번호를 정하세요.</b><br>${esc(session.user.email||'')} 계정의 비밀번호가 바뀝니다.</div>
       <div class="frow"><input id="nPw" type="password" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password"></div>
       <div class="frow"><input id="nPw2" type="password" placeholder="새 비밀번호 확인" autocomplete="new-password"></div>
-      <div class="frow"><button class="go2" id="nPwGo">비밀번호 변경</button></div>
+      <div class="frow btns"><button class="go2" id="nPwGo">비밀번호 변경</button><button class="go2 alt" id="nPwNo">취소</button></div>
       <div class="hint-txt" id="nPwMsg"></div>`;
+    $('nPwNo').onclick=()=>{recovering=false;renderAuth();};
     $('nPwGo').onclick=async()=>{const a=$('nPw').value,b=$('nPw2').value,m=t=>$('nPwMsg').textContent=t;
       if(a.length<6){m('비밀번호는 6자 이상이어야 합니다.');return;}
       if(a!==b){m('두 비밀번호가 서로 다릅니다.');return;}
@@ -4047,6 +4049,7 @@ function renderAuth(){
       <div><b>${esc(em)}</b><span><i></i>동기화 사용 중</span></div></div>
     <div class="sg-b acc-grp">
       <button class="grow" id="aShare"><span>다른 기기에서 쓰기<small>연결 주소를 복사해 다른 기기에서 열고 로그인하세요</small></span><em>복사</em></button>
+      <button class="grow" id="aPwChg"><span>비밀번호 변경<small>새 비밀번호로 바꿉니다</small></span><em>변경</em></button>
       <button class="grow" id="aOut"><span>로그아웃</span></button>
     </div>
     <p class="acc-note" id="shMsg">같은 계정으로 로그인한 기기끼리 일정이 맞춰집니다. 휴대폰·PC·홈 화면 앱은 로그인 전에는 서로 보이지 않습니다.</p>
@@ -4062,6 +4065,7 @@ function renderAuth(){
     try{await navigator.clipboard.writeText(link);$('shMsg').textContent='복사했습니다. 다른 기기에서 이 주소를 열어 로그인하세요.';}
     catch(e){prompt('이 주소를 복사해 다른 기기에서 여세요',link);}
   };
+  $('aPwChg').onclick=()=>{recovering=true;renderAuth();};
   $('aOut').onclick=async()=>{await SB.auth.signOut();session=null;backend='sb';setSync('','로그아웃됨');renderAuth();};
   $('sbReset').onclick=()=>{localStorage.removeItem(SBCFG);location.reload();};
 }
