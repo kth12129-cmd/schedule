@@ -1485,6 +1485,7 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 }
 /* v102 팝업이 화면보다 길면 안에서 스크롤 */
 .pop{max-height:calc(100dvh - 72px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#aMsg{white-space:pre-line;color:var(--ink);font-weight:500}
 </style>
 </head>
 <body>
@@ -3853,7 +3854,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v103';
+const APPVER=/*ver*/'v104';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -3983,12 +3984,29 @@ function renderAuth(){
     $('aDiag').onclick=()=>runDiag($('diagOut'));
     const msg=t=>$('aMsg').textContent=t;
     const creds=()=>({email:$('aEmail').value.trim(),password:$('aPw').value});
-    $('aIn').onclick=async()=>{msg('로그인 중…');
-      const {error}=await SB.auth.signInWithPassword(creds());
+    const typo=e=>{const d=(e.split('@')[1]||'').toLowerCase();
+      const fx={'gamil.com':'gmail.com','gmial.com':'gmail.com','gmai.com':'gmail.com','gmail.co':'gmail.com','naver.co':'naver.com','tongyanginc.com':'tongyanginc.co.kr','tongyang.co.kr':'tongyanginc.co.kr'};
+      return fx[d]?e.split('@')[0]+'@'+fx[d]:'';};
+    $('aIn').onclick=async()=>{
+      const c=creds();
+      if(!c.email){msg('이메일을 입력하세요.');return;}
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.email)){msg('이메일 형식이 올바르지 않습니다. (예: 이름@tongyanginc.co.kr)');return;}
+      if(!c.password){msg('비밀번호를 입력하세요.');return;}
+      msg('로그인 중…');
+      const {error}=await SB.auth.signInWithPassword(c);
       if(!error){msg('');return;}
-      let m='로그인 실패: '+error.message;
-      if(/Invalid login/i.test(error.message))m+='\n→ 아직 계정을 만들지 않았다면 먼저 [가입]을 누르세요.';
-      if(/not confirmed|confirm/i.test(error.message))m+='\n→ 메일함의 확인 링크를 누르거나, Supabase의 Authentication → Sign In / Providers → Email 에서 "Confirm email"을 끄세요.';
+      let m;
+      if(/not confirmed|confirm/i.test(error.message))m='이메일 인증이 아직 끝나지 않았습니다.\n→ 메일함의 확인 링크를 누른 뒤 다시 로그인하세요.';
+      else if(/Invalid login/i.test(error.message)){
+        let st='';try{const r=await SB.rpc('acct_state',{p_email:c.email});st=r.data||'';}catch(_){}
+        const t=typo(c.email);
+        if(st==='missing')m='등록되지 않은 아이디입니다. 가입한 적이 없는 이메일이에요.'+(t?'\n→ 혹시 '+t+' 아닌가요? 이메일 철자를 확인하세요.':'\n→ 이메일 철자를 확인하거나, 처음이라면 [가입]을 누르세요.');
+        else if(st==='unconfirmed')m='이메일 인증이 아직 끝나지 않았습니다.\n→ 메일함의 확인 링크를 누른 뒤 다시 로그인하세요.';
+        else if(st==='exists')m='비밀번호가 틀렸습니다. 가입된 아이디입니다.\n→ 비밀번호를 다시 입력하세요.';
+        else m='이메일 또는 비밀번호가 올바르지 않습니다.'+(t?'\n→ 혹시 '+t+' 아닌가요?':'');
+      }else if(/rate|too many/i.test(error.message))m='시도가 너무 많습니다. 잠시 후 다시 시도하세요.';
+      else if(/fetch|network/i.test(error.message))m='서버에 연결하지 못했습니다. 인터넷 연결을 확인하세요.';
+      else m='로그인 실패: '+error.message;
       msg(m);};
     $('aUp').onclick=async()=>{
       if(!/^[^@\s]+@tongyanginc\.co\.kr$/i.test(creds().email)){msg('회사 이메일(@tongyanginc.co.kr)만 가입할 수 있습니다.');return;}
