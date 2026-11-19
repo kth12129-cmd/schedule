@@ -1019,7 +1019,7 @@ header{background:color-mix(in srgb,var(--page) 90%,transparent)}
   .hsec-memo .hbtn,.hbtn{width:31px;height:31px}
   .hsec-memo{gap:3px}
   .hsec-memo .hbtn svg{width:16px;height:16px}
-  #miniBtn,#analyBtn,#vocBtn{display:none}
+  #miniBtn,#analyBtn,#vocBtn,#calBtn,#vacBtn{display:none}
   .hsec-memo{-webkit-mask-image:none;mask-image:none}
   .mo-btn,.yr-btn{font-size:21px}
   .yr-btn .cv{display:none}
@@ -1361,7 +1361,7 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
     <div class="clegend" id="clegend"><span class="lgt">범례</span>
       <button class="lgchip" id="lgVac" aria-pressed="false"><i style="background:#d9822b"></i>휴가 일정</button>
       <button class="lgchip" id="lgExt" aria-pressed="true"><i style="background:#2f7d6b"></i>연동 캘린더</button>
-      <span class="lgnote" id="lgNote"></span></div>
+      <a class="lgchip lgvac" id="lgLink" href="https://tongyang-dashboard.vercel.app/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;opacity:1;color:var(--ink)">휴가ㆍ외근 ↗</a><span class="lgnote" id="lgNote"></span></div>
   </div>
   <div class="rightcol" id="rc" data-rt="status">
   <div class="rt-tabs" id="rtTabs"><button data-rt="status">현황</button><button data-rt="day">선택한 날</button><button data-rt="time">시간표</button><button data-rt="memo">메모</button><button class="rt-x" id="rcClose" aria-label="닫기">✕</button></div>
@@ -3531,7 +3531,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v89';
+const APPVER=/*ver*/'v90';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
