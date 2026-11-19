@@ -1407,6 +1407,31 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .grow{line-height:1.3}.grow span{display:block}
 .adv{padding-bottom:4px}
 .acc-grp .grow{height:60px;min-height:60px;padding:0 16px;align-items:center}
+/* v100 VOC */
+.vstat{margin:12px 0 14px;border:1px solid var(--hair);border-radius:14px;background:var(--surface);padding:14px}
+.vtiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.vtile{padding:10px 12px;border:1px solid var(--hair);border-radius:10px}
+.vtile span{display:block;font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.04em}
+.vtile b{display:block;margin-top:4px;font-size:28px;font-weight:300;letter-spacing:-.04em;color:var(--ink)}
+.vtile.t-new b{color:#b5700c}.vtile.t-review b{color:#1d4fb8}.vtile.t-done b{color:#1c7a3f}
+.vbar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--field);margin-top:14px;gap:2px}
+.vbar i{display:block;min-width:4px}.sg-new{background:#e0a030}.sg-review{background:#3f72ff}.sg-done{background:#2e9d5b}.sg-hold{background:#a3a9b8}
+.vleg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:12px;color:var(--ink-3)}.vleg b{color:var(--ink);font-weight:700}
+.vkd{margin-top:12px;border-top:1px solid var(--hair);padding-top:10px}
+.vkd summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-3);list-style:none}.vkd summary::-webkit-details-marker{display:none}
+.vk{display:grid;grid-template-columns:72px 1fr 44px;gap:10px;align-items:center;margin-top:8px;font-size:12.5px;color:var(--ink-2)}
+.vk .bar{height:6px;border-radius:3px;background:var(--field);overflow:hidden}.vk .bar i{display:block;height:100%;background:#2e9d5b}.vk b{text-align:right;color:var(--ink)}
+.vseg{display:flex;gap:4px;overflow-x:auto;padding:0}
+.vseg button{flex:none;padding:6px 11px;border-radius:8px;border:1px solid var(--hair);background:transparent;color:var(--ink-3);font-size:12.5px;font-weight:600}
+.vseg button.on{background:var(--ink);color:var(--page);border-color:var(--ink)}
+.vrow{display:flex!important;align-items:center;gap:12px}.vrow .vmain{flex:1;min-width:0}
+.vst{flex:none;display:inline-block;min-width:68px;text-align:center;padding:6px 10px;border-radius:6px;font-size:12px;font-weight:700;border:1px solid transparent}
+.vst.st-new{background:#fff4dc;color:#9a5b00;border-color:#f0d391}
+.vst.st-review{background:#e8f0ff;color:#1d4fb8;border-color:#b9cdf5}
+.vst.st-done{background:#e4f5ea;color:#1c7a3f;border-color:#a9d9bb}
+.vst.st-hold{background:#eceef3;color:#5b6272;border-color:#d2d6e0}
+.vadmbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+@media (max-width:560px){.vtiles{grid-template-columns:repeat(2,1fr)}.voc-top{flex-wrap:wrap}.voc-top .grow{flex:1 0 100%}}
 </style>
 </head>
 <body>
@@ -2732,8 +2757,9 @@ document.addEventListener('keydown',e=>{if(!$('tmMeet').classList.contains('on')
 
 /* ── VOC 의견 게시판 ── */
 const VK={bug:'버그·오류',improve:'개선 요청',feature:'새 기능',complaint:'불만',etc:'기타'};
-const VS={new:'접수',review:'검토 중',done:'반영 완료',hold:'보류'};
-let vocV='list',vocKind='all',vocSort='new',vocPosts=[],vocCm={},vocVt={},vocMe=null,vocCur=null,vocBusy=false;
+const VS={new:'접수 · 조치 전',review:'조치 중',done:'조치 완료',hold:'보류'};
+const VSS={new:'조치 전',review:'조치 중',done:'조치 완료',hold:'보류'};
+let vocV='list',vocSt='all',vocKind='all',vocSort='new',vocPosts=[],vocCm={},vocVt={},vocMe=null,vocCur=null,vocBusy=false;
 const vEsc=x=>esc(String(x==null?'':x));
 const vDate=t=>{const d=new Date(t),z=n=>String(n).padStart(2,'0');return `${z(d.getMonth()+1)}.${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`;};
 function vEnv(){
@@ -2768,6 +2794,8 @@ function vocPack(list){
 작성자: ${pst.author||'익명'} · 공감 ${(vocVt[pst.id]||[]).length}`;
   return list.map(one).join('\n\n---\n\n')+'\n\n→ 위 VOC 내용대로 앱을 수정하고, 수정한 내용을 한 줄씩 알려 주세요.';
 }
+const vJson=x=>({id:x.id,kind:VK[x.kind],status:VS[x.status],title:x.title,area:x.area,body:x.body,expect:x.expect,env:x.env,author:x.author,votes:(vocVt[x.id]||[]).length,reply:x.reply,created_at:x.created_at});
+function vDl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type+';charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);toastMsg('저장했어요');}
 async function vCopy(text){
   try{await navigator.clipboard.writeText(text);toastMsg('복사했어요. Claude 대화창에 붙여넣으세요');}
   catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();try{document.execCommand('copy');toastMsg('복사했어요. Claude 대화창에 붙여넣으세요');}catch(_){alert(text);}t.remove();}
@@ -2778,18 +2806,35 @@ function vocRender(){
   if(!vocMe){b.innerHTML='<div class="vempty">의견을 남기려면 먼저 로그인해 주세요.<br>설정(⚙)에서 로그인할 수 있어요.</div>';return;}
   if(vocV==='write')return vocWrite();
   if(vocV==='detail')return vocDetail();
-  let list=vocPosts.filter(x=>vocKind==='all'||x.kind===vocKind);
+  let list=vocPosts.filter(x=>(vocKind==='all'||x.kind===vocKind)&&(vocSt==='all'||x.status===vocSt));
   if(vocSort==='vote')list=[...list].sort((a,c)=>(vocVt[c.id]||[]).length-(vocVt[a.id]||[]).length||(a.created_at<c.created_at?1:-1));
   const chips=[['all','전체'],...Object.entries(VK)].map(([k,n])=>`<button data-k="${k}" class="${vocKind===k?'on':''}">${n}</button>`).join('');
-  const rows=list.map(x=>`<button class="vrow" data-id="${x.id}"><div class="vt">${vEsc(x.title)}</div>
-    <div class="vm"><span class="vtag k-${x.kind}">${VK[x.kind]}</span><span class="vtag s-${x.status}">${VS[x.status]}</span>
-    <span>${vEsc(x.author||'익명')}</span><span>${vDate(x.created_at)}</span><span>♥ ${(vocVt[x.id]||[]).length}</span><span>댓글 ${vocCm[x.id]||0}</span></div></button>`).join('');
-  const nNew=vocPosts.filter(x=>x.status==='new').length;
-  b.innerHTML=`<div class="voc-top"><span class="grow" style="font-size:13.5px;color:var(--ink-2)">총 ${vocPosts.length}건${nNew?` · 접수 ${nNew}건`:''}</span>
+  const cnt=k=>vocPosts.filter(x=>x.status===k).length,tot=vocPosts.length,nNew=cnt('new');
+  const nDone=cnt('done'),nRev=cnt('review'),nHold=cnt('hold'),pct=tot?Math.round(nDone/tot*100):0;
+  const mo=new Date().toISOString().slice(0,7);
+  const doneMo=vocPosts.filter(x=>x.status==='done'&&(x.created_at||'').slice(0,7)===mo).length;
+  const seg=(k,n)=>n?`<i class="sg-${k}" style="flex:${n}" title="${VSS[k]} ${n}건"></i>`:'';
+  const kinds=Object.entries(VK).map(([k,n])=>{const a=vocPosts.filter(x=>x.kind===k),d=a.filter(x=>x.status==='done').length;
+    return `<div class="vk"><span>${n}</span><div class="bar"><i style="width:${a.length?d/a.length*100:0}%"></i></div><b>${d}/${a.length}</b></div>`;}).join('');
+  const stat=`<div class="vstat">
+    <div class="vtiles">
+      <div class="vtile"><span>전체 접수</span><b>${tot}</b></div>
+      <div class="vtile t-new"><span>조치 전</span><b>${nNew}</b></div>
+      <div class="vtile t-review"><span>조치 중</span><b>${nRev}</b></div>
+      <div class="vtile t-done"><span>조치 완료</span><b>${nDone}</b></div></div>
+    <div class="vprog"><div class="vbar">${seg('new',nNew)}${seg('review',nRev)}${seg('done',nDone)}${seg('hold',nHold)}</div>
+      <div class="vleg"><span>조치율 <b>${pct}%</b></span>${vocMe.admin?`<span>불만 ${vocPosts.filter(x=>x.kind==='complaint').length}건</span><span>이번 달 조치 ${doneMo}건</span>`:''}</div></div>
+    ${vocMe.admin?`<details class="vkd"><summary>분류별 조치 현황</summary>${kinds}</details>`:''}</div>`;
+  const sch=[['all','전체'],['new','조치 전'],['review','조치 중'],['done','조치 완료'],['hold','보류']].map(([k,n])=>`<button data-st="${k}" class="${vocSt===k?'on':''}">${n}${k==='all'?'':' '+cnt(k)}</button>`).join('');
+  const rows=list.map(x=>`<button class="vrow" data-id="${x.id}"><div class="vmain"><div class="vt">${vEsc(x.title)}</div>
+    <div class="vm"><span class="vtag k-${x.kind}">${VK[x.kind]}</span>
+    <span>${vEsc(x.author||'익명')}</span><span>${vDate(x.created_at)}</span><span>♥ ${(vocVt[x.id]||[]).length}</span><span>댓글 ${vocCm[x.id]||0}</span></div></div>
+    <span class="vst st-${x.status}">${VSS[x.status]}</span></button>`).join('');
+  b.innerHTML=`${stat}<div class="voc-top"><span class="grow vseg" id="vSt">${sch}</span>
     <button class="vbtn alt sm" id="vSort">${vocSort==='new'?'최신순':'공감순'}</button><button class="vbtn sm" id="vWrite">글쓰기</button></div>
     <div class="voc-chips" id="vChips">${chips}</div>
-    ${vocMe.admin&&nNew?`<button class="vbtn alt sm" id="vAllCopy" style="margin-bottom:10px">접수 ${nNew}건 모두 Claude용으로 복사</button>`:''}
-    <div class="card" style="overflow:hidden">${rows||'<div class="vempty">아직 글이 없어요.<br>불편한 점이나 바라는 점을 첫 글로 남겨 보세요.</div>'}</div>`;
+    ${vocMe.admin?`<div class="vadmbar"><button class="vbtn alt sm" id="vAllCopy">조치 전 ${nNew}건 Claude용 복사</button><button class="vbtn alt sm" id="vExpMd">전체 .md 저장</button><button class="vbtn alt sm" id="vExpJson">전체 .json 저장</button></div>`:''}
+    <div class="card" style="overflow:hidden">${rows||'<div class="vempty">해당하는 글이 없어요.</div>'}</div>`;
 }
 function vocWrite(){
   $('vocBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="vBack">← 목록</button><span class="grow"></span></div>
@@ -2814,7 +2859,7 @@ function vocDetail(){
   const x=vocPosts.find(q=>q.id===vocCur);if(!x){vocV='list';return vocRender();}
   const mine=vocMe.id===x.user_id,votes=vocVt[x.id]||[],voted=votes.includes(vocMe.id);
   $('vocBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="vBack">← 목록</button><span class="grow"></span></div>
-  <div class="vd"><div class="meta"><span class="vtag k-${x.kind}">${VK[x.kind]}</span><span class="vtag s-${x.status}">${VS[x.status]}</span></div>
+  <div class="vd"><div class="meta"><span class="vtag k-${x.kind}">${VK[x.kind]}</span><span class="vst st-${x.status}">${VS[x.status]}</span></div>
     <h3>${vEsc(x.title)}</h3><div class="meta"><span>${vEsc(x.author||'익명')}</span><span>${vDate(x.created_at)}</span></div>
     ${x.area?`<div class="blk"><h5>어디서</h5><p>${vEsc(x.area)}</p></div>`:''}
     <div class="blk"><h5>지금 상황</h5><p>${vEsc(x.body)}</p></div>
@@ -2822,7 +2867,7 @@ function vocDetail(){
     ${x.env?`<div class="blk"><h5>환경</h5><p>${vEsc(x.env)}</p></div>`:''}
     ${x.reply?`<div class="vreply"><h5 style="margin:0 0 4px;font-size:12.5px;color:var(--navy)">운영자 답변</h5><p style="margin:0;font-size:15px;line-height:1.65;white-space:pre-wrap">${vEsc(x.reply)}</p></div>`:''}
     <div class="vact"><button class="vbtn ${voted?'':'alt'}" id="vVote">♥ 공감 ${votes.length}</button>
-      <button class="vbtn alt" id="vCopyOne">Claude용으로 복사</button>
+      <button class="vbtn alt" id="vCopyOne">Claude용으로 복사</button>${vocMe.admin?'<button class="vbtn alt" id="vDlMd">.md 저장</button><button class="vbtn alt" id="vDlJson">.json 저장</button>':''}
       ${(mine||vocMe.admin)?'<button class="vbtn red" id="vDel">삭제</button>':''}</div>
     ${vocMe.admin?`<div class="vadm vf"><label style="margin-top:0">처리 상태</label><select id="vaSt">${Object.entries(VS).map(([k,n])=>`<option value="${k}"${x.status===k?' selected':''}>${n}</option>`).join('')}</select>
       <label>운영자 답변</label><textarea id="vaRe" maxlength="2000">${vEsc(x.reply)}</textarea><div class="vact"><button class="vbtn sm" id="vaSave">저장</button></div></div>`:''}
@@ -2848,6 +2893,7 @@ $('vocBtn').onclick=vocOpen;
 $('vocOpen2').onclick=()=>{try{$('setPop').classList.remove('open');$('popBack').classList.remove('open');}catch(e){}vocOpen();};
 $('vocBody').addEventListener('click',async e=>{
   const t=e.target,bt=t.closest('button'),id=bt&&bt.id;
+  if(t.closest('#vSt')&&t.dataset.st){vocSt=t.dataset.st;return vocRender();}
   if(t.closest('#vChips')&&t.dataset.k){vocKind=t.dataset.k;return vocRender();}
   const row=t.closest('.vrow');if(row){vocCur=row.dataset.id;vocV='detail';return vocRender();}
   const cd=t.closest('[data-cd]');
@@ -2857,6 +2903,10 @@ $('vocBody').addEventListener('click',async e=>{
   if(id==='vWrite'){vocV='write';return vocRender();}
   if(id==='vBack'){vocV='list';return vRefresh();}
   if(id==='vAllCopy'){return vCopy(vocPack(vocPosts.filter(x=>x.status==='new').reverse()));}
+  if(id==='vExpMd')return vDl('voc-all.md',vocPack(vocPosts),'text/markdown');
+  if(id==='vExpJson')return vDl('voc-all.json',JSON.stringify(vocPosts.map(vJson),null,2),'application/json');
+  if(id==='vDlMd'){const x=vocPosts.find(q=>q.id===vocCur);return x&&vDl('voc-'+x.id.slice(0,4)+'.md',vocPack([x]),'text/markdown');}
+  if(id==='vDlJson'){const x=vocPosts.find(q=>q.id===vocCur);return x&&vDl('voc-'+x.id.slice(0,4)+'.json',JSON.stringify(vJson(x),null,2),'application/json');}
   if(id==='vCopyOne'){const x=vocPosts.find(q=>q.id===vocCur);return x&&vCopy(vocPack([x]));}
   if(id==='vPost'){
     const g=k=>$(k).value.trim(),title=g('vfTitle'),body=g('vfBody');
@@ -3651,7 +3701,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v99';
+const APPVER=/*ver*/'v100';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
