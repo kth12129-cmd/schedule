@@ -4014,7 +4014,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v113';
+const APPVER=/*ver*/'v114';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -4488,31 +4488,22 @@ function copyItem(id,day){
     if(day===it.date){toastMsg('같은 날짜입니다. 다른 날짜로 끌어 놓으세요');return;}
     store.items.push(cloneItem(it,day));cpDone('일정을 복사했습니다 · '+md(day),day);return;}
   cpAsk(it,day);}
-function cpDays(it,day,skipOff){
-  const out=[];let k=addDays(it.date,1);
-  while(k<=day){const d=fromYmd(k).getDay();if(!(skipOff&&(d===0||d===6||holOf(k))))out.push(k);k=addDays(k,1);}
-  return out;}
 function cpAsk(it,day){
   const dl=$('cpDlg');
   const paint=()=>{
-    const skip=$('cpSkip')?$('cpSkip').checked:true,ds=cpDays(it,day,skip);
     dl.innerHTML=`<div class="xd-card" role="dialog" aria-label="일정 복사">
-      <h3>일정을 어떻게 넣을까요?</h3>
+      <h3>범위를 지정할까요? 일정을 추가할까요?</h3>
       <p class="xd-sub"><b>${esc(it.title)}</b> · ${md(it.date)} → ${md(day)}</p>
       <button class="xd-opt" data-cp="range"><b>범위로 지정</b><span>하나의 일정이 ${md(it.date)} ~ ${md(day)}로 이어집니다</span></button>
-      <button class="xd-opt" data-cp="rep"${ds.length?'':' disabled'}><b>매일 반복 추가</b><span>${ds.length?`${ds.length}일에 같은 일정을 각각 복사합니다 (${ds.slice(0,3).map(md).join(', ')}${ds.length>3?' …':''})`:'넣을 날짜가 없습니다'}</span></button>
-      <button class="xd-opt" data-cp="one"><b>이 날만 추가</b><span>${md(day)} 하루에만 복사합니다</span></button>
-      <label class="xd-chk"><input type="checkbox" id="cpSkip"${skip?' checked':''}> 반복 추가 시 주말·공휴일 제외</label>
+      <button class="xd-opt" data-cp="one"><b>일정 추가</b><span>${md(day)} 하루에만 복사합니다</span></button>
       <div class="xd-act"><button data-cp="x">취소</button></div></div>`;};
   paint();dl.classList.add('on');
   dl.onclick=e=>{
     if(e.target===dl){dl.classList.remove('on');return;}
-    if(e.target.id==='cpSkip'){paint();return;}
     const b=e.target.closest('[data-cp]');if(!b)return;const a=b.dataset.cp;
     if(a==='x'){dl.classList.remove('on');return;}
-    const skip=$('cpSkip').checked;dl.classList.remove('on');
+    dl.classList.remove('on');
     if(a==='range'){const n=cloneItem(it,it.date,day);store.items.push(n);cpDone('범위 일정으로 복사했습니다 · '+md(it.date)+'~'+md(day),it.date);}
-    else if(a==='rep'){const ds=cpDays(it,day,skip);ds.forEach(k=>store.items.push(cloneItem(it,k)));cpDone(ds.length+'건을 반복 추가했습니다',ds[0]);}
     else{store.items.push(cloneItem(it,day));cpDone('일정을 복사했습니다 · '+md(day),day);}};}
 
 dropTargets($('grid'),'.cell');
