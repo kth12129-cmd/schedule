@@ -1576,6 +1576,19 @@ body.copying .cell.dropo{outline:2px dashed var(--navy);outline-offset:-3px}
 .memo-carry{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);white-space:nowrap;cursor:pointer}
 .memo-carry input{width:16px;height:16px;accent-color:var(--navy)}
 .memo-from{display:none;padding:7px 14px 0;font-size:11.5px;color:var(--ink-3)}
+/* v116 현황: 해야 할 일은 직접 담은 것만 */
+.st-tile{position:relative}
+.st-tile .mj{position:absolute;top:7px;right:7px;width:26px;height:26px;display:block;pointer-events:none}
+.st-tile .mj svg{width:100%;height:100%;display:block}
+.st-row.late::after{content:none}
+.st-row .st-x{flex:none;width:24px;height:24px;border:0;border-radius:6px;background:transparent;color:var(--ink-3);font-size:16px;line-height:1}
+.st-row .st-x:hover{background:var(--hair);color:var(--ink)}
+.st-row .st-add{flex:none;height:24px;padding:0 9px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--ink-2);font-size:11.5px;font-weight:650}
+.st-todo-sec{border-radius:10px;transition:box-shadow .15s,background .15s}
+.st-todo-sec.dropz{box-shadow:0 0 0 2px var(--navy);background:color-mix(in srgb,var(--navy) 5%,transparent)}
+.st-h.st-sub{margin-top:18px}
+.todobtn{font-size:15px}.todobtn.on{color:var(--navy)}
+body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 </style>
 </head>
 <body>
@@ -2244,6 +2257,7 @@ function renderDay(){try{memoMaterialize();}catch(_){}
              <div class="edit-tip">시간·날짜도 같이 고칠 수 있습니다. Enter 저장, Esc 취소</div>`
           :`<div class="title" data-act="open">${esc(i.title)}${has&&!isOpen?'<span class="caret">⌄</span>':''}</div>`}</div>
       <div class="acts"><button class="flag${i.pri?' on':''}" data-act="pri" data-tip="${i.pri?'중요 해제':'중요 표시'}">${i.pri?'★':'☆'}</button>
+        <button class="todobtn${i.todo?' on':''}" data-act="todo" data-tip="${i.todo?'해야 할 일에서 빼기':'꼭 해야 할 일로 담기'}">${i.todo?'☑':'☐'}</button>
         <button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'팀에 공개 중 · 누르면 나만 보기':'나만 보기 · 누르면 팀에 공개'}">${isShared(i)?'👥':'🔒'}</button>
         <button data-act="edit" data-tip="내용 수정">✎</button>
         <button class="tip-r" data-act="del" data-tip="삭제">×</button></div>
@@ -3304,53 +3318,60 @@ function setLayout(l){layout=l;HTMLEL.setAttribute('data-layout',l);try{localSto
   $('layBar').querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on',b.dataset.l===l));
   if(typeof paintDs==='function')paintDs();
   setTimeout(()=>{try{renderMonth();}catch(e){}},60);}
-$('layBar').onclick=e=>{const b=e.target.closest('[data-l]');if(b)setLayout(b.dataset.l);};
+$('layBar').onclick=e=>{const b=e.target.closest('[data-l]');if(!b)return;setLayout(b.dataset.l);
+  setTimeout(()=>{try{view=new Date(today.getFullYear(),today.getMonth(),1);goto(TODAY);}catch(_){}},90);};
 $('rtTabs').onclick=e=>{const b=e.target.closest('[data-rt]');if(b)setRT(b.dataset.rt);};
 $('rcClose').onclick=()=>openRC(false);$('rcBack').onclick=()=>openRC(false);
 $('rcOpen').onclick=()=>{setRT('status');openRC(true);};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('rc-open'))openRC(false);});
 
+const MJ_BEAR='<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="8" cy="8.5" r="5" fill="#c98f5e"/><circle cx="24" cy="8.5" r="5" fill="#c98f5e"/><circle cx="8" cy="8.5" r="2.4" fill="#f2cfae"/><circle cx="24" cy="8.5" r="2.4" fill="#f2cfae"/><circle cx="16" cy="18" r="12" fill="#dba672"/><ellipse cx="16" cy="22.3" rx="5.6" ry="4.2" fill="#f7e0c6"/><path d="M9.6 15.6q2.2-3 4.4 0M18 15.6q2.2-3 4.4 0" stroke="#3a281c" stroke-width="1.7" fill="none" stroke-linecap="round"/><ellipse cx="16" cy="20.2" rx="1.9" ry="1.3" fill="#3a281c"/><path d="M12.4 23q3.6 4.4 7.2 0z" fill="#b8423f"/><circle cx="8.8" cy="21" r="2.1" fill="#f59a96" opacity=".65"/><circle cx="23.2" cy="21" r="2.1" fill="#f59a96" opacity=".65"/></svg>';
+const MJ_BUNNY='<svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="11" cy="8" rx="3.3" ry="8" fill="#f4f5f9" stroke="#c4c8d8" stroke-width="1"/><ellipse cx="21" cy="8" rx="3.3" ry="8" fill="#f4f5f9" stroke="#c4c8d8" stroke-width="1"/><ellipse cx="11" cy="8.6" rx="1.5" ry="5.4" fill="#f6b8c8"/><ellipse cx="21" cy="8.6" rx="1.5" ry="5.4" fill="#f6b8c8"/><circle cx="16" cy="20" r="10.5" fill="#f4f5f9" stroke="#c4c8d8" stroke-width="1"/><path d="M9.8 18.4q2.2 2.8 4.4 0M17.8 18.4q2.2 2.8 4.4 0" stroke="#4a5068" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M12 21.2q-.6 3.2-.2 5M20 21.2q.6 3.2.2 5" stroke="#7db8f2" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="16" cy="22.2" r="1.2" fill="#f08aa4"/><path d="M13.8 25.8q2.2-2 4.4 0" stroke="#4a5068" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="8.6" cy="22" r="1.9" fill="#f9a9b8" opacity=".6"/><circle cx="23.4" cy="22" r="1.9" fill="#f9a9b8" opacity=".6"/></svg>';
 function renderStatus(){
   const box=$('stBody');if(!box)return;
-  const seen=new Set(),done=[],late=[],tod=[],soon=[],wkl=[];let d7=0,n7=0;
+  const seen=new Set(),done=[],missed=[],todo=[],wkl=[];let dw=0,nTod=0,n7=0;
   const t0=fromYmd(TODAY),mon0=monOf(TODAY),nm=addDays(mon0,7),nf=addDays(nm,6);
+  store.items.forEach(i=>{if(i.todo&&!i.done&&inView(i))todo.push({i,k:i.date,en:i.endDate||i.date,wk:false,pin:true});});
+  todo.sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:((a.i.time||'')<(b.i.time||'')?-1:1));
   for(let o=-30;o<=14;o++){
     const k=ymd(dayAdd(t0,o));
     ordItems(k).forEach(i=>{
       if(seen.has(i.id))return;seen.add(i.id);
       const st=i.date,en=i.endDate||i.date;
       const row={i,k:st,en,wk:!!(i.wk&&i.endDate)};
-      if(i.done){if(en>=mon0&&st<=TODAY)d7++;if(en>=ymd(dayAdd(t0,-14)))done.push(row);}
-      else if(en<TODAY)late.push(row);
+      if(i.done){if(en>=mon0&&st<=TODAY)dw++;if(en>=ymd(dayAdd(t0,-14)))done.push(row);}
+      else if(en<TODAY)missed.push(row);
       else if(row.wk){wkl.push(row);if(st<=nf&&en>=nm)n7++;}
-      else if(st<=TODAY)tod.push(row);
-      else{soon.push(row);if(st>=nm&&st<=nf)n7++;}
+      else{if(st<=TODAY)nTod++;else if(st>=nm&&st<=nf)n7++;}
     });
   }
   done.sort((a,b)=>b.k<a.k?-1:b.k>a.k?1:0);
-  late.sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:0);
+  missed.sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:0);
+  wkl.sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:0);
   const lo=(()=>{try{return localStorage.getItem('st-late')==='1';}catch(e){return false;}})();
   const rowH=(r,cls)=>{const i=r.i,c=catColor(i);
     return `<div class="st-row ${cls}${i.pri?' pri':''}" data-go="${r.k}" style="--c:${c}">
       <button class="st-ck${i.done?' on':''}" data-tg="${i.id}" aria-label="${i.done?'완료 취소':'완료 표시'}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button>
-      <span class="t">${esc(i.title)}</span>${i.time?`<span class="tm">${esc(i.time)}</span>`:''}</div>`;};
-  const WK=k=>WD[fromYmd(k).getDay()];
+      <span class="t">${esc(i.title)}</span>${r.pin?`<span class="tm">${md(i.date)} (${WD[fromYmd(i.date).getDay()]})</span>`:(i.time?`<span class="tm">${esc(i.time)}</span>`:'')}
+      ${r.pin?`<button class="st-x" data-untodo="${i.id}" aria-label="해야 할 일에서 빼기" title="목록에서 빼기">×</button>`:''}
+      ${cls==='late'?`<button class="st-add" data-todo="${i.id}" title="해야 할 일에 담기">담기</button>`:''}</div>`;};
   const grp=(arr,cls,tag)=>{
     const g=[];arr.forEach(r=>{const l=g[g.length-1];if(l&&l.k===r.k&&!!l.wk===!!r.wk)l.rows.push(r);else g.push({k:r.k,wk:r.wk,rows:[r]});});
-    return g.map(x=>{if(x.wk){const i=x.rows[0].i;return `<div class="st-day"><div class="st-dh wk"><b>${wkLabel(i)}</b><span>${md(i.date)} ~ ${md(i.endDate)}</span>${tag?`<em class="tag">${tag}</em>`:''}<i>${x.rows.length}건</i></div>${x.rows.map(r=>rowH(r,cls)).join('')}</div>`;}
+    return g.map(x=>{if(x.wk){const i=x.rows[0].i;return `<div class="st-day"><div class="st-dh wk"><b>${wkLabel(i)}</b><span>${md(i.date)} ~ ${md(i.endDate)}</span><i>${x.rows.length}건</i></div>${x.rows.map(r=>rowH(r,cls)).join('')}</div>`;}
       const dd=fromYmd(x.k),dw=dd.getDay();
       const lab=x.k===TODAY?'오늘':x.k===ymd(dayAdd(fromYmd(TODAY),1))?'내일':'';
-      return `<div class="st-day"><div class="st-dh${dw===0?' sun':dw===6?' sat':''}"><b>${md(x.k)}</b><span>${WD[dw]}요일</span>${lab?`<em class="lab">${lab}</em>`:''}${tag?`<em class="tag">${tag}</em>`:''}<i>${x.rows.length}건</i></div>${x.rows.map(r=>rowH(r,cls)).join('')}</div>`;}).join('');};
+      return `<div class="st-day"><div class="st-dh${dw===0?' sun':dw===6?' sat':''}"><b>${md(x.k)}</b><span>${WD[dw]}요일</span>${lab?`<em class="lab">${lab}</em>`:''}<i>${x.rows.length}건</i></div>${x.rows.map(r=>rowH(r,cls)).join('')}</div>`;}).join('');};
   const empty=t=>`<div class="st-empty">${t}</div>`;
   box.innerHTML=`<div class="st-tiles">
-    <div class="st-tile ok"><span>금주 완료</span><b>${d7}</b></div>
-    <div class="st-tile${tod.length?' now':''}"><span>오늘 남은 일</span><b>${tod.length}</b></div>
-    <div class="st-tile${late.length?' warn':''}" ${late.length?'data-late="1" style="cursor:pointer"':''}><span>기한 지난 미완료</span><b>${late.length}</b></div>
+    <div class="st-tile ok"><span>금주 한 일</span><b>${dw}</b><i class="mj" title="잘했어요">${MJ_BEAR}</i></div>
+    <div class="st-tile${nTod?' now':''}"><span>오늘 일정</span><b>${nTod}</b></div>
+    <div class="st-tile${missed.length?' warn':''}" ${missed.length?'data-late="1" style="cursor:pointer"':''}><span>못 끝낸 일</span><b>${missed.length}</b><i class="mj" title="못 끝낸 일">${MJ_BUNNY}</i></div>
     <div class="st-tile"><span>차주 예정</span><b>${n7}</b></div></div>
   <div class="st-cols">
-    <section><h3 class="st-h"><span>해야 할 일</span><em>날짜별 · 체크하면 완료</em></h3>
-      ${late.length?`<button class="st-fold${lo?' open':''}" data-fold="1"><span>기한이 지났는데 아직 완료 표시 안 한 일 ${late.length}건</span><i>${lo?'접기':'펼치기'}</i></button>${lo?grp(late,'late','지남'):''}`:''}
-      ${tod.length||soon.length||wkl.length?grp(wkl.sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:0),'','')+grp(tod.concat(soon),'',''):empty(late.length?'오늘 이후 예정된 일이 없습니다.':'오늘 남은 일이 없습니다.')}</section>
+    <section id="stTodo" class="st-todo-sec"><h3 class="st-h"><span>해야 할 일</span><em>직접 담은 일만 표시</em></h3>
+      ${todo.length?todo.map(r=>rowH(r,'')).join(''):empty('일정을 이곳으로 끌어 놓거나, 일정 오른쪽의 ☐ 버튼을 눌러 꼭 해야 할 일을 담아 두세요.')}
+      ${wkl.length?`<h3 class="st-h st-sub"><span>주 단위 일정</span><em>날짜를 정하지 않은 일</em></h3>${grp(wkl,'','')}`:''}
+      ${missed.length?`<button class="st-fold${lo?' open':''}" data-fold="1"><span>날짜가 지난 일정 중 완료 표시를 안 한 ${missed.length}건</span><i>${lo?'접기':'펼치기'}</i></button>${lo?grp(missed,'late',''):''}`:''}</section>
     <section><h3 class="st-h"><span>해온 일</span><em>최근 2주 · 완료 처리한 일</em></h3>${done.length?grp(done,'done',''):empty('아직 완료 표시한 일정이 없습니다. 위 일정의 체크를 누르면 여기로 옮겨집니다.')}</section>
   </div>`;
 }
@@ -3359,10 +3380,20 @@ $('stBody').onclick=e=>{
   if(tg){const it=store.items.find(x=>x.id===tg.dataset.tg);if(!it)return;
     it.done=!it.done;it.doneAt=it.done?new Date().toISOString().slice(0,16).replace('T',' '):null;touch(it);save();
     try{renderMonth();renderDay();renderBanner();}catch(_){}return;}
+  const ut=e.target.closest('[data-untodo]');
+  if(ut){const it=store.items.find(x=>x.id===ut.dataset.untodo);if(it){it.todo=0;touch(it);save();try{renderDay();}catch(_){}}return;}
+  const ad=e.target.closest('[data-todo]');
+  if(ad){const it=store.items.find(x=>x.id===ad.dataset.todo);if(it){it.todo=1;touch(it);save();try{renderDay();}catch(_){}toastMsg('해야 할 일에 담았습니다');}return;}
   const fd=e.target.closest('[data-fold],[data-late]');
   if(fd){let o=false;try{o=localStorage.getItem('st-late')==='1';localStorage.setItem('st-late',o?'0':'1');}catch(x){}renderStatus();return;}
   const r=e.target.closest('[data-go]');if(!r)return;
   const k=r.dataset.go;goto(k);setRT('day');if(layout==='cal')openRC(true);};
+$('stBody').addEventListener('dragover',e=>{const z=e.target.closest('#stTodo');if(!z||!dragId)return;
+  e.preventDefault();try{e.dataTransfer.dropEffect='copy';}catch(_){}z.classList.add('dropz');});
+$('stBody').addEventListener('dragleave',e=>{const z=e.target.closest('#stTodo');if(z&&!z.contains(e.relatedTarget))z.classList.remove('dropz');});
+$('stBody').addEventListener('drop',e=>{const z=e.target.closest('#stTodo');if(!z)return;e.preventDefault();z.classList.remove('dropz');
+  const id=dragId||(e.dataTransfer&&e.dataTransfer.getData('text/plain'));const it=store.items.find(x=>x.id===id);if(!it)return;
+  it.todo=1;touch(it);save();try{renderDay();}catch(_){}toastMsg('해야 할 일에 담았습니다');});
 {const _rd=renderDay;renderDay=function(){_rd.apply(this,arguments);try{renderStatus();}catch(e){}};}
 
 /* 디자인 시트 */
@@ -3727,6 +3758,7 @@ $('list').onclick=e=>{
   else if(a==='img'){imgTarget=it.id;$('imgFile').click();return;}
   else if(a==='cat'){openCatMenu(it.id,false);return;}
   else if(a==='pri'){it.pri=!it.pri;touch(it);}
+  else if(a==='todo'){it.todo=it.todo?0:1;touch(it);toastMsg(it.todo?'해야 할 일에 담았습니다':'해야 할 일에서 뺐습니다');}
   else if(a==='share'){
     if(backend!=='sb'||!session){toastMsg('로그인하면 공유할 수 있습니다');return;}
     it.share=!isShared(it);touch(it);
@@ -4070,7 +4102,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v115';
+const APPVER=/*ver*/'v116';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
