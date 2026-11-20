@@ -1568,6 +1568,14 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .cell.rnga{box-shadow:inset 0 0 0 2px var(--navy)}
 body.copying .cell.dropo{outline:2px dashed var(--navy);outline-offset:-3px}
 .xd-act .go{width:auto!important;margin:0!important;flex:none}
+/* v115 메모 제목 · 이어쓰기 */
+.memo-head{display:flex;align-items:center;gap:10px;padding:10px 12px 0;flex-wrap:wrap}
+.memo-title{flex:1;min-width:140px;height:36px;padding:0 11px;border:1px solid var(--fieldline);border-radius:9px;background:var(--field);color:var(--ink);font-size:14.5px;font-weight:650;letter-spacing:-.01em;outline:none}
+.memo-title.def{color:var(--ink-2);font-weight:600}
+.memo-title:focus{border-color:var(--navy)}
+.memo-carry{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);white-space:nowrap;cursor:pointer}
+.memo-carry input{width:16px;height:16px;accent-color:var(--navy)}
+.memo-from{display:none;padding:7px 14px 0;font-size:11.5px;color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -1632,6 +1640,9 @@ body.copying .cell.dropo{outline:2px dashed var(--navy);outline-offset:-3px}
     </div>
     <div class="card pane memo-pane">
       <div class="pane-hd"><span>메모</span><span class="saved" id="saved">저장됨</span></div>
+      <div class="memo-head"><input id="memoTitle" class="memo-title" autocomplete="off" aria-label="메모 제목" maxlength="60">
+        <label class="memo-carry" data-tip="켜 두면 다음 날 메모가 이 내용으로 시작됩니다. 지난 날의 메모는 그대로 남습니다."><input type="checkbox" id="memoCarry"><span>다음날 이어쓰기</span></label></div>
+      <div class="memo-from" id="memoFrom"></div>
       <textarea class="memo" id="memo" placeholder=""></textarea>
     </div>
   </div>
@@ -1891,7 +1902,7 @@ try{const r=localStorage.getItem(KEY)||localStorage.getItem('schedule-v2')||loca
   if(r)store=Object.assign(store,JSON.parse(r));}catch(e){}
 if(!store.stages||!store.stages.length)store.stages=JSON.parse(JSON.stringify(DEFAULT_STAGES));
 const NOW=()=>Date.now();
-store.tomb=store.tomb||{};store.memoMt=store.memoMt||{};
+store.tomb=store.tomb||{};store.memoMt=store.memoMt||{};store.memoMeta=store.memoMeta||{};
 store.casesMt=store.casesMt||{};store.caseTomb=store.caseTomb||{};
 store.stagesMt=store.stagesMt||0;
 store.settings=store.settings||{alertH:20};store.settingsMt=store.settingsMt||0;
@@ -2206,7 +2217,8 @@ function renderYear(){
   let h='';for(let m=0;m<12;m++)h+=miniMonth(yearView,m,null);
   $('yearWrap').innerHTML=h;
 }
-function renderDay(){
+function renderDay(){try{memoMaterialize();}catch(_){}
+  
   const d=fromYmd(sel);
   const holN=holOf(sel);
   $('dayTitle').innerHTML=`${d.getMonth()+1}월 ${d.getDate()}일<span class="wd">${WD[d.getDay()]}요일</span>`
@@ -2245,7 +2257,7 @@ function renderDay(){
         ${o.time?`<span class="mtime">${o.time}${o.endTime?'~'+o.endTime:''}</span>`:''}${o.cat?`<span class="mtag" style="color:${o.color}">${esc(o.cat)}</span>`:''}</div>
         <div class="title">${esc(o.title)}</div></div><div class="acts"></div></li>`;});
   $('list').innerHTML=h||'<li class="empty">아래에 한 줄로 적으면 이 날에 들어갑니다.</li>';
-  $('memo').value=store.memos[sel]||'';
+  memoPaint();
   renderTL();
   const ta=$('list').querySelector('textarea[data-note]');if(ta){ta.focus();ta.selectionStart=ta.value.length;}
   const ei=$('list').querySelector('input[data-edit]');if(ei){ei.focus();ei.selectionStart=ei.value.length;}
@@ -3813,10 +3825,53 @@ $('send').onclick=add;
 })();
 $('input').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();add();}};
 
-let mt;$('memo').oninput=()=>{clearTimeout(mt);mt=setTimeout(()=>{
-  const v=$('memo').value;if(v.trim())store.memos[sel]=v;else delete store.memos[sel];
+/* ── 메모: 제목 · 이어쓰기 ── */
+const memoDef=k=>{const d=fromYmd(k);return d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일의 메모';};
+function memoSrc(day){
+  const ks=Object.keys(store.memos||{}).filter(k=>k<day).sort().reverse();
+  for(const k of ks){
+    const t=(store.memos[k]||'').trim(),m=store.memoMeta[k]||{};
+    if(!t)return null;
+    if(m.c===0)return null;
+    return k;}
+  return null;}
+function memoMaterialize(){
+  if(store.memos[TODAY]!==undefined)return;
+  const k=memoSrc(TODAY);if(!k)return;
+  store.memos[TODAY]=store.memos[k];
+  const m=store.memoMeta[k]||{};store.memoMeta[TODAY]={f:k};if(m.t)store.memoMeta[TODAY].t=m.t;
+  store.memoMt[TODAY]=NOW();save(false);}
+function memoView(day){
+  const own=store.memos[day]!==undefined;
+  if(own)return{text:store.memos[day],meta:store.memoMeta[day]||{},from:(store.memoMeta[day]||{}).f||null,virtual:false};
+  if(day>TODAY){const k=memoSrc(day);if(k)return{text:store.memos[k],meta:{t:(store.memoMeta[k]||{}).t},from:k,virtual:true};}
+  return{text:'',meta:{},from:null,virtual:false};}
+function memoPaint(){
+  const v=memoView(sel);
+  $('memo').value=v.text;
+  $('memoTitle').value=v.meta.t||memoDef(sel);
+  $('memoTitle').classList.toggle('def',!v.meta.t);
+  $('memoCarry').checked=v.meta.c!==0;
+  $('memoFrom').textContent=v.from?'↳ '+md(v.from)+' 메모에서 이어서 시작했습니다. 이 날의 내용은 따로 저장됩니다.':'';
+  $('memoFrom').style.display=v.from?'block':'none';}
+function memoSave(){
+  const text=$('memo').value,t=$('memoTitle').value.trim(),def=memoDef(sel),carryOn=$('memoCarry').checked;
+  const m=Object.assign({},store.memoMeta[sel]||{});
+  if(t&&t!==def)m.t=t;else delete m.t;
+  if(carryOn)delete m.c;else m.c=0;
+  const cur=memoView(sel);
+  if(cur.virtual&&!m.f)m.f=cur.from;
+  if(text.trim()||m.t||m.c===0){store.memos[sel]=text;}
+  else if(sel>=TODAY)store.memos[sel]='';
+  else delete store.memos[sel];
+  if(Object.keys(m).length)store.memoMeta[sel]=m;else delete store.memoMeta[sel];
   store.memoMt[sel]=NOW();
-  save();renderMonth();$('saved').classList.add('on');setTimeout(()=>$('saved').classList.remove('on'),1200);},500);};
+  save();renderMonth();$('memoTitle').classList.toggle('def',!m.t);
+  $('saved').classList.add('on');setTimeout(()=>$('saved').classList.remove('on'),1200);}
+let mt;$('memo').oninput=()=>{clearTimeout(mt);mt=setTimeout(memoSave,500);};
+$('memoTitle').oninput=()=>{clearTimeout(mt);mt=setTimeout(memoSave,500);};
+$('memoTitle').onblur=()=>{if(!$('memoTitle').value.trim()){$('memoTitle').value=memoDef(sel);$('memoTitle').classList.add('def');}};
+$('memoCarry').onchange=memoSave;
 
 $('stageList').oninput=e=>{const t=e.target;if(t.dataset.i===undefined)return;
   const s=store.stages[+t.dataset.i];
@@ -3856,6 +3911,7 @@ function mergeRemote(r){
   const memoMt=maxMap(store.memoMt,r.memoMt);
   const memos=pickMap(store.memos,r.memos||{},store.memoMt,r.memoMt);
   if(JSON.stringify(memos)!==JSON.stringify(store.memos))changed=true;
+  store.memoMeta=pickMap(store.memoMeta,r.memoMeta||{},store.memoMt,r.memoMt);
   store.memos=memos;store.memoMt=memoMt;
   const cById={};store.cases.forEach(c=>cById[c.id]=c);
   (r.cases||[]).forEach(rc=>{const lc=cById[rc.id];
@@ -3873,7 +3929,7 @@ function mergeRemote(r){
     store.settings=r.settings;store.settingsMt=r.settingsMt;changed=true;}
   return changed;
 }
-function payload(){return{items:store.items,tomb:store.tomb,memos:store.memos,memoMt:store.memoMt,
+function payload(){return{items:store.items,tomb:store.tomb,memos:store.memos,memoMt:store.memoMt,memoMeta:store.memoMeta,
   cases:store.cases,casesMt:store.casesMt,caseTomb:store.caseTomb,
   stages:store.stages,stagesMt:store.stagesMt,cats:store.cats,catsMt:store.catsMt,
   settings:store.settings,settingsMt:store.settingsMt,
@@ -4014,7 +4070,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v114';
+const APPVER=/*ver*/'v115';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
