@@ -236,7 +236,7 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .ev.dl{background:var(--red);border-left-color:var(--red)}
 .ev.dl .evt,.ev.dl .evn{color:#fff;opacity:1}
 .ev.done{opacity:.42}
-.ev.done .evt{text-decoration:line-through;font-weight:500}
+.ev.done .evt{font-weight:500}
 .ev.pri .evt{font-weight:800}
 .evmore{display:flex;align-items:center;justify-content:center;gap:3px;padding:2px 0 1px;min-height:8px}
 .evmore i{width:4px;height:4px;border-radius:50%;flex:none;opacity:.85}
@@ -361,7 +361,7 @@ body.dragging .cell{transition:background .1s}
  background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c);border-left:2px solid var(--c);
  max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tlchip.dl{background:var(--red);color:#fff;border-left-color:var(--red)}
-.tlchip.done{opacity:.45;text-decoration:line-through}
+.tlchip.done{opacity:.45}
 .tlwrap{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
 .tl{position:relative;width:100%}
 .tlrow{position:absolute;left:0;right:0;border-top:1px solid var(--hair)}
@@ -1518,7 +1518,7 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .wkb.s i{border-radius:3px 0 0 3px;margin-left:2px}
 .wkb.e i{margin-right:7px}
 .wkb.e i::after{content:"";position:absolute;right:-7px;top:-3px;border-left:8px solid color-mix(in srgb,var(--c) 55%,transparent);border-top:4.5px solid transparent;border-bottom:4.5px solid transparent}
-.wkb.done{opacity:.45}.wkb.done .wt{text-decoration:line-through}
+.wkb.done{opacity:.45}.wkb.done .wt{text-decoration:none}
 .cell.past .wkb{opacity:.55}
 @media (max-width:760px){.wkb .wt{font-size:8.5px;letter-spacing:-.05em}}
 .mdate .wkl{color:var(--navy);font-weight:700}
@@ -1539,7 +1539,7 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .wkz{display:block;position:relative;height:0;flex:none;margin:0 0 -2px}
 .wklab{position:absolute;left:50%;transform:translateX(-50%);width:calc(500% + 24px);height:11px;line-height:11px;text-align:center;
   font-size:10px;font-weight:700;color:var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
-.wklab.done{opacity:.45;text-decoration:line-through}
+.wklab.done{opacity:.45}
 .cell.past .wklab{opacity:.6}
 @media (max-width:760px){.wklab{font-size:9px;letter-spacing:-.04em}}
 /* v113 복사 · 내보내기 */
@@ -4108,7 +4108,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v117';
+const APPVER=/*ver*/'v118';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
