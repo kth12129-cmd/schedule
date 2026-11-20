@@ -1534,6 +1534,14 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .wk-c.on.st i{left:7px;border-radius:0}
 .wk-c.on.st i::before{content:"";position:absolute;left:-7px;top:-3px;border-right:8px solid color-mix(in srgb,var(--navy) 55%,transparent);border-top:4.5px solid transparent;border-bottom:4.5px solid transparent}
 .wk-c.on.st.en i{left:7px}
+/* v112 제목을 화살표 범위 가운데에 */
+.cell.hasw{overflow:visible;z-index:2}
+.wkz{display:block;position:relative;height:0;flex:none;margin:0 0 -2px}
+.wklab{position:absolute;left:50%;transform:translateX(-50%);width:calc(500% + 24px);height:11px;line-height:11px;text-align:center;
+  font-size:10px;font-weight:700;color:var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.wklab.done{opacity:.45;text-decoration:line-through}
+.cell.past .wklab{opacity:.6}
+@media (max-width:760px){.wklab{font-size:9px;letter-spacing:-.04em}}
 </style>
 </head>
 <body>
@@ -2099,7 +2107,9 @@ function renderMonth(){
     if(k===sel)cl.push('sel');
     if(dls.length)cl.push('hasdl');else if(its.length||memo)cl.push('has');
     const wkb=its.filter(i=>i.wk&&i.endDate);
-    const wkh=wkb.slice(0,2).map(i=>`<span class="wkb${k===i.date?' s':''}${k===i.endDate?' e':''}${i.done?' done':''}" style="--c:${catColor(i)}"><span class="wt">${(k===i.date||d.getDay()===1)?esc(i.title):''}</span><i></i></span>`).join('');
+    const wkh=wkb.slice(0,2).map(i=>`<span class="wkb${k===i.date?' s':''}${k===i.endDate?' e':''}${i.done?' done':''}" style="--c:${catColor(i)}"><span class="wt"></span><i></i></span>`).join('');
+    const wkz=(d.getDay()===3&&wkb.length)?`<span class="wkz">${wkb.slice(0,2).map((i,n)=>`<span class="wklab${i.done?' done':''}" style="--c:${catColor(i)};top:${n*15}px">${esc(i.title)}</span>`).join('')}</span>`:'';
+    if(wkz)cl.push('hasw');
     const evs=[...dls.map(x=>({t:x.stage,dl:true})),
       ...its.filter(i=>!(i.wk&&i.endDate)).map(i=>({t:(i.endDate?'▸ ':'')+i.title,c:catColor(i),done:i.done,pri:i.pri,id:i.id})),
       ...othersFor(k).map(o=>({t:(ownerName(o)?ownerName(o)+' · ':'')+o.title,c:o.color||'#8a8f9e',done:o.done,oth:true})),
@@ -2116,7 +2126,7 @@ function renderMonth(){
         (rest.length>6?'<b>+</b>':'')+'</span>';}
     h+=`<button class="${cl.join(' ')}" data-d="${k}">${evs.some(e=>e.pri)?'<i class="priflag"></i>':''}`+
        `<span class="num">${d.getDate()}</span>${d.getDate()===1?`<span class="mlab">${d.getMonth()===0?"'"+String(d.getFullYear()).slice(2)+' ':''}${d.getMonth()+1}월</span>`:''}${hol?`<span class="holname">${esc(hol)}</span>`:''}`+
-       `<span class="evs">${ev}</span></button>`;
+       `${wkz}<span class="evs">${ev}</span></button>`;
   }
   g.innerHTML=h;
   g.scrollTop=weekIdx(c)*rowH+off;
@@ -3973,7 +3983,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v111';
+const APPVER=/*ver*/'v112';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
