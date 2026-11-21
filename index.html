@@ -436,7 +436,6 @@ body.dragging .cell{transition:background .1s}
 .note-inner{font-size:12.5px;line-height:1.55;color:var(--ink-2);border-left:2px solid var(--line);padding:1px 0 1px 9px;white-space:pre-wrap;word-break:break-word}
 @media (hover:hover) and (pointer:fine){.item:hover .note.has{max-height:340px;opacity:1;margin-top:8px}}
 .item.open .note.has,.item.open .note.edit{max-height:340px;opacity:1;margin-top:8px}
-.note textarea{width:100%;min-height:66px;resize:vertical;background:var(--field);border:0;border-radius:10px;padding:9px 11px;font-size:14px;line-height:1.5}
 .empty{padding:18px 14px;color:var(--ink-2);font-size:13px}
 .memo-label{flex:none;display:flex;align-items:baseline;justify-content:flex-end;
  font-size:11.5px;font-weight:700;color:var(--ink-2);letter-spacing:.05em;margin-bottom:7px}
@@ -1614,7 +1613,14 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .ds-chip:hover{border-color:var(--ink-2)}.ds-chip.on{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy);font-weight:650}
 .ds-sw{display:inline-flex}.ds-sw i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(128,128,128,.45)}.ds-sw i+i{margin-left:-5px}
 .ds-fc{flex-direction:column;align-items:flex-start;gap:2px;border-radius:12px;padding:9px 14px}.ds-fc small{font-size:12px;color:var(--ink-3);font-weight:400}
-.item.todo .check{border-color:var(--moss);background:linear-gradient(135deg,transparent 50%,var(--moss) 50%)}
+.item.todo .check{border-color:var(--indigo);background:var(--indigo)}
+.item.todo .check::after{content:"";width:5px;height:5px;border-radius:50%;background:#fff}
+.item.todo::before{background:var(--indigo)}
+.item.done::before{background:var(--moss);opacity:.55}
+.item.open .note.edit{max-height:200px;margin-top:6px}
+.note textarea{display:block;width:100%;min-height:24px;max-height:160px;resize:none;overflow:hidden;background:transparent;border:0;border-left:2px solid var(--line);border-radius:0;padding:2px 0 2px 9px;font-size:13px;line-height:1.5;color:var(--ink-2);transition:border-color .15s}
+.note textarea:focus{outline:0;border-left-color:var(--indigo)}
+.note textarea::placeholder{color:var(--ink-3);opacity:.55}
 </style>
 </head>
 <body>
@@ -2303,7 +2309,7 @@ function renderDay(){try{memoMaterialize();}catch(_){}
         <button class="tip-r" data-act="del" data-tip="삭제">×</button></div>
       ${i.img?`<img class="thumb" src="${i.img}" data-img="${i.id}" alt="">`:''}
       <div class="note ${isOpen?'edit':(has?'has':'')}">${isOpen
-        ?`<textarea data-note="${i.id}" placeholder="">${esc(i.note||'')}</textarea>`
+        ?`<textarea data-note="${i.id}" rows="1" placeholder="메모를 기록하세요.">${esc(i.note||'')}</textarea>`
         :(has?`<div class="note-inner">${esc(i.note)}</div>`:'')}</div></li>`;});
   othersFor(sel).forEach(o=>{
     h+=`<li class="item oth${o.done?' done':''}" style="--c:${o.color||'#8a8f9e'}"><button class="check locked"></button>
@@ -2313,7 +2319,7 @@ function renderDay(){try{memoMaterialize();}catch(_){}
   $('list').innerHTML=h||'<li class="empty">아래에 한 줄로 적으면 이 날에 들어갑니다.</li>';
   memoPaint();
   renderTL();
-  const ta=$('list').querySelector('textarea[data-note]');if(ta){ta.focus();ta.selectionStart=ta.value.length;}
+  const ta=$('list').querySelector('textarea[data-note]');if(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';ta.focus();ta.selectionStart=ta.value.length;}
   const ei=$('list').querySelector('input[data-edit]');if(ei){ei.focus();ei.selectionStart=ei.value.length;}
   const ni=$('newIn');if(ni)ni.focus();
   if(pipHost)renderMini();
@@ -3933,7 +3939,7 @@ $('list').addEventListener('focusout',e=>{
   setTimeout(()=>{if(editItem===id&&!$('list').contains(document.activeElement))saveEdit(id,val);},130);});
 $('list').addEventListener('input',e=>{const ta=e.target.closest('textarea[data-note]');if(!ta)return;
   const it=store.items.find(i=>i.id===ta.dataset.note);if(!it)return;
-  it.note=ta.value;touch(it);clearTimeout(window._nt);window._nt=setTimeout(save,400);});
+  ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';it.note=ta.value;touch(it);clearTimeout(window._nt);window._nt=setTimeout(save,400);});
 $('list').addEventListener('focusout',e=>{if(!e.target.closest('textarea[data-note]'))return;
   setTimeout(()=>{if(!$('list').contains(document.activeElement)){openNote=null;save();renderDay();}},120);});
 
@@ -4257,7 +4263,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v128';
+const APPVER=/*ver*/'v129';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
