@@ -1478,7 +1478,7 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .om-r{display:flex;align-items:center;gap:10px;flex:none}.om-s{font-size:12.5px;color:var(--ink-2)}.om-s.dim{color:var(--ink-3)}
 .org-ta{width:100%;min-height:90px;border:1px solid var(--hair);border-radius:8px;padding:10px;font-size:13px;background:var(--field);box-sizing:border-box}
 .org-s{font-size:12.5px;color:var(--ink-2)}
-@media (max-width:760px){.org{grid-template-columns:1fr}.org-tree{position:static;max-height:230px}.om-r .om-s{display:none}}
+@media (max-width:760px){.org{grid-template-columns:1fr}.org-tree{position:static;max-height:230px}}
 /* v102 디자인 시트: 옆 패널로 열어 실제 화면에서 바로 미리보기 */
 #dsSheet{box-shadow:-18px 0 48px rgba(10,20,50,.16);border-left:1px solid var(--line)}
 #dsSheet .sheet-body{max-width:none;padding:0 16px 24px}
@@ -1746,6 +1746,7 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
     <div class="grid" id="grid"></div>
     <div class="clegend" id="clegend"><span class="lgt">범례</span>
       <button class="lgchip" id="lgVac" aria-pressed="false"><i style="background:#d9822b"></i>휴가 일정</button>
+      <button class="lgchip" id="lgTeam" aria-pressed="false"><i style="background:#3a63c8"></i>팀 일정</button>
       <button class="lgchip" id="lgExt" aria-pressed="true"><i style="background:#2f7d6b"></i>연동 캘린더</button>
       <a class="lgchip lgvac" id="lgLink" href="https://tongyang-dashboard.vercel.app/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;opacity:1;color:var(--ink)">휴가ㆍ외근 ↗</a><span class="lgnote" id="lgNote"></span></div>
   </div>
@@ -2034,7 +2035,8 @@ if(!curCats.length)curCats=['__all'];
 try{if(!localStorage.getItem('cat-all-v1')){curCats=['__all'];localStorage.setItem('cat-all-v1','1');localStorage.setItem('cur-cats','__all');}}catch(e){}
 const allMode=()=>curCats.includes('__all');
 const addCats=()=>allMode()?[store.cats[0].id]:curCats.slice();
-const inView=i=>allMode()||catsOf(i).some(c=>curCats.includes(c.id));
+let lgTeam=false;try{lgTeam=localStorage.getItem('lg-team')==='1';}catch(e){}
+const inView=i=>(allMode()||catsOf(i).some(c=>curCats.includes(c.id)))&&(!lgTeam||isShared(i));
 const saveCurCats=()=>localStorage.setItem('cur-cats',curCats.join(','));
 const catOf=id=>store.cats.find(c=>c.id===id)||store.cats[store.cats.length-1];
 const catsOf=i=>{const a=(Array.isArray(i.cats)&&i.cats.length?i.cats:[i.cat]).map(catOf);
@@ -2141,7 +2143,7 @@ let otherItems=[],myShares=[],inShares=[];
 const viewOff=new Set((()=>{try{return JSON.parse(localStorage.getItem('sh-off')||'[]');}catch(e){return [];}})());
 const ownerName=o=>o.owner_name||o.owner_label||'';
 let viewWho=(()=>{try{return localStorage.getItem('viewWho')||'me';}catch(e){return 'me';}})();
-const showOwner=o=>viewWho==='me'?false:viewWho==='all'?!viewOff.has(o.owner):o.owner===viewWho;
+const showOwner=o=>lgTeam?true:viewWho==='me'?false:viewWho==='all'?!viewOff.has(o.owner):o.owner===viewWho;
 const othersFor=day=>otherItems.filter(o=>showOwner(o)&&(o.date===day||(o.endDate&&o.date<=day&&day<=o.endDate)))
   .sort((a,b)=>((a.time||'99:99')<(b.time||'99:99')?-1:1));
 const hasAny=day=>othersFor(day).length>0||ordItems(day).length>0||deadlinesOn(day).length>0||!!(store.memos[day]||'').trim();
@@ -3078,7 +3080,7 @@ function orgMembersHTML(){
       <div class="om-b"><div class="om-n"><i class="om-d${p.user_id?' on':''}" title="${p.user_id?'앱 사용 중':'미가입'}"></i><b>${esc(p.name)}</b><span>${esc(p.title||'')}</span>
         ${p.is_leader?'<em class="tmb lead">팀장</em>':''}${p.user_id===me?'<em class="tmb">나</em>':''}${abs?`<em class="tmb st-${m.status}">${esc(tmLabel(m))}</em>`:''}</div>
         <div class="om-p">${esc(path)}</div></div>
-      <div class="om-r">${p.user_id?`<span class="om-s">${n?`오늘 일정 ${n}건`:'오늘 공개 일정 없음'}</span>${m?`<button class="vbtn alt sm" data-tmo="${p.user_id}">${p.user_id===me?'내 상태':'상세'}</button>`:''}`:'<span class="om-s dim">미가입</span>'}
+      <div class="om-r"><span class="om-s${p.user_id?'':' dim'}">${p.user_id?'가입':'미가입'}</span>
         ${q?'':`<button class="vbtn alt sm" data-oe="${p.id}" aria-label="수정" title="이름·직급 수정">수정</button><button class="vbtn alt sm" data-od="${p.id}" aria-label="목록에서 빼기" title="구성원에서 빼기">빼기</button>`}</div></div>${orgEd===p.id?`<div class="om-ed"><input id="oeN" value="${esc(p.name)}" placeholder="이름" maxlength="30"><input id="oeT" value="${esc(p.title||'')}" placeholder="직급" maxlength="20"><label><input type="checkbox" id="oeL"${p.is_leader?' checked':''}> 팀장</label><button class="vbtn sm" data-oes="${p.id}">저장</button><button class="vbtn alt sm" data-oec="1">취소</button></div>`:''}`;}).join('');
 }
 function orgRender(){
@@ -3655,15 +3657,19 @@ function extOn(k){
   return extEv.filter(e=>e.d<=k&&k<=e.e).slice(0,8).map(e=>({t:(e.t?e.t+' ':'')+e.n,c:e.c,oth:true,x:'ext'}));
 }
 function paintLegend(){
-  $('lgVac').setAttribute('aria-pressed',lgVac);$('lgExt').setAttribute('aria-pressed',lgExt);
+  $('lgTeam').setAttribute('aria-pressed',lgTeam);$('lgVac').setAttribute('aria-pressed',lgVac);$('lgExt').setAttribute('aria-pressed',lgExt);
   const n=[];
   if(lgVac)n.push(tmMembers&&tmMembers.length?'팀 휴가·발령 '+tmMembers.filter(m=>m.status!=='active').length+'건':'팀에 참여하면 팀 휴가가 보여요');
+  if(lgTeam)n.push('팀원이 공개한 일정 '+otherItems.length+'건 · 내가 공개한 일정만 표시');
   if(lgExt&&extEv.length)n.push('연동 일정 '+extEv.length+'건');
   $('lgNote').textContent=n.join(' · ');
 }
 $('lgVac').onclick=async()=>{lgVac=!lgVac;lgSet('lg-vac',lgVac?'1':'0');
   if(lgVac&&!team&&backend==='sb'){try{await loadTeam();}catch(e){}}
   paintLegend();try{renderMonth();}catch(e){}};
+$('lgTeam').onclick=async()=>{lgTeam=!lgTeam;lgSet('lg-team',lgTeam?'1':'0');
+  if(lgTeam&&backend==='sb'){try{await loadShares();}catch(e){}}
+  paintLegend();try{redrawAll();}catch(e){}};
 $('lgExt').onclick=()=>{lgExt=!lgExt;lgSet('lg-ext',lgExt?'1':'0');paintLegend();try{renderMonth();}catch(e){}};
 
 /* ---- ICS 해석 ---- */
@@ -4492,7 +4498,7 @@ $('an2').addEventListener('click',e=>{
       if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
     an2Render();}});
 runQuery=function(){an2Render();};
-const APPVER=/*ver*/'v136';
+const APPVER=/*ver*/'v137';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
