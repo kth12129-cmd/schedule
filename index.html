@@ -1879,8 +1879,8 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
       <button class="lgchip" id="lgExt" aria-pressed="true"><i style="background:#2f7d6b"></i>연동 캘린더</button>
       <a class="lgchip lgvac" id="lgLink" href="https://tongyang-dashboard.vercel.app/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;opacity:1;color:var(--ink)">휴가ㆍ외근 ↗</a><span class="lgnote" id="lgNote"></span></div>
   </div>
-  <div class="rightcol" id="rc" data-rt="status">
-  <div class="rt-tabs" id="rtTabs"><button data-rt="status">현황</button><button data-rt="day">선택한 날</button><button data-rt="time">시간표</button><button data-rt="memo">메모</button><button class="rt-x" id="rcClose" aria-label="닫기">✕</button></div>
+  <div class="rightcol" id="rc" data-rt="day">
+  <div class="rt-tabs" id="rtTabs"><button data-rt="day">선택한 날</button><button data-rt="status">현황</button><button data-rt="time">시간표</button><button data-rt="memo">메모</button><button class="rt-x" id="rcClose" aria-label="닫기">✕</button></div>
   <div class="card pane status-pane" id="stPane"><div id="stBody"></div></div>
   <div class="card pane list-pane">
     <div class="day-head"><h2 id="dayTitle"></h2><span class="cnt" id="dayCnt"></span>
@@ -5917,8 +5917,8 @@ $('yearWrap').addEventListener('mouseleave',()=>{zMonth=null;});
 /* ===== v88 화면 구성 · 현황 · 디자인 시안 ===== */
 const HTMLEL=document.documentElement;
 let layout=HTMLEL.getAttribute('data-layout')||'focus';
-let rtab=(()=>{try{return localStorage.getItem('rt')||'status';}catch(e){return 'status';}})();
-function setRT(r){rtab=r;try{localStorage.setItem('rt',r);}catch(e){}
+let rtab=(()=>{try{return localStorage.getItem('rt2')||'day';}catch(e){return 'day';}})();
+function setRT(r){rtab=r;try{localStorage.setItem('rt2',r);}catch(e){}
   $('rc').dataset.rt=r;
   $('rtTabs').querySelectorAll('[data-rt]').forEach(b=>b.classList.toggle('on',b.dataset.rt===r));
   if(r==='status')renderStatus();}
@@ -5934,7 +5934,7 @@ $('layBar').onclick=e=>{const b=e.target.closest('[data-l]');if(!b)return;
   setTimeout(()=>{try{view=new Date(today.getFullYear(),today.getMonth(),1);calStart=null;renderMonth();goto(TODAY);}catch(_){}},120);};
 $('rtTabs').onclick=e=>{const b=e.target.closest('[data-rt]');if(b)setRT(b.dataset.rt);};
 $('rcClose').onclick=()=>openRC(false);$('rcBack').onclick=()=>openRC(false);
-$('rcOpen').onclick=()=>{setRT('status');openRC(true);};
+$('rcOpen').onclick=()=>{setRT('day');openRC(true);};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('rc-open'))openRC(false);});
 
 const MJ_BEAR='<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="8" cy="8.5" r="5" fill="#c98f5e"/><circle cx="24" cy="8.5" r="5" fill="#c98f5e"/><circle cx="8" cy="8.5" r="2.4" fill="#f2cfae"/><circle cx="24" cy="8.5" r="2.4" fill="#f2cfae"/><circle cx="16" cy="18" r="12" fill="#dba672"/><ellipse cx="16" cy="22.3" rx="5.6" ry="4.2" fill="#f7e0c6"/><path d="M9.6 15.6q2.2-3 4.4 0M18 15.6q2.2-3 4.4 0" stroke="#3a281c" stroke-width="1.7" fill="none" stroke-linecap="round"/><ellipse cx="16" cy="20.2" rx="1.9" ry="1.3" fill="#3a281c"/><path d="M12.4 23q3.6 4.4 7.2 0z" fill="#b8423f"/><circle cx="8.8" cy="21" r="2.1" fill="#f59a96" opacity=".65"/><circle cx="23.2" cy="21" r="2.1" fill="#f59a96" opacity=".65"/></svg>';
@@ -5961,6 +5961,9 @@ function renderStatus(){
   }
   done.sort((a,b)=>b.k<a.k?-1:b.k>a.k?1:0);
   wkl.sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:0);
+  const ystd=ymd(dayAdd(t0,-1)),tmr=ymd(dayAdd(t0,1));
+  const dl=k=>ordItems(k).filter(i=>!(i.wk&&i.endDate)).map(i=>({i,k,en:i.endDate||i.date,wk:false}));
+  const ystL=dl(ystd),tmrL=dl(tmr).filter(r=>!todo.some(t=>t.i.id===r.i.id));
   const lo=(()=>{try{return localStorage.getItem('st-late')==='1';}catch(e){return false;}})();
   const rowH=(r,cls)=>{const i=r.i,c=catColor(i);
     return `<div class="st-row ${cls}${i.pri?' pri':''}" data-go="${r.k}" style="--c:${c}">
@@ -5980,11 +5983,12 @@ function renderStatus(){
     <div class="st-tile${missed.length?' warn':''}" id="stMissTile" ${missed.length?'data-late="1" style="cursor:pointer"':''}><span>못 끝낸 일</span><b>${missed.length}</b><i class="mj" title="못 끝낸 일">${MJ_BUNNY}</i></div>
     <div class="st-tile"><span>차주 예정</span><b>${n7}</b></div></div>
   <div class="st-cols">
-    <section id="stTodo" class="st-todo-sec"><h3 class="st-h"><span>해야 할 일</span><em>직접 담은 일만 표시</em></h3>
-      ${todo.length?todo.map(r=>rowH(r,'')).join(''):empty('일정을 이곳으로 끌어 놓거나, 일정 오른쪽의 ☐ 버튼을 눌러 꼭 해야 할 일을 담아 두세요.')}
+    <section id="stTodo" class="st-todo-sec"><h3 class="st-h"><span>내일 할 일</span><em>${md(tmr)} (${WD[fromYmd(tmr).getDay()]}) · ${tmrL.length+todo.length}건</em></h3>
+      ${todo.length?`<h3 class="st-h st-sub"><span>담아 둔 일</span><em>직접 담은 일</em></h3>${todo.map(r=>rowH(r,'')).join('')}`:''}
+      ${tmrL.length?tmrL.map(r=>rowH(r,'')).join(''):(todo.length?'':empty('내일 등록된 일정이 없습니다.'))}
       ${wkl.length?`<h3 class="st-h st-sub"><span>주 단위 일정</span><em>날짜를 정하지 않은 일</em></h3>${grp(wkl,'','')}`:''}
       ${missed.length?`<button class="st-fold${lo?' open':''}" data-fold="1"><span>못 끝낸 일 ${missed.length}건 (직접 표시한 일)</span><i>${lo?'접기':'펼치기'}</i></button>${lo?missed.map(r=>rowH(r,'late')).join(''):''}`:''}</section>
-    <section><h3 class="st-h"><span>해온 일</span><em>최근 2주 · 완료 처리한 일</em></h3>${done.length?grp(done,'done',''):empty('아직 완료 표시한 일정이 없습니다. 위 일정의 체크를 누르면 여기로 옮겨집니다.')}</section>
+    <section><h3 class="st-h"><span>어제 한 일</span><em>${md(ystd)} (${WD[fromYmd(ystd).getDay()]}) · 완료 ${ystL.filter(r=>r.i.done).length} / ${ystL.length}건</em></h3>${ystL.length?ystL.map(r=>rowH(r,r.i.done?'done':'')).join(''):empty('어제 등록된 일정이 없습니다.')}</section>
   </div>`;
 }
 $('stBody').onclick=e=>{
@@ -7253,7 +7257,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v155';
+const APPVER=/*ver*/'v156';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
