@@ -3653,6 +3653,16 @@ document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{
   $(b.dataset.close).classList.remove('open');
   if(b.dataset.close==='sheet'){runQuery($('q').value||'');renderMonth();}});
 
+/* Esc: 가장 위에 열린 시트(계정·설정·분석 등 전체 화면)를 닫습니다. 팝업·대화상자가 열려 있으면 그쪽이 먼저 닫힙니다 */
+window.addEventListener('keydown',e=>{
+  if(e.key!=='Escape'||e.isComposing||e.defaultPrevented)return;
+  if(document.querySelector('.xdlg.on,.pop.open,.wkpop.open,#brief[style*="block"],body.rc-open'))return;
+  const sh=[...document.querySelectorAll('.sheet.open')].pop();
+  if(!sh)return;
+  const b=sh.querySelector('[data-close]');
+  if(b)b.click();else sh.classList.remove('open');
+  e.preventDefault();e.stopImmediatePropagation();
+},true);
 function anRefresh(){$('q').value.trim()||anCats.size||anRange?runQuery($('q').value):runQuery('');}
 $('qGo').onclick=()=>{const v=$('q').value.trim();v?runQuery(v):runQuery('');};
 $('anScaleSeg').onclick=e=>{const b=e.target.closest('[data-sc]');if(!b)return;
@@ -4133,7 +4143,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v120';
+const APPVER=/*ver*/'v121';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
