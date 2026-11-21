@@ -1592,6 +1592,10 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .missbtn{font-size:15px}.missbtn.on{color:var(--red)}
 .st-tile.dropz{box-shadow:0 0 0 2px var(--navy)}
 .rembtn.on,.tnbtn.on{color:var(--navy)}.rembtn,.tnbtn{font-size:14px}.tnbtn:not(.on){opacity:.45}
+.vc-card{margin:14px 0 4px}.vc-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:9px 12px;margin:0 0 6px;border:1px solid var(--line);border-left:3px solid #d9822b;border-radius:9px;background:var(--surface);cursor:pointer}
+.vc-row b{font-size:14px;font-weight:650}.vc-row em{font-style:normal;font-size:12.5px;color:var(--ink-2)}.vc-row small{flex-basis:100%;font-size:12px;color:var(--ink-3)}
+.vc-k{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff1d9;color:#9a5b00}.vc-k.site{background:#e1f0ee;color:#0d6b63}.vc-k.transfer{background:#fde8e6;color:#b3261e}
+.xd-card .vc-row{cursor:default}
 </style>
 </head>
 <body>
@@ -1688,7 +1692,7 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
   <div class="wk-sum" id="wkSum"></div>
   <div class="wk-act"><button id="wkClr">해제</button><button id="wkOk" class="go">적용</button></div>
 </div>
-<div class="xdlg" id="cpDlg"></div><div class="xdlg" id="exDlg"></div>
+<div class="xdlg" id="vacDlg"></div><div class="xdlg" id="cpDlg"></div><div class="xdlg" id="exDlg"></div>
 <div class="updbar" id="updBar"><span id="updTxt"></span>
   <button id="updGo">지금 받기</button><button class="x" id="updX">×</button></div>
 
@@ -2828,7 +2832,7 @@ $('v-cal').addEventListener('dblclick',e=>{
 });
 
 /* ── 팀 업무 공유 · 현황 · 인수인계 ── */
-const TS={active:'정상 근무',leave:'휴가',transfer:'타 팀 발령',site:'현장 발령'};
+const TS={active:'정상 근무',leave:'휴가',transfer:'타 팀 발령',site:'외근 · 현장'};
 let team=null,tmMembers=[],teamItems=[],handLog=[],tmDay=TODAY,tmView='board',tmCur=null,tmChan=null,tmT=null,tmMeetT=null;
 const tmMe=()=>session&&session.user.id;
 const onDay=(o,d)=>o.date===d||(o.endDate&&o.date<=d&&d<=o.endDate);
@@ -3394,6 +3398,7 @@ function renderStatus(){
   </div>`;
 }
 $('stBody').onclick=e=>{
+  const vg=e.target.closest('[data-vgo]');if(vg){vacOpen(vg.dataset.vgo);return;}
   const tg=e.target.closest('[data-tg]');
   if(tg){const it=store.items.find(x=>x.id===tg.dataset.tg);if(!it)return;
     it.done=!it.done;it.doneAt=it.done?new Date().toISOString().slice(0,16).replace('T',' '):null;touch(it);save();
@@ -3460,14 +3465,53 @@ setRT(rtab);setLayout(layout);paintDs();
 /* ===== v89 캘린더 연동 · 휴가 범례 ===== */
 const lgGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
 const lgSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
-let lgVac=lgGet('lg-vac')==='1',lgExt=lgGet('lg-ext')!=='0';
+let lgVac=lgGet('lg-vac')!=='0',lgExt=lgGet('lg-ext')!=='0';
 let extEv=[]; // 연동 캘린더에서 가져온 일정
 const p2x=n=>String(n).padStart(2,'0');
+/* ---- 휴가 · 외근 상세 ---- */
+const vacF=x=>`${+x.slice(5,7)}/${+x.slice(8)}(${WD[fromYmd(x).getDay()]})`;
+function vacSpan(m){
+  const a=m.status_from,b=m.status_to;
+  if(a&&b){if(a===b)return vacF(a)+' 하루';return vacF(a)+' ~ '+vacF(b)+' · '+(Math.round((fromYmd(b)-fromYmd(a))/864e5)+1)+'일간';}
+  if(a)return vacF(a)+'부터 (종료일 미정)';
+  if(b)return '~ '+vacF(b);
+  return '기간 미정';
+}
+const vacRange=m=>(TS[m.status]||'휴가')+' '+vacSpan(m);
+const vacOver=(m,a,b)=>m.status&&m.status!=='active'&&(!m.status_from||m.status_from<=b)&&(!m.status_to||m.status_to>=a);
+const vacList=(a,b)=>(tmMembers||[]).filter(m=>vacOver(m,a,b)).sort((x,y)=>(x.status_from||'')<(y.status_from||'')?-1:1);
+function vacOpen(k){
+  const dl=$('vacDlg');if(!dl)return;
+  const L=vacList(k,k),d=fromYmd(k);
+  dl.innerHTML=`<div class="xd-card" role="dialog" aria-label="휴가 외근">
+    <h3>${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]}) 휴가 · 외근</h3>
+    <p class="xd-sub">${L.length?L.length+'명 · 기간이 있는 일정은 시작~종료일로 표시됩니다':'이 날 휴가·외근으로 등록된 사람이 없습니다'}</p>
+    ${L.map(m=>`<div class="vc-row"><b>${esc(tmName(m))}</b><span class="vc-k ${m.status}">${esc(TS[m.status]||'휴가')}</span><em>${esc(vacSpan(m))}</em>${m.status_note?`<small>${esc(m.status_note)}</small>`:''}</div>`).join('')}
+    <div class="xd-act"><button data-vx="1">닫기</button></div></div>`;
+  dl.classList.add('on');
+  dl.onclick=e=>{if(e.target===dl||e.target.closest('[data-vx]'))dl.classList.remove('on');};
+}
+function vacNextWeek(){
+  const a=wkMon(1),b=wkFri(1);
+  return{a,b,list:vacList(a,b)};
+}
+function vacCard(){
+  const w=vacNextWeek(),f=x=>md(x)+'('+WD[fromYmd(x).getDay()]+')';
+  const body=!tmMembers||!tmMembers.length?'<div class="st-empty">팀에 참여하면 팀원의 휴가 · 외근이 여기에 자동으로 모입니다.</div>'
+    :w.list.length?w.list.map(m=>`<div class="vc-row" data-vgo="${esc(m.status_from||w.a)}"><b>${esc(tmName(m))}</b><span class="vc-k ${m.status}">${esc(TS[m.status]||'휴가')}</span><em>${esc(vacSpan(m))}</em>${m.status_note?`<small>${esc(m.status_note)}</small>`:''}</div>`).join('')
+    :'<div class="st-empty">차주에 휴가 · 외근으로 등록된 사람이 없습니다.</div>';
+  return `<section class="vc-card" id="vcCard"><h3 class="st-h"><span>차주 휴가 · 외근</span><em>${f(w.a)} ~ ${f(w.b)}${w.list.length?' · '+w.list.length+'명':''}</em></h3>${body}</section>`;
+}
+const _rs123=renderStatus;
+renderStatus=function(){_rs123.apply(this,arguments);
+  try{const b=$('stBody'),t=b.querySelector('.st-tiles');if(t)t.insertAdjacentHTML('afterend',vacCard());
+    if(backend==='sb'&&!team&&!window._vacTry){window._vacTry=1;loadTeam().then(()=>{try{renderStatus();renderMonth();}catch(_){}}).catch(()=>{});}}catch(e){}
+};
 function vacOn(k){
   if(!lgVac||!tmMembers||!tmMembers.length)return[];
   const o=[];
   tmMembers.forEach(m=>{if(m.status!=='active'&&m.status_from&&tmAbsent(m,k))
-    o.push({t:(m.name||'팀원')+' · '+(TS[m.status]||'휴가'),c:'#d9822b',oth:true,x:'vac'});});
+    o.push({t:(m.name||'팀원')+' · '+(TS[m.status]||'휴가'),c:'#d9822b',oth:true,x:'vac',d:(m.name||'팀원')+' · '+vacRange(m)+(m.status_note?' · '+m.status_note:'')});});
   return o;
 }
 function extOn(k){
@@ -3621,7 +3665,7 @@ renderDay=function(){_rd89.apply(this,arguments);
     const xs=[...vacOn(sel),...extOn(sel)];
     xs.forEach(e=>{const li=document.createElement('li');li.className='xrow';
       li.style.cssText='list-style:none;margin:6px 0;padding:8px 11px;border:1px dashed var(--fieldline);border-left:3px solid '+e.c+';border-radius:8px;font-size:13px;color:var(--ink-2)';
-      li.textContent=e.t;L.appendChild(li);});}catch(x){}
+      li.textContent=e.d||e.t;L.appendChild(li);});}catch(x){}
 };
 paintLegend();
 setTimeout(()=>{extRebuild();extRefreshAll(false);},2500);
@@ -3708,6 +3752,7 @@ $('qResult').addEventListener('keydown',e=>{
 $('yearWrap').onclick=e=>{const d=e.target.closest('[data-d]');if(d){goto(d.dataset.d);return;}
   const m=e.target.closest('[data-m]');if(m){view=new Date(yearView,+m.dataset.m,1);setTab('cal');}};
 $('grid').onclick=e=>{const b=e.target.closest('.cell');if(!b)return;
+  if(e.target.closest('.ev.vac')&&!e.shiftKey&&typeof vacOpen==='function'){sel=b.dataset.d;try{renderMonth();renderDay();}catch(_){}vacOpen(b.dataset.d);return;}
   if(e.shiftKey){e.preventDefault();rngClick(b.dataset.d);return;}
   sel=b.dataset.d;openNote=null;editItem=null;adding=false;
   if(layout==='cal'){setRT('day');openRC(true);}else if(layout!=='split')setRT('day');
@@ -4139,7 +4184,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v122';
+const APPVER=/*ver*/'v124';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -4276,7 +4321,7 @@ function renderAuth(){
   if(!session){
     box.innerHTML=`<div class="hint-txt"><b style="color:var(--navy)">아직 로그인하지 않았습니다 — 그래서 다른 기기와 연동되지 않습니다.</b><br>
       <b>회사 이메일(@tongyanginc.co.kr)</b>로만 가입할 수 있습니다. 처음이면 이메일·비밀번호를 적고 <b>가입</b>을 먼저 누르세요. 그 다음 다른 기기에서 <b>같은 계정으로 로그인</b>하면 맞춰집니다.</div>
-      <div class="frow"><input id="aEmail" type="email" placeholder="회사 이메일 (@tongyanginc.co.kr)" autocomplete="username"></div>
+      <div class="frow"><input id="aEmail" type="email" placeholder="아이디: 이름 초성 영어@tongyanginc.co.kr (예: kth)" autocomplete="username"></div>
       <div class="frow"><input id="aPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"></div>
       <div class="frow btns"><button class="go2" id="aIn">로그인</button>
         <button class="go2 alt" id="aUp">가입</button></div>
@@ -4325,9 +4370,12 @@ function renderAuth(){
       msg('재설정 메일을 보냈습니다. 메일함(스팸함 포함)을 확인하고, 링크를 누르면 새 비밀번호를 정할 수 있습니다. 1~2분 걸릴 수 있어요.');};
     $('aUp').onclick=async()=>{
       if(!/^[^@\s]+@tongyanginc\.co\.kr$/i.test(creds().email)){msg('회사 이메일(@tongyanginc.co.kr)만 가입할 수 있습니다.');return;}
+      msg('확인 중…');
+      try{const ok=await SB.rpc('org_email_ok',{p_email:creds().email});
+        if(ok.data===false){msg('등록된 직원 아이디가 아닙니다.\n→ 아이디는 이름의 초성을 영어로 쓴 것입니다. 예) 김태현 → kth@tongyanginc.co.kr\n→ 이름이 같은 초성이면 뒤에 숫자가 붙습니다(kms2). 맞는데도 안 되면 관리자에게 알려 주세요.');return;}}catch(_){}
       msg('가입 중…');
       const {error}=await SB.auth.signUp(creds());
-      if(error){msg('가입 실패: '+(/database error|P0001|tongyanginc/i.test(error.message)?'회사 이메일(@tongyanginc.co.kr)만 가입할 수 있습니다.':error.message)
+      if(error){msg('가입 실패: '+(/database error|P0001|tongyanginc|등록된 직원/i.test(error.message)?'등록된 직원 아이디(이름 초성 영어 + @tongyanginc.co.kr)만 가입할 수 있습니다.':error.message)
         +(/already/i.test(error.message)?'\n→ 이미 만든 계정입니다. [로그인]을 누르세요.':''));return;}
       msg('가입되었습니다. 바로 로그인되지 않으면 [로그인]을 누르세요. 확인 메일이 왔다면 링크를 먼저 누르세요.');};
     $('aPw').onkeydown=e=>{if(e.key==='Enter')$('aIn').click();};
@@ -4721,7 +4769,7 @@ $('exDlg').onclick=async e=>{
 };
 $('exDlg').addEventListener('change',e=>{
   if(e.target.id==='exA'||e.target.id==='exB'){const a=$('exA').value,b=$('exB').value;if(a&&b){exSt.a=a<=b?a:b;exSt.b=a<=b?b:a;exPaint();}}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('exDlg').classList.remove('on');$('cpDlg').classList.remove('on');rngA=rngB=null;try{renderMonth();}catch(_){}}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('vacDlg').classList.remove('on');$('exDlg').classList.remove('on');$('cpDlg').classList.remove('on');rngA=rngB=null;try{renderMonth();}catch(_){}}});
 
 /* ── 항상 위 미니 창 (Document Picture-in-Picture) ── */
 let pipWin=null,pipHost=null;
