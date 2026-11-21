@@ -14,7 +14,7 @@
 <title>TY-Scheduler</title>
 <style>
 :root{
-  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);
+  box-sizing:border-box;padding-top:0;
   --page:#f6f6f9;--surface:#fff;
   --ink:#14161c;--ink-2:#7c8090;--ink-3:#b8bcc8;
   --line:#cfd4e3;--hair:#eef0f5;
@@ -216,12 +216,12 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .arrow{width:29px;height:32px;display:grid;place-items:center;color:var(--ink-2);font-size:18px;border-radius:9px}
 .arrow:active{background:var(--chip)}
 
-.weekdays{flex:none;display:grid;grid-template-columns:repeat(7,1fr);padding:7px 4px 5px;
+.weekdays{flex:none;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));padding:7px 4px 5px;
  border-bottom:2px solid var(--navy);margin:0 2px 3px}
 .weekdays span{text-align:center;font-size:10.5px;font-weight:700;color:var(--navy);letter-spacing:.06em}
 .weekdays span:first-child{color:var(--red)}
 .weekdays span:last-child{color:var(--sat)}
-.grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,1fr)}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(6,1fr)}
 .cell{position:relative;min-height:0;display:flex;flex-direction:column;align-items:stretch;
  justify-content:flex-start;gap:2px;padding:3px 3px 2px;overflow:hidden}
 .cell>.num{align-self:center;flex:none}
@@ -304,9 +304,9 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
 .ymon{background:var(--surface);border-radius:13px;padding:8px 6px 9px;box-shadow:var(--shadow)}
 .ymon h4{margin:0 0 5px 4px;font-size:14px;font-weight:680;letter-spacing:-.02em}
 .ymon.cur h4{color:var(--red)}
-.ywd{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px}
+.ywd{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));margin-bottom:2px}
 .ywd i{font-size:8px;font-style:normal;text-align:center;color:var(--ink-3)}
-.ygrid{display:grid;grid-template-columns:repeat(7,1fr)}
+.ygrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
 .yd{aspect-ratio:1;display:grid;place-items:center;font-size:9.5px;border-radius:50%;line-height:1}
 .yd.o{color:transparent}
 .yd.hit{font-weight:700;color:var(--indigo)}
@@ -1161,7 +1161,7 @@ textarea.memo{background:transparent}
 .capcardwrap{background:none!important;border:0!important;padding:0!important}
 
 /* v83 연속 스크롤 달력 */
-#grid.grid{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:none;grid-auto-rows:var(--rowh,90px);
+#grid.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:var(--rowh,90px);
   overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;align-content:start}
 #grid.grid::-webkit-scrollbar{display:none}
 .cell.mo-odd{background:color-mix(in srgb,var(--ink) 3%,var(--surface))}
@@ -1544,6 +1544,7 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .wk-c.on.st.en i{left:7px}
 /* v112 제목을 화살표 범위 가운데에 */
 .cell.hasw{overflow:visible;z-index:2}
+.grid>.cell,.ygrid>*{min-width:0}
 .wkz{display:block;position:relative;height:0;flex:none;margin:0 0 -2px}
 .wklab{position:absolute;left:50%;transform:translateX(-50%);width:calc(500% + 24px);height:11px;line-height:11px;text-align:center;
   font-size:10px;font-weight:700;color:var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
@@ -1731,7 +1732,7 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .tscol{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
 @media(min-width:960px){.tscol{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}}
 .tscal{padding:10px}
-.tsw,.tsg{display:grid;grid-template-columns:repeat(7,1fr)}
+.tsw,.tsg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
 .tsw span{text-align:center;font-size:11.5px;color:var(--ink-2);padding:4px 0}.tsw .su{color:var(--red)}.tsw .sa{color:#2f5bd0}
 .tsg{gap:3px}
 .tsc{display:grid;grid-template-rows:18px 16px 10px 16px;justify-items:start;align-content:start;padding:5px 6px;min-height:84px;border:1px solid var(--line);border-radius:8px;background:var(--surface);text-align:left}
@@ -1969,7 +1970,8 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
 @media(max-width:900px){input,textarea,select{font-size:16px!important}}
 
 @media(max-width:660px){
-  .brandbar{z-index:30;background:var(--surface);opacity:1}
+  .brandbar{z-index:30;background:var(--surface);opacity:1;padding-top:env(safe-area-inset-top,0px)}
+  html{background:var(--surface)}
   .brandbar img,.brandbar .bt,.brandbar .bs{opacity:1;filter:none}
   header{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--page);padding-top:0;z-index:20}
 }
@@ -6564,7 +6566,7 @@ renderStatus=function(){_rs123.apply(this,arguments);
     if(backend==='sb'&&!team&&!window._vacTry){window._vacTry=1;loadTeam().then(()=>{try{renderStatus();renderMonth();}catch(_){}}).catch(()=>{});}}catch(e){}
 };
 function vacOn(k){
-  if(!lgVac||!tmMembers||!tmMembers.length)return[];
+  if(!lgVac||viewWho==='me'||!tmMembers||!tmMembers.length)return[];
   const o=[];
   tmMembers.forEach(m=>{if(m.status!=='active'&&m.status_from&&tmAbsent(m,k))
     o.push({t:(m.name||'팀원')+' · '+(TS[m.status]||'휴가'),c:'#d9822b',oth:true,x:'vac',d:(m.name||'팀원')+' · '+vacRange(m)+(m.status_note?' · '+m.status_note:'')});});
@@ -6862,7 +6864,7 @@ function closeFind(){
   $('findPop').classList.remove('open');
   const sp=$('setPop');if(sp)sp.classList.remove('open');
   const yp=$('yrPop');if(yp)yp.classList.remove('open');
-  const cp=$('catPop');if(cp){cp.classList.remove('open');cp.classList.remove('big');}document.body.classList.remove('cat-live');
+  const cp=$('catPop');if(cp){cp.classList.remove('open');cp.classList.remove('big');cp.style.maxHeight='';}document.body.classList.remove('cat-live');
   const vp=$('viewPop');if(vp)vp.classList.remove('open');
   $('popBack').classList.remove('open');}
 $('popBack').onclick=closeFind;
@@ -7728,7 +7730,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v190';
+const APPVER=/*ver*/'v191';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -8028,11 +8030,12 @@ function curSel(){
 }
 const catNav=()=>catTarget?store.cats.map(c=>c.id):['__all'].concat(store.cats.map(c=>c.id));
 function paintCatMenu(){
-  const sel2=curSel(),nav=catNav();
+  const sel2=curSel(),nav=catNav();const _l=$('catMenu').querySelector('.clist'),_st=_l?_l.scrollTop:0;
   const rows=(catTarget?'':`<button data-c="__all" class="${allMode()?'on':''}${nav[catIdx]==='__all'?' cur':''}"><i style="background:#8a8f9e"></i><b>전체</b><span class="ck">${allMode()?'✓':''}</span></button>`)+store.cats.map((c,i)=>
     `<button data-c="${c.id}" class="${sel2.includes(c.id)?'on':''}${nav[catIdx]===c.id?' cur':''}">
       <i style="background:${c.color}"></i><b>${esc(c.name)}</b><em class="csm${c.share?' on':''}" data-csm="${c.id}" title="누르면 ${c.share?'비공개':'팀에 공개'}로 바뀜">${c.share?'공유':'비공개'}</em><span class="ck">${sel2.includes(c.id)?'✓':''}</span></button>`).join('');
   $('catMenu').innerHTML=`<div class="clist">${rows}</div><div class="cfoot"><button data-c="__multi" class="${multiCat?'on':''}"><span class="mk">${multiCat?'☑':'☐'}</span>다중 선택</button><button data-c="__edit">분류 설정</button><button data-c="__close" class="ok">완료</button></div><div class="kbd">↑ ↓ 로 옮기고 Enter 로 선택</div>`;
+  const _n=$('catMenu').querySelector('.clist');if(_n&&_st)_n.scrollTop=_st;
 }
 function moveCat(n){
   const N=catNav().length;if(!N)return;
@@ -8069,7 +8072,7 @@ function openCatMenu(itemId,anchorUp){
   try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
   paintCatMenu();
   $('catPop').classList.toggle('up',anchorUp!==false);
-  const cpEl=$('catPop');cpEl.classList.remove('big');cpEl.classList.add('open');
+  const cpEl=$('catPop');cpEl.classList.remove('big');cpEl.style.maxHeight='';cpEl.classList.add('open');
   if(catPhone()&&!catTarget){document.body.classList.add('cat-live');}else{$('popBack').classList.add('open');}
 }
 document.addEventListener('keydown',e=>{
@@ -8081,11 +8084,16 @@ document.addEventListener('keydown',e=>{
     const id=catNav()[catIdx];if(id)pickCat(id);}
 },true);
 $('catBtn').onclick=()=>openCatMenu(null,true);
-(function(){const g=$('catGrab'),p=$('catPop');let y0=null;
-  g.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;},{passive:true});
-  g.addEventListener('touchend',e=>{if(y0==null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;
-    if(dy<-30)p.classList.add('big');else if(dy>30){if(p.classList.contains('big'))p.classList.remove('big');else closeFind();}},{passive:true});
-  g.addEventListener('click',()=>{p.classList.toggle('big');});})();
+(function(){const g=$('catGrab'),p=$('catPop');let y0=null,h0=0,moved=false;
+  const maxH=()=>Math.round(window.innerHeight*0.86),minH=()=>Math.round(window.innerHeight*0.30);
+  g.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;h0=p.getBoundingClientRect().height;moved=false;p.style.transition='none';},{passive:true});
+  g.addEventListener('touchmove',e=>{if(y0==null)return;const dy=e.touches[0].clientY-y0;if(Math.abs(dy)>4)moved=true;
+    p.style.maxHeight=Math.max(minH(),Math.min(maxH(),h0-dy))+'px';},{passive:true});
+  g.addEventListener('touchend',e=>{if(y0==null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;p.style.transition='';
+    if(!moved)return;
+    if(dy>h0*0.5&&dy>60){p.style.maxHeight='';p.classList.remove('big');closeFind();return;}
+    p.classList.add('big');},{passive:true});
+  g.addEventListener('click',()=>{if(moved){moved=false;return;}if(p.style.maxHeight){p.style.maxHeight='';p.classList.remove('big');}else p.classList.toggle('big');});})();
 $('catMenu').onclick=e=>{
   const sm=e.target.closest('[data-csm]');
   if(sm){e.stopPropagation();const c=store.cats.find(x=>x.id===sm.dataset.csm);if(!c)return;
