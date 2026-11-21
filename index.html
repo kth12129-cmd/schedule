@@ -1967,6 +1967,12 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
 :root[data-font="pret"]{--fnt:"Pretendard Variable",Pretendard}:root[data-font="gothica"]{--fnt:"Gothic A1"}:root[data-font="nanum"]{--fnt:"Nanum Gothic"}
 :root[data-font] body{font-variant-numeric:tabular-nums}
 @media(max-width:900px){input,textarea,select{font-size:16px!important}}
+
+@media(max-width:660px){
+  .brandbar{z-index:30;background:var(--surface);opacity:1}
+  .brandbar img,.brandbar .bt,.brandbar .bs{opacity:1;filter:none}
+  header{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--page);padding-top:0;z-index:20}
+}
 </style>
 </head>
 <body>
@@ -1995,6 +2001,7 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
       <a class="hbtn" id="vacBtn" href="https://tongyang-dashboard.vercel.app/" target="_blank" rel="noopener noreferrer" data-tip="휴가ㆍ외근 · 건설사업본부 주간 근무계획 관리 시스템">휴가ㆍ외근</a>
       <button class="hbtn txt" id="vocBtn" data-tip="VOC · 의견 게시판">VOC</button>
       <button class="hbtn" id="findBtn" data-tip="날짜 찾기">⌕</button>
+      <button class="hbtn txt" id="capTop" data-tip="화면을 캡처해서 일정 등록">캡처</button>
       <button class="hbtn" id="miniBtn" data-tip="항상 위 미니 창">⧉</button>
       <button class="hbtn txt" id="analyBtn" data-tip="추정 n+1 · 업무 사이클 분석">추정 n+1</button>
       <button class="hbtn" id="dsBtn" data-tip="디자인 · 화면 구성 · 색상">◐</button>
@@ -4908,6 +4915,7 @@ function calShow(k){
   const fit=()=>{if(innerWidth>660){document.documentElement.style.removeProperty('--calh');document.documentElement.style.removeProperty('--rowh');return;}
     const h=v.clientHeight-4;if(h>200&&Math.abs(h-last)>1){last=h;document.documentElement.style.setProperty('--calh',h+'px');document.documentElement.style.setProperty('--rowh',Math.max(52,Math.floor((h-84)/6))+'px');try{if(tab==='cal')renderMonth();}catch(e){}}};
   new ResizeObserver(fit).observe(v);addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));setTimeout(fit,100);})();
+document.getElementById('capTop').addEventListener('click',()=>{const b=document.getElementById('imgBtn');if(b)b.click();});
 let calRz=null;addEventListener('resize',()=>{clearTimeout(calRz);calRz=setTimeout(()=>{if(tab==='cal')renderMonth();},150);});
 function miniMonth(y,m,mark){
   const f=new Date(y,m,1),start=new Date(f);start.setDate(start.getDate()-f.getDay());
@@ -7443,7 +7451,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v174';
+const APPVER=/*ver*/'v175';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
