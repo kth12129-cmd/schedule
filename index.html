@@ -7451,7 +7451,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v175';
+const APPVER=/*ver*/'v176';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -8324,8 +8324,13 @@ const toFile=(c,n)=>new Promise(r=>c.toBlob(b=>r(new File([b],n||'capture.png',{
 const capTouch=matchMedia('(pointer:coarse)').matches&&!canGrab;
 function capUI(){
   const t=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
-  if(capTouch){t('capGrabD','휴대폰에서 찍은 스크린샷을 불러와 전체를 읽어 일정 목록을 만들어요');
-    t('capRegionD','스크린샷을 불러온 뒤 필요한 부분만 끌어서 선택해요');}
+  if(capTouch){
+    const g=$('capGrab'),r=$('capRegion'),d=$('capDrop');
+    if(g){g.querySelector('i').textContent='1';g.querySelector('b').textContent='스크린샷 선택 (카톡창·바탕화면 등)';}
+    t('capGrabD','카톡·바탕화면 등을 스크린샷으로 찍은 뒤, 사진 목록에서 그 화면을 골라요');
+    if(r)r.style.display='none';
+    if(d){d.querySelector('i').textContent='2';d.querySelector('b').textContent='사진·파일 불러오기';
+      const sp=d.querySelector('span');if(sp)sp.textContent='저장된 사진이나 파일을 선택해요';}}
 }
 $('capShots').onclick=e=>{const im=e.target.closest('img');if(im&&capShots[+im.dataset.k])openCrop(capShots[+im.dataset.k].file);};
 async function shootOne(){
