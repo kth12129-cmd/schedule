@@ -2167,6 +2167,18 @@ textarea.memo{background-color:transparent!important;border:0!important;border-r
 }
 
 
+
+/* v198 */
+.memo-head .mnav,.memo-from{display:none!important}
+.memo-head{padding:2px 14px 0}
+.memo-title{font-size:18px;padding:8px 2px 6px}
+textarea.memo{margin:0!important}
+@media(max-width:700px){
+ html[data-layout="cal"] #rc{gap:0!important}
+ html[data-layout="cal"] #rc .rt-tabs{margin:0 0 2px!important}
+ .rc-dnav{padding:0 6px 2px;margin:0}.rc-dnav button{height:30px}
+ .rc-dt{font-size:16px}
+}
 </style>
 </head>
 <body>
@@ -2235,7 +2247,7 @@ textarea.memo{background-color:transparent!important;border:0!important;border-r
     </div>
     <div class="card pane memo-pane">
       <div class="pane-hd mh"><span class="mh-t">메모</span><span class="saved" id="saved">저장됨</span><label class="memo-carry" data-tip="켜 두면 다음 날 메모가 이 내용으로 시작됩니다. 지난 날의 메모는 그대로 남습니다."><input type="checkbox" id="memoCarry"><span>다음날 이어쓰기</span></label></div>
-      <div class="memo-head"><div class="mnav"><button id="memoPrev" aria-label="전날">‹</button><input type="date" id="memoDate" aria-label="날짜로 이동"><button id="memoNext" aria-label="다음날">›</button></div><input id="memoTitle" class="memo-title" autocomplete="off" aria-label="메모 제목" placeholder="제목" maxlength="60"></div>
+      <div class="memo-head"><div class="mnav"><button id="memoPrev" aria-label="전날">‹</button><input type="date" id="memoDate" aria-label="날짜로 이동"><button id="memoNext" aria-label="다음날">›</button></div><input id="memoTitle" class="memo-title" autocomplete="off" aria-label="메모 제목" maxlength="60"></div>
       <div class="memo-from" id="memoFrom"></div>
       <textarea class="memo" id="memo" placeholder=""></textarea>
     </div>
@@ -7226,7 +7238,7 @@ function memoView(day){
 function memoPaint(){
   const v=memoView(sel);
   $('memo').value=v.text;
-  $('memoTitle').value=v.meta.t||'';try{$('memoDate').value=sel;}catch(_){}
+  $('memoTitle').value=v.meta.t||memoDef(sel);try{$('memoDate').value=sel;}catch(_){}
   $('memoTitle').classList.toggle('def',!v.meta.t);
   $('memoCarry').checked=v.meta.c!==0;
   $('memoFrom').textContent=v.from?'↳ '+md(v.from)+' 메모에서 이어서 시작했습니다. 이 날의 내용은 따로 저장됩니다.':'';
@@ -7247,7 +7259,7 @@ function memoSave(){
   $('saved').classList.add('on');setTimeout(()=>$('saved').classList.remove('on'),1200);}
 let mt;$('memo').oninput=()=>{clearTimeout(mt);mt=setTimeout(memoSave,500);};
 $('memoTitle').oninput=()=>{clearTimeout(mt);mt=setTimeout(memoSave,500);};
-$('memoTitle').onblur=()=>{};
+$('memoTitle').onblur=()=>{if(!$('memoTitle').value.trim())$('memoTitle').value=memoDef(sel);};
 $('memoCarry').onchange=memoSave;
 
 $('stageList').oninput=e=>{const t=e.target;if(t.dataset.i===undefined)return;
@@ -7948,7 +7960,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v197';
+const APPVER=/*ver*/'v198';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
