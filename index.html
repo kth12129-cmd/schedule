@@ -4361,21 +4361,28 @@ function an2Sim(a,b){
   if((a.length>=2&&b.includes(a))||(b.length>=2&&a.includes(b)))return .9;
   const bg=s=>{const m=new Map();for(let i=0;i<s.length-1;i++){const g=s.slice(i,i+2);m.set(g,(m.get(g)||0)+1);}return m;};
   const A=bg(a),B=bg(b);let n=0;A.forEach((v,k)=>{if(B.has(k))n+=Math.min(v,B.get(k));});
-  const t=Math.max(1,a.length-1)+Math.max(1,b.length-1);return 2*n/t;}
+  const dice=2*n/(Math.max(1,a.length-1)+Math.max(1,b.length-1));
+  const ov=n>=2?n/Math.max(1,Math.min(a.length-1,b.length-1)):0;
+  return Math.max(dice,ov);}
 function an2Items(){return store.items.filter(i=>!i.wk&&(!AN2.cat||catsOf(i).some(c=>c.id===AN2.cat)));}
 function an2Pat(){
-  const cl=[];AN2.map={};
+  let cl=[];
   an2Items().slice().sort((x,y)=>x.date.localeCompare(y.date)).forEach(i=>{
     const k=an2Norm(i.title);if(k.length<2)return;
-    let best=null,bs=0;cl.forEach(G=>{const v=an2Sim(k,G.k);if(v>bs){bs=v;best=G;}});
-    if(best&&bs>=.6){best.its.push(i);}else{best={k,its:[i]};cl.push(best);}
-    AN2.map[i.id]=best.k;});
+    let best=null,bs=0;cl.forEach(G=>{const v=Math.max(...G.keys.map(q=>an2Sim(k,q)));if(v>bs){bs=v;best=G;}});
+    if(best&&bs>=.6){best.its.push(i);if(!best.keys.includes(k))best.keys.push(k);}else cl.push({k,keys:[k],its:[i]});});
+  for(let ch=true;ch;){ch=false;
+    outer:for(let x=0;x<cl.length;x++)for(let y=x+1;y<cl.length;y++){
+      if(cl[x].keys.some(a=>cl[y].keys.some(b=>an2Sim(a,b)>=.6))){
+        cl[x].its=cl[x].its.concat(cl[y].its);cl[x].keys=cl[x].keys.concat(cl[y].keys);
+        cl[x].k=cl[x].keys.slice().sort((a,b)=>a.length-b.length)[0];cl.splice(y,1);ch=true;break outer;}}}
+  AN2.map={};cl.forEach(G=>G.its.forEach(i=>AN2.map[i.id]=G.k));
   const out=[];
   cl.forEach(G=>{
     const srt=G.its.slice().sort((a,b)=>a.date.localeCompare(b.date)),last=srt[srt.length-1];
     const all=[...new Set(srt.map(i=>i.date))];
     G.dates=[];all.forEach(d=>{if(!G.dates.length||diffDays(d,G.dates[G.dates.length-1])>3)G.dates.push(d);});
-    G.label=an2Name(last.title);{const mm=(last.title||'').match(/(\d{1,2})\s*월/);G.mon=mm?+mm[1]:0;}G.color=catColor(last);G.n=G.its.length;
+    G.label=an2Name(last.title.replace(/\d+\s*(차수|차시|회차)/,' ').replace(/\d+\s*차\b/,' '));{const sq=(last.title||'').match(/(\d+)\s*(차수|차시|회차|차)/);G.seq=sq?{n:+sq[1],u:sq[2]}:null;}{const mm=(last.title||'').match(/(\d{1,2})\s*월/);G.mon=mm?+mm[1]:0;}G.color=catColor(last);G.n=G.its.length;
     if(G.dates.length>=2){const iv=[];for(let j=1;j<G.dates.length;j++)iv.push(diffDays(G.dates[j],G.dates[j-1]));
       iv.sort((a,b)=>a-b);const m=iv[Math.floor(iv.length/2)];G.iv=m;
       G.kind=m>=26&&m<=35?'month':m>=6&&m<=8?'week':m>=12&&m<=16?'2week':'days';
@@ -4383,7 +4390,7 @@ function an2Pat(){
       G.dow=fromYmd(G.dates[G.dates.length-1]).getDay();}
     out.push(G);});
   return out;}
-function an2PName(p){const G=p.G;return (G.mon&&G.kind==='month'?(((G.mon-1+p.k)%12)+1)+'월 ':'')+G.label;}
+function an2PName(p){const G=p.G;return (G.mon&&G.kind==='month'?(((G.mon-1+p.k)%12)+1)+'월 ':'')+G.label+(G.seq?' '+(G.seq.n+p.k)+G.seq.u:'');}
 function an2Next(G,from){
   if(G.kind==='month'){const d=fromYmd(from),m=d.getMonth()+1,y=d.getFullYear();return ymd(new Date(y,m,Math.min(G.dom,new Date(y,m+1,0).getDate())));}
   return addDays(from,G.kind==='week'?7:G.kind==='2week'?14:G.iv);}
@@ -4500,7 +4507,7 @@ $('an2').addEventListener('click',e=>{
       if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
     an2Render();}});
 runQuery=function(){an2Render();};
-const APPVER=/*ver*/'v138';
+const APPVER=/*ver*/'v139';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
