@@ -1606,6 +1606,9 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .vc-row b{font-size:14px;font-weight:650}.vc-row em{font-style:normal;font-size:12.5px;color:var(--ink-2)}.vc-row small{flex-basis:100%;font-size:12px;color:var(--ink-3)}
 .vc-k{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff1d9;color:#9a5b00}.vc-k.site{background:#e1f0ee;color:#0d6b63}.vc-k.transfer{background:#fde8e6;color:#b3261e}
 .xd-card .vc-row{cursor:default}
+.om-ed{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:-2px 0 10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.om-ed input[type=text],.om-ed input:not([type]){flex:1;min-width:110px;padding:7px 9px;border:1px solid var(--fieldline);border-radius:8px;background:var(--field)}
+.org-add .oa-r{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}.org-add .oa-r input{flex:1;min-width:130px;padding:8px 10px;border:1px solid var(--fieldline);border-radius:8px;background:var(--field)}
 </style>
 </head>
 <body>
@@ -2985,6 +2988,7 @@ function orgTreeHTML(pid,depth){
       <button class="ot-c" data-ot="${u.id}" ${k.length?'':'disabled'} aria-label="펼치기">${k.length?(open?'▾':'▸'):''}</button>
       <button class="ot-l" data-os="${u.id}"><span>${esc(u.name)}</span>${n?`<i>${n}</i>`:''}</button></div>${k.length&&open?orgTreeHTML(u.id,depth+1):''}</div>`;}).join('');
 }
+let orgEd=null,orgAddMsg='';
 function orgMembersHTML(){
   const me=tmMe(),ids=orgSub?orgSubIds(orgSel):[orgSel],q=orgQ.trim();
   let ppl=q?orgD.people.filter(p=>p.name.includes(q)||(p.title||'').includes(q)):orgD.people.filter(p=>ids.includes(p.unit_id));
@@ -2996,7 +3000,8 @@ function orgMembersHTML(){
       <div class="om-b"><div class="om-n"><i class="om-d${p.user_id?' on':''}" title="${p.user_id?'앱 사용 중':'미가입'}"></i><b>${esc(p.name)}</b><span>${esc(p.title||'')}</span>
         ${p.is_leader?'<em class="tmb lead">팀장</em>':''}${p.user_id===me?'<em class="tmb">나</em>':''}${abs?`<em class="tmb st-${m.status}">${esc(tmLabel(m))}</em>`:''}</div>
         <div class="om-p">${esc(path)}</div></div>
-      <div class="om-r">${p.user_id?`<span class="om-s">${n?`오늘 일정 ${n}건`:'오늘 공개 일정 없음'}</span>${m?`<button class="vbtn alt sm" data-tmo="${p.user_id}">${p.user_id===me?'내 상태':'상세'}</button>`:''}`:'<span class="om-s dim">미가입</span>'}</div></div>`;}).join('');
+      <div class="om-r">${p.user_id?`<span class="om-s">${n?`오늘 일정 ${n}건`:'오늘 공개 일정 없음'}</span>${m?`<button class="vbtn alt sm" data-tmo="${p.user_id}">${p.user_id===me?'내 상태':'상세'}</button>`:''}`:'<span class="om-s dim">미가입</span>'}
+        ${q?'':`<button class="vbtn alt sm" data-oe="${p.id}" aria-label="수정" title="이름·직급 수정">수정</button><button class="vbtn alt sm" data-od="${p.id}" aria-label="목록에서 빼기" title="구성원에서 빼기">빼기</button>`}</div></div>${orgEd===p.id?`<div class="om-ed"><input id="oeN" value="${esc(p.name)}" placeholder="이름" maxlength="30"><input id="oeT" value="${esc(p.title||'')}" placeholder="직급" maxlength="20"><label><input type="checkbox" id="oeL"${p.is_leader?' checked':''}> 팀장</label><button class="vbtn sm" data-oes="${p.id}">저장</button><button class="vbtn alt sm" data-oec="1">취소</button></div>`:''}`;}).join('');
 }
 function orgRender(){
   const box=$('tmBody');
@@ -3017,12 +3022,28 @@ function orgRender(){
        <span style="flex:1"></span>${team?'<button class="vbtn alt sm" id="tmMeetBtn">회의 화면</button>':''}</div>
      ${orgTab==='mem'&&!team?`<div class="org-note">${orgMsg||'회사 이메일이 조직도에 등록되면 팀에 자동 배정돼요. 등록 전에는 팀 코드로 직접 참여할 수 있어요.'} <button class="lnk" id="tmCodeGo">팀 코드로 참여</button></div>`:''}
      <div class="org-list">${main}</div>
+     ${orgTab==='mem'&&orgD.units.length?`<details class="adv org-add"><summary>구성원 추가 · 팀장·팀원 모두 가능</summary><div class="adv-b">
+       <div class="oa-r"><input id="oaN" placeholder="이름 (예: 홍길동)" maxlength="30"><input id="oaT" placeholder="직급 (예: 대리)" maxlength="20"><input id="oaI" placeholder="아이디 (이름 초성 영어, 예: hgd)" maxlength="20" autocapitalize="none" autocomplete="off"></div>
+       <button class="vbtn sm" id="orgAddBtn">추가</button><span class="org-s" id="orgAddMsg">${esc(orgAddMsg)}</span>
+       <p class="org-s" style="margin:8px 0 0">아이디를 적어 두면 그 사람이 앱에 가입할 때 이 팀에 자동으로 들어옵니다. 다른 팀의 구성원은 서로 협의해 열기 전까지 보이지 않습니다.</p></div></details>`:''}
      ${orgAdmin?`<details class="adv"><summary>운영자 · 이메일 등록</summary><div class="adv-b"><textarea id="orgEm" class="org-ta" placeholder="이름,이메일 (한 줄에 한 명)&#10;예: 홍길동,hong@tongyanginc.co.kr"></textarea>
         <button class="vbtn sm" id="orgEmSave">저장</button><span id="orgEmMsg" class="org-s"></span></div></details>`:''}
      ${team&&orgTab==='mem'?`<div class="tmcode" style="margin-top:14px">팀 코드 <b>${esc(team.code)}</b> <button class="vbtn alt sm" id="tmCopyCode" style="margin-left:6px">코드 복사</button></div>`:''}
    </section></div>`;
 }
 $('tmBody').addEventListener('click',async e=>{
+  const t0=e.target;let b0;
+  const re=async()=>{await orgLoad();orgRender();};
+  if(b0=t0.closest('[data-oe]')){orgEd=+b0.dataset.oe;return orgRender();}
+  if(t0.closest('[data-oec]')){orgEd=null;return orgRender();}
+  if(b0=t0.closest('[data-oes]')){const r=await SB.rpc('org_member_edit',{p_pid:+b0.dataset.oes,p_name:$('oeN').value,p_title:$('oeT').value,p_leader:$('oeL').checked});
+    if(r.error){toastMsg('저장하지 못했습니다');return;}orgEd=null;toastMsg('저장했습니다');return re();}
+  if(b0=t0.closest('[data-od]')){if(!confirm('이 사람을 팀 구성원 목록에서 뺄까요?\n(이미 가입한 사람의 일정은 그대로 남습니다)'))return;
+    const r=await SB.rpc('org_member_del',{p_pid:+b0.dataset.od});if(r.error){toastMsg('빼지 못했습니다');return;}toastMsg('구성원에서 뺐습니다');return re();}
+  if(t0.id==='orgAddBtn'){const n=$('oaN').value.trim();if(!n){orgAddMsg='이름을 적어 주세요.';return orgRender();}
+    const r=await SB.rpc('org_member_add',{p_name:n,p_title:$('oaT').value.trim(),p_id:$('oaI').value.trim()});
+    orgAddMsg=r.error?(String(r.error.message||'추가하지 못했습니다').replace(/^.*?:\s*/,'')):'추가했습니다.';await orgLoad();orgRender();
+    if(!r.error){toastMsg('구성원을 추가했습니다');}return;}
   const t=e.target;let b;
   if(b=t.closest('[data-ot]')){const id=+b.dataset.ot;orgOpen.has(id)?orgOpen.delete(id):orgOpen.add(id);return orgRender();}
   if(b=t.closest('[data-os]')){orgSel=+b.dataset.os;orgQ='';const k=orgKids(orgSel);if(k.length)orgOpen.add(orgSel);return orgRender();}
@@ -4221,7 +4242,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v125';
+const APPVER=/*ver*/'v126';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
