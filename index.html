@@ -2062,6 +2062,12 @@ body.picking #list .item .acts{pointer-events:none;opacity:.35}
 #ctxMenu button:hover{background:var(--field)}#ctxMenu .del{color:var(--red);font-weight:650}
 #ctxMenu .cm-f{font-size:11px;color:var(--ink-3);padding:6px 10px 4px;border-top:1px solid var(--hair);margin-top:4px}
 @media (pointer:coarse){#list .item{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}}
+
+@media(max-width:700px){
+  #capSheet{top:auto;max-height:55dvh;border-radius:18px 18px 0 0;box-shadow:0 -14px 40px rgba(10,20,50,.22);border-top:1px solid var(--line);padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+  #capSheet:has(#capList:not(:empty)),#capSheet:has(#capPrev[src]:not([style*="none"])){max-height:92dvh}
+  #capSheet .sheet-bar{border-radius:18px 18px 0 0}
+}
 </style>
 </head>
 <body>
@@ -7675,7 +7681,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v187';
+const APPVER=/*ver*/'v188';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -8545,7 +8551,7 @@ const canGrab=!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia)
 const isTouchDev=matchMedia('(pointer:coarse)').matches&&!canGrab;
 let capShots=[],grab=null,awaiting=false;
 const toFile=(c,n)=>new Promise(r=>c.toBlob(b=>r(new File([b],n||'capture.png',{type:'image/png'})),'image/png'));
-const capTouch=matchMedia('(pointer:coarse)').matches&&!canGrab;
+const capTouch=matchMedia('(pointer:coarse)').matches&&(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||!canGrab);
 function capUI(){
   const t=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
   if(capTouch){
