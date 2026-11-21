@@ -7948,7 +7948,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v196';
+const APPVER=/*ver*/'v197';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -8790,7 +8790,7 @@ function openCap(){
   capReset();
   closeFind();capUI();$('capSheet').classList.add('open');
 }
-$('capDrop').onclick=()=>{capPend='crop';$('capFile').click();};
+$('capDrop').onclick=()=>{capPend='crop';$('capFile').removeAttribute('capture');$('capFile').click();};
 $('capFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f){if(capPend==='full')capRun(f);else openCrop(f);}capPend='crop';e.target.value='';};
 ['dragenter','dragover'].forEach(ev=>$('capDrop').addEventListener(ev,e=>{
   e.preventDefault();$('capDrop').classList.add('over');}));
@@ -8896,7 +8896,7 @@ async function startTimed(){
   tick();
 }
 let capPend='crop';
-$('capGrab').onclick=()=>{if(capTouch){capPend='full';$('capFile').click();}else startGrab('full');};
+$('capGrab').onclick=()=>{if(capTouch){capPend='full';$('capFile').setAttribute('capture','environment');$('capFile').click();}else startGrab('full');};
 
 /* 화면 일부 캡처: OS 기본 캡처 도구(영역 드래그) → 클립보드 → 앱이 자동으로 불러옴 */
 let snipWait=false,snipBase=null,snipT=null;
@@ -8928,7 +8928,7 @@ async function snipCheck(){
 addEventListener('focus',()=>setTimeout(snipCheck,300));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(snipCheck,300);});
 $('capWaitX').onclick=snipStop;
-$('capRegion').onclick=()=>{if(capTouch){capPend='crop';$('capFile').click();}else startSnip();};
+$('capRegion').onclick=()=>{if(capTouch){capPend='crop';$('capFile').removeAttribute('capture');$('capFile').click();}else startSnip();};
 capUI();
 
 /* 자르기 창 */
