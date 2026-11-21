@@ -2016,6 +2016,28 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
 
 .st-ck{width:18px!important;height:18px!important;min-width:0!important;min-height:0!important;border-width:1.5px!important;flex:0 0 18px!important;align-self:center}
 .st-ck svg{width:11px;height:11px}
+
+.pk{grid-column:1;align-self:start;margin-top:2px;width:17px;height:17px;border-radius:4px;border:1.5px solid var(--ink-3);background:transparent;display:grid;place-items:center;padding:0;flex:none}
+.pk svg{width:11px;height:11px;fill:#fff;stroke:none}
+.pk.on{background:var(--amber,#d9822b);border-color:var(--amber,#d9822b)}
+.item .acts .rmb{font-size:10.5px;font-weight:650;color:var(--amber,#b86a14);border:1px solid color-mix(in srgb,var(--amber,#d9822b) 45%,transparent);border-radius:999px;padding:1px 7px;width:auto;height:auto;white-space:nowrap}
+.item.pri:not(.done){animation:none!important}
+.rmcard{padding:18px 18px 14px}
+.rmh{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}.rmh b{font-size:16px}.rmh span{font-size:13px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rml{font-size:12px;font-weight:650;color:var(--ink-3);margin:12px 0 6px}
+.rmseg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.rmseg button{height:36px;font-size:13px;font-weight:600;color:var(--ink-2);border-left:1px solid var(--line);white-space:nowrap}
+.rmseg button:first-child{border-left:0}.rmseg button.on{background:var(--navy);color:#fff}.rmseg button:disabled{opacity:.35}
+.rmpv{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;background:var(--field)}
+.rmpv b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rmpv span{font-size:12px;color:var(--ink-2)}
+.rmpv.off{font-size:12.5px;color:var(--ink-3)}
+.rmno{margin-top:10px;font-size:12px;color:var(--ink-2);line-height:1.5}
+.rmact{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.rmact button{height:40px;border-radius:10px;border:1px solid var(--line);font-weight:650}.rmact .go{background:var(--navy);border-color:var(--navy);color:#fff}
+
+.list{column-count:auto;column-width:330px}
+@media(max-width:660px){.list{column-count:1!important;column-width:auto}}
+.mtag.rmt{cursor:pointer;border:0;background:none;padding:0;font-size:11.5px;font-weight:700;line-height:1.3}
 </style>
 </head>
 <body>
@@ -2105,7 +2127,7 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
     <button class="pribtn tip-up" id="priBtn" data-tip="중요 일정으로 표시"><span class="st">☆</span><span class="tx">중요 표시</span></button>
     <button class="send tip-up" id="send" data-tip="일정 추가" disabled><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
   </div>
-  <div class="hint" id="hint">앞에 ! 를 붙이면 중요 일정으로 맨 위에 올라갑니다</div>
+  <div class="hint" id="hint">앞에 ! 를 붙이면 중요 일정으로 표시됩니다</div>
 </div>
 
 <div class="wkpop" id="wkPop" role="dialog" aria-label="주 단위 일정">
@@ -2114,7 +2136,7 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
   <div class="wk-sum" id="wkSum"></div>
   <div class="wk-act"><button id="wkClr">해제</button><button id="wkOk" class="go">적용</button></div>
 </div>
-<div class="xdlg" id="vacDlg"></div><div class="xdlg" id="cpDlg"></div><div class="xdlg" id="exDlg"></div>
+<div class="xdlg" id="remDlg"></div><div class="xdlg" id="vacDlg"></div><div class="xdlg" id="cpDlg"></div><div class="xdlg" id="exDlg"></div>
 <div class="updbar" id="updBar"><span id="updTxt"></span>
   <button id="updGo">지금 받기</button><button class="x" id="updX">×</button></div>
 
@@ -4757,7 +4779,7 @@ function caseState(c){
 const deadlinesOn=day=>{const o=[];store.cases.forEach(c=>{const s=caseState(c);
   if(!s.complete&&s.deadline===day)o.push({label:c.label,stage:s.stage.name,level:s.level});});return o;};
 const ordAll=day=>store.items.filter(i=>i.date===day||(i.endDate&&i.date<=day&&day<=i.endDate)).sort((a,b)=>
-  (a.done-b.done)||((b.pri?1:0)-(a.pri?1:0))||((a.time||'99:99')<(b.time||'99:99')?-1:1)||(a.id<b.id?-1:1));
+  (a.done-b.done)||((a.time||'99:99')<(b.time||'99:99')?-1:1)||(a.id<b.id?-1:1));
 const ordItems=day=>ordAll(day).filter(inView);
 const isShared=i=>i.share!==undefined&&i.share!==null?!!i.share:catsOf(i).some(c=>c.share);
 let otherItems=[],myShares=[],inShares=[];
@@ -4967,6 +4989,31 @@ document.getElementById('capTop').addEventListener('click',()=>{const b=document
   document.addEventListener('click',e=>{if(fired&&e.target.closest&&e.target.closest('.ds-chip[data-full]')){e.stopPropagation();e.preventDefault();fired=false;}},true);
   document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('.ds-chip[data-full]'))e.preventDefault();});
 })();
+/* 중요 표시 + 알림 설정 */
+let remId=null,remSt=null;
+function remOpen(id){const it=store.items.find(i=>i.id===id);if(!it)return;remId=id;
+  const dv=store.settings.impRem===undefined?30:(+store.settings.impRem||0);
+  remSt={to:it.tn?'team':'me',min:it.rem!=null?+it.rem:(it.pri?remVal(it):dv),vib:it.vib||'once'};remPaint();$('remDlg').classList.add('on');}
+function remPaint(){const it=store.items.find(i=>i.id===remId);if(!it)return;const S=remSt,noT=!it.time;
+  const seg=(k,arr)=>`<div class="rmseg">${arr.map(([v,l])=>`<button data-rk="${k}" data-rv="${v}" class="${String(S[k])===String(v)?'on':''}"${noT&&k!=='to'?' disabled':''}>${l}</button>`).join('')}</div>`;
+  const lbl=S.min>=60?S.min/60+'시간 전':S.min+'분 전';
+  const pv=noT?'':(S.min?`<div class="rmpv"><b>${esc(it.time)} ${esc(it.title)}</b><span>${S.to==='team'?esc(myName()||'나')+' · ':''}${lbl}${S.vib==='long'?' · 연속 진동':S.vib==='none'?' · 무음':' · 진동 1회'}</span></div>`:'<div class="rmpv off">알림 없이 중요 표시만 합니다</div>');
+  $('remDlg').innerHTML=`<div class="xd-card rmcard"><div class="rmh"><b>중요 표시</b><span>${esc(it.title)}</span></div>
+    <div class="rml">알림 받을 사람</div>${seg('to',[['me','나만'],['team','팀원에게도']])}
+    <div class="rml">알림 시간</div>${seg('min',[[5,'5분 전'],[10,'10분 전'],[30,'30분 전'],[60,'1시간 전'],[0,'안 함']])}
+    <div class="rml">진동</div>${seg('vib',[['once','1회'],['long','연속'],['none','무음']])}
+    ${noT?'<div class="rmno">시간이 없는 일정이라 알림은 가지 않고 중요 표시만 됩니다. 아침 브리핑에는 포함됩니다.</div>':''}
+    <div class="rml">미리 보기</div>${pv||'<div class="rmpv off">—</div>'}
+    <div class="rmact"><button data-rm="x">취소</button><button data-rm="ok" class="go">저장</button></div></div>`;}
+$('remDlg').onclick=e=>{
+  if(e.target.id==='remDlg'){$('remDlg').classList.remove('on');return;}
+  const b=e.target.closest('[data-rk]');if(b&&!b.disabled){const k=b.dataset.rk,v=b.dataset.rv;remSt[k]=k==='min'?+v:v;remPaint();return;}
+  const m=e.target.closest('[data-rm]');if(!m)return;
+  if(m.dataset.rm==='ok'){const it=store.items.find(i=>i.id===remId);if(it){it.pri=true;
+    if(it.time){it.rem=remSt.min;it.vib=remSt.vib;}
+    if(remSt.to==='team'){it.tn=1;if(!isShared(it))it.share=1;}else delete it.tn;
+    touch(it);toastMsg(it.time&&remSt.min?(remSt.to==='team'?'나와 팀원에게 ':'')+(remSt.min>=60?remSt.min/60+'시간':remSt.min+'분')+' 전에 알립니다':'중요 표시했습니다');}}
+  $('remDlg').classList.remove('on');try{redrawAll();}catch(_){try{renderDay();renderMonth();}catch(__){}}};
 let calRz=null;addEventListener('resize',()=>{clearTimeout(calRz);calRz=setTimeout(()=>{if(tab==='cal')renderMonth();},150);});
 function miniMonth(y,m,mark){
   const f=new Date(y,m,1),start=new Date(f);start.setDate(start.getDate()-f.getDay());
@@ -5008,16 +5055,15 @@ function renderDay(){try{memoMaterialize();}catch(_){}
   its.forEach(i=>{n++;const isOpen=openNote===i.id,has=!!(i.note&&i.note.trim());
     h+=`<li class="item${i.done?' done':''}${i.todo&&!i.done?' todo':''}${i.pri?' pri':''}${isOpen?' open':''}" data-id="${i.id}"
       ${editItem===i.id?'':`draggable="true" data-drag="${i.id}"`}>
-      <button class="check" data-act="toggle"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></button>
+      <button class="pk${i.pri?' on':''}" data-act="pri" data-tip="${i.pri?'중요 해제':'중요 표시 · 알림 설정'}" aria-label="중요 표시">${i.pri?'<svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8-4.3-4.1 5.9-.9z"/></svg>':''}</button>
       <div class="body"><div class="meta"><span class="no">${n}</span><span class="mdate">${i.wk&&i.endDate?`<b class="wkl">${wkLabel(i)}</b> ${md(i.date)}~${md(i.endDate)}`:md(i.date)+(i.endDate?'~'+md(i.endDate):'')}</span>
-        ${i.time?`<span class="mtime">${i.time}${i.endTime?'~'+i.endTime:''}</span>`:''}${i.pri?'<span class="mtag pri">중요</span>':''}${isShared(i)?'<button class="mtag sh shtg" data-act="share" data-tip="누르면 비공개로">팀 공개</button>':'<button class="mtag shtg" data-act="share" data-tip="누르면 팀에 공개" style="opacity:.7">🔒 비공개</button>'}
+        ${i.time?`<span class="mtime">${i.time}${i.endTime?'~'+i.endTime:''}</span>`:''}${i.pri?`<button class="mtag pri rmt" data-act="pri2" data-tip="알림 설정 변경">중요${i.time&&remVal(i)?' · '+(remVal(i)>=60?remVal(i)/60+'시간':remVal(i)+'분')+' 전'+(i.tn?' · 팀':''):''}</button>`:''}${isShared(i)?'<button class="mtag sh shtg" data-act="share" data-tip="누르면 비공개로">팀 공개</button>':'<button class="mtag shtg" data-act="share" data-tip="누르면 팀에 공개" style="opacity:.7">🔒 비공개</button>'}
         ${catsOf(i).map(c=>`<button class="cattag" data-act="cat" data-tip="분류 변경" style="--c:${c.color}">${esc(c.name)}</button>`).join('')}</div>
         ${editItem===i.id
           ?`<input class="edit-in" data-edit="${i.id}" value="${esc((i.endDate?md(i.date)+'~'+md(i.endDate)+' ':'')+(i.time?i.time+(i.endTime?'~'+i.endTime:'')+' ':'')+i.title)}">
              <div class="edit-tip">시간·날짜도 같이 고칠 수 있습니다. Enter 저장, Esc 취소</div>`
           :`<div class="title" data-act="open">${esc(i.title)}${has&&!isOpen?'<span class="caret">⌄</span>':''}</div>`}</div>
-      <div class="acts"><button class="flag${i.pri?' on':''}" data-act="pri" data-tip="${i.pri?'중요 해제':'중요 표시'}">${i.pri?'★':'☆'}</button>
-        <button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'팀에 공개 중 · 누르면 나만 보기':'나만 보기 · 누르면 팀에 공개'}">${isShared(i)?'👥':'🔒'}</button>
+      <div class="acts"><button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'팀에 공개 중 · 누르면 나만 보기':'나만 보기 · 누르면 팀에 공개'}">${isShared(i)?'👥':'🔒'}</button>
         <button data-act="edit" data-tip="내용 수정">✎</button>
         <button class="tip-r" data-act="del" data-tip="삭제">×</button></div>
       ${i.img?`<img class="thumb" src="${i.img}" data-img="${i.id}" alt="">`:''}
@@ -6694,7 +6740,8 @@ $('list').onclick=e=>{
   else if(a==='edit'){editItem=editItem===it.id?null:it.id;openNote=null;renderDay();return;}
   else if(a==='img'){imgTarget=it.id;$('imgFile').click();return;}
   else if(a==='cat'){openCatMenu(it.id,false);return;}
-  else if(a==='pri'){it.pri=!it.pri;touch(it);if(it.pri&&it.time&&it.rem===undefined)toastMsg('중요 일정이라 '+(store.settings.impRem===0?'알림은 꺼져 있습니다(설정에서 변경)':remTxt(store.settings.impRem??30)+' 알림이 자동으로 켜졌습니다'));}
+  else if(a==='pri'){if(it.pri){it.pri=false;delete it.rem;delete it.tn;delete it.vib;touch(it);toastMsg('중요 표시를 해제했습니다');}else{remOpen(it.id);return;}}
+  else if(a==='pri2'){remOpen(it.id);return;}
   else if(a==='rem'){const seq=[undefined,10,30,60,0],k=seq.indexOf(it.rem),nx=seq[(k+1)%seq.length];
     if(nx===undefined)delete it.rem;else it.rem=nx;
     if(!it.time&&nx!==0)toastMsg('시간이 있는 일정에서만 알림이 갑니다');
@@ -6740,7 +6787,7 @@ $('list').addEventListener('focusout',e=>{if(!e.target.closest('textarea[data-no
   setTimeout(()=>{if(!$('list').contains(document.activeElement)){openNote=null;save();renderDay();}},120);});
 
 $('input').oninput=()=>{const v=$('input').value.trim();$('send').disabled=!v;
-  if(!v){$('hint').textContent='앞에 ! 를 붙이면 중요 일정으로 맨 위에 올라갑니다';return;}
+  if(!v){$('hint').textContent='앞에 ! 를 붙이면 중요 일정으로 표시됩니다';return;}
   const p=parseInput(v,sel),d=fromYmd(p.date);
   const tt=p.time?' '+p.time+(p.endTime?'~'+p.endTime:''):'';
   if(!p.wk&&wkSel){p.wk=true;p.date=wkMon(wkSel.s);p.endDate=wkFri(wkSel.e);}
@@ -6802,7 +6849,7 @@ function add(){const v=$('input').value.trim();if(!v)return;
     note:'',done:false,doneAt:null,mt:NOW()});
   save();$('input').value='';$('send').disabled=true;
   priOn=false;paintPri();wkSel=null;paintWk();
-  $('hint').textContent='앞에 ! 를 붙이면 중요 일정으로 맨 위에 올라갑니다';
+  $('hint').textContent='앞에 ! 를 붙이면 중요 일정으로 표시됩니다';
   goto(p.date);renderBanner();}
 $('send').onclick=add;
 (function(){const c=document.querySelector('.composer'),i=$('input');
@@ -7520,7 +7567,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v183';
+const APPVER=/*ver*/'v185';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;

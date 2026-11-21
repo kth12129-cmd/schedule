@@ -5,6 +5,7 @@ self.addEventListener('push',e=>{
   let d={};try{d=e.data.json();}catch(_){}
   e.waitUntil(self.registration.showNotification(d.title||'TY-Scheduler',{
     body:d.body||'',tag:d.tag||'brief',icon:'icons/icon-192.png',badge:'icons/apple-touch-icon.png',
+    vibrate:d.vibrate||undefined,silent:!!d.silent,renotify:!!d.vibrate,
     data:{url:d.url||'./?brief=1'}}));
 });
 self.addEventListener('notificationclick',e=>{
