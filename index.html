@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="TY-Scheduler">
@@ -1966,6 +1966,7 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
 :root[data-skin="ios"]{--page:#f2f2f7;--surface:#ffffff;--field:#efeff4;--chip:#e5e5ea;--ink:#1c1c1e;--ink-2:#48484a;--ink-3:#8e8e93;--line:#d1d1d6;--hair:#e5e5ea;--fieldline:#c7c7cc;--navy:#007aff;--navy-2:#0062cc;--globe:#5ac8fa}
 :root[data-font="pret"]{--fnt:"Pretendard Variable",Pretendard}:root[data-font="gothica"]{--fnt:"Gothic A1"}:root[data-font="nanum"]{--fnt:"Nanum Gothic"}
 :root[data-font] body{font-variant-numeric:tabular-nums}
+@media(max-width:900px){input,textarea,select{font-size:16px!important}}
 </style>
 </head>
 <body>
@@ -7438,7 +7439,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v168';
+const APPVER=/*ver*/'v169';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
