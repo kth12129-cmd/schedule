@@ -1894,6 +1894,31 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .vlist{overflow:hidden}
 .vadmbar{margin-top:10px}
 @media(max-width:700px){.vline{grid-template-columns:repeat(4,1fr)}.vline button[data-st="hold"]{display:none}.vline .vpct{grid-column:1/-1;border-top:1px solid var(--hair);height:28px;justify-content:flex-end}.vline button{gap:4px;font-size:11.5px;padding:0 2px}.vline button b{font-size:13px}.vmo b{min-width:80px}}
+/* v160 구성원 표 */
+.omh,.om{display:grid;grid-template-columns:30px minmax(0,1fr) 150px 52px auto;gap:10px;align-items:center}
+.om{padding:10px 4px;border-bottom:1px solid var(--hair)}
+.omh{height:42px;padding:0 4px;border:1px solid var(--line);border-radius:10px 10px 0 0;background:var(--field);font-size:12.5px;font-weight:650;color:var(--ink-2);margin-top:8px}
+.omh-l,.omh-p,.omh-s{white-space:nowrap}
+.omh .omh-a{grid-column:2/-1;display:flex;align-items:center;gap:10px}.omh-a b{font-size:13.5px;color:var(--ink)}.omh-a span{font-size:12px;color:var(--ink-3);font-weight:500}.omh-a i{flex:1}
+.omh-a .vbtn:disabled{opacity:.4}
+.om-ck{display:grid;place-items:center}.om-ck input{width:17px;height:17px}
+.om-b{min-width:0}
+.om-n{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.om-n .om-av{width:30px;height:30px;font-size:13px;flex:none}
+.om-p{margin:2px 0 0 37px;font-size:12px;color:var(--ink-3)}
+.om-pi{height:34px;width:100%;border:1px solid transparent;border-radius:8px;background:transparent;padding:0 8px;font-size:13.5px;font-family:ui-monospace,monospace;color:var(--ink)}
+.om-pi:hover{border-color:var(--line)}.om-pi:focus{border-color:var(--indigo);background:var(--field);outline:0}.om-pi::placeholder{color:var(--ink-3);font-family:inherit}
+.om-s{font-size:12.5px;color:var(--ink-2);text-align:center}.om-s.dim{color:var(--ink-3)}
+.om-r{display:flex;gap:6px;justify-content:flex-end;white-space:nowrap}.om-r .vbtn{white-space:nowrap;flex:none}
+.osm-d{margin:0 0 4px;font-size:12.5px;color:var(--ink-3)}.osm-d summary{cursor:pointer;list-style:none;padding:4px 2px}.osm-d summary::-webkit-details-marker{display:none}
+.osm-d[open]{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface)}
+.osm-p{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;margin-top:8px}
+@media(max-width:700px){
+  .omh,.om{grid-template-columns:30px minmax(0,1fr) auto}
+  .omh .omh-p,.omh .omh-s+span{display:none}
+  .om .om-pi{grid-column:2/3;grid-row:2}.om .om-s{grid-column:3;grid-row:1}.om .om-r{grid-column:3;grid-row:2}
+  .omh .omh-a{flex-wrap:wrap;row-gap:6px}.omh{height:auto;min-height:42px;padding:6px 4px;align-items:start}.omh .om-ck{height:30px}.omh-a .vbtn{padding:0 10px}.om-n .om-p{width:100%}
+}
 </style>
 </head>
 <body>
@@ -5580,26 +5605,31 @@ let orgEd=null,orgAddMsg='';
 const fmtPh=v=>{const d=String(v||'').replace(/\D/g,'');return d.length===11?`${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}`:d.length===10?`${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`:d;};
 let orgPh=new Set(),orgGrpForm=false;
 const orgSite=()=>location.origin+location.pathname.replace(/index\.html$/,'');
-function orgSmsBar(){
-  const ppl=orgD.people,sel=ppl.filter(p=>orgPh.has(p.id)),has=sel.filter(p=>p.phone),no=sel.length-has.length;
-  const all=ppl.filter(p=>p.phone).length;
-  return `<div class="osm"><div class="osm-t"><b>문자로 안내 보내기</b><span>목록에서 사람을 체크하세요 · 연락처가 등록된 사람 ${all}명</span></div>
-   <div class="osm-b"><span class="osm-n">선택 ${sel.length}명${no?` · 연락처 없음 ${no}명 제외`:''}</span><button class="vbtn alt sm" id="osmAll">연락처 있는 사람 모두 선택</button><button class="vbtn alt sm" id="osmClr">선택 해제</button><span style="flex:1"></span><button class="vbtn alt sm" id="osmQr">QR 이미지 공유</button><button class="vbtn sm" id="osmSend"${has.length?'':' disabled'}>문자 보내기 (${has.length}명)</button></div>
-   <div class="osm-p"><div class="qr">${tsQr(orgSite())}</div><div class="osm-m"><div><i>사이트</i>${esc(orgSite())}</div>${team?`<div><i>${esc(team.name)} 참여 코드</i><b>${esc(team.code)}</b></div>`:''}<em>문자 본문에 사이트 주소와 참여 코드가 들어갑니다. QR 이미지는 문자에 직접 붙일 수 없어 "QR 이미지 공유"로 따로 보내거나 화면을 보여주세요.</em></div></div></div>`;}
+function orgVisible(){const ids=orgSub?orgSubIds(orgSel):[orgSel],q=orgQ.trim();
+  return q?orgD.people.filter(p=>p.name.includes(q)||(p.title||'').includes(q)):orgD.people.filter(p=>ids.includes(p.unit_id));}
+function orgHead(){
+  const ppl=orgVisible(),n=ppl.filter(p=>orgPh.has(p.id)).length,sel=ppl.filter(p=>orgPh.has(p.id)),has=sel.filter(p=>p.phone).length;
+  const st=n===0?'':(n===ppl.length?'checked':'data-part="1"');
+  return `<div class="omh"><label class="om-ck" title="전체 선택 / 해제"><input type="checkbox" id="osmAll" ${st}></label>
+    ${n?`<div class="omh-a"><b>${n}명 선택됨</b><span>${has<n?`연락처 없는 ${n-has}명은 제외됩니다`:''}</span><i></i><button class="vbtn sm" id="osmSend"${has?'':' disabled'}>문자 보내기 (${has}명)</button><button class="vbtn alt sm" id="osmQr">QR 이미지 공유</button><button class="vbtn alt sm" id="osmClr">선택 해제</button></div>`
+      :`<span class="omh-l">이름</span><span class="omh-p">연락처</span><span class="omh-s">상태</span><span></span>`}</div>`;}
+function orgSmsInfo(){
+  return `<details class="osm-d"><summary>문자로 보낼 내용 (사이트 · 참여 코드 · QR)</summary><div class="osm-p"><div class="qr">${tsQr(orgSite())}</div><div class="osm-m"><div><i>사이트</i>${esc(orgSite())}</div>${team?`<div><i>${esc(team.name)} 참여 코드</i><b>${esc(team.code)}</b></div>`:''}<em>문자 본문에는 사이트 주소와 참여 코드가 들어갑니다. QR 이미지는 "QR 이미지 공유"로 따로 보냅니다.</em></div></div></details>`;}
 function orgSmsText(){return `[TY-Scheduler] 일정 앱 안내\n접속: ${orgSite()}\n${team?`${team.name} 참여 코드: ${team.code}\n`:''}휴대폰 브라우저에서 위 주소를 열고 가입한 뒤 "홈 화면에 추가"하면 설치됩니다.`;}
 function orgMembersHTML(){
-  const me=tmMe(),ids=orgSub?orgSubIds(orgSel):[orgSel],q=orgQ.trim();
-  let ppl=q?orgD.people.filter(p=>p.name.includes(q)||(p.title||'').includes(q)):orgD.people.filter(p=>ids.includes(p.unit_id));
+  const me=tmMe(),q=orgQ.trim();
+  let ppl=orgVisible();
   if(!ppl.length)return '<div class="vempty">이 조직에는 아직 등록된 구성원이 없어요.</div>';
-  return orgSmsBar()+ppl.map(p=>{
-    const m=p.user_id?tmMembers.find(x=>x.user_id===p.user_id):null,abs=m&&tmAbsent(m,TODAY),n=m?tmOnDay(m.user_id,TODAY).length:0;
+  return orgSmsInfo()+orgHead()+ppl.map(p=>{
+    const m=p.user_id?tmMembers.find(x=>x.user_id===p.user_id):null,abs=m&&tmAbsent(m,TODAY);
     const path=orgPath(p.unit_id).slice(-3).map(u=>u.name).join(' › ');
-    return `<div class="om"><label class="om-ck"><input type="checkbox" data-ophs="${p.id}"${orgPh.has(p.id)?' checked':''}></label><span class="om-av">${esc(p.name.charAt(0))}</span>
-      <div class="om-b"><div class="om-n"><i class="om-d${p.user_id?' on':''}" title="${p.user_id?'앱 사용 중':'미가입'}"></i><b>${esc(p.name)}</b><span>${esc(p.title||'')}</span>${p.phone?`<span class="om-ph">${fmtPh(p.phone)}</span>`:''}
+    return `<div class="om"><label class="om-ck"><input type="checkbox" data-ophs="${p.id}"${orgPh.has(p.id)?' checked':''}></label>
+      <div class="om-b"><div class="om-n"><span class="om-av">${esc(p.name.charAt(0))}</span><i class="om-d${p.user_id?' on':''}" title="${p.user_id?'앱 사용 중':'미가입'}"></i><b>${esc(p.name)}</b><span>${esc(p.title||'')}</span>
         ${p.is_leader?'<em class="tmb lead">팀장</em>':''}${p.user_id===me?'<em class="tmb">나</em>':''}${abs?`<em class="tmb st-${m.status}">${esc(tmLabel(m))}</em>`:''}</div>
         <div class="om-p">${esc(path)}</div></div>
-      <div class="om-r"><span class="om-s${p.user_id?'':' dim'}">${p.user_id?'가입':'미가입'}</span>
-        ${q?'':`<button class="vbtn alt sm" data-oe="${p.id}" aria-label="수정" title="이름·직급 수정">수정</button><button class="vbtn alt sm" data-od="${p.id}" aria-label="목록에서 빼기" title="구성원에서 빼기">빼기</button>`}</div></div>${orgEd===p.id?`<div class="om-ed"><input id="oeN" value="${esc(p.name)}" placeholder="이름" maxlength="30"><input id="oeT" value="${esc(p.title||'')}" placeholder="직급" maxlength="20"><input id="oeP" type="tel" inputmode="numeric" value="${esc(p.phone?fmtPh(p.phone):'')}" placeholder="연락처 (010-0000-0000)" maxlength="13"><label><input type="checkbox" id="oeL"${p.is_leader?' checked':''}> 팀장</label><button class="vbtn sm" data-oes="${p.id}">저장</button><button class="vbtn alt sm" data-oec="1">취소</button></div>`:''}`;}).join('');
+      <input class="om-pi" type="tel" inputmode="numeric" data-phid="${p.id}" value="${esc(p.phone?fmtPh(p.phone):'')}" placeholder="연락처 입력" maxlength="13" autocomplete="off">
+      <span class="om-s${p.user_id?'':' dim'}">${p.user_id?'가입':'미가입'}</span>
+      <div class="om-r">${q?'':`<button class="vbtn alt sm" data-oe="${p.id}" aria-label="수정" title="이름·직급 수정">수정</button><button class="vbtn alt sm" data-od="${p.id}" aria-label="목록에서 빼기" title="구성원에서 빼기">빼기</button>`}</div></div>${orgEd===p.id?`<div class="om-ed"><input id="oeN" value="${esc(p.name)}" placeholder="이름" maxlength="30"><input id="oeT" value="${esc(p.title||'')}" placeholder="직급" maxlength="20"><label><input type="checkbox" id="oeL"${p.is_leader?' checked':''}> 팀장</label><button class="vbtn sm" data-oes="${p.id}">저장</button><button class="vbtn alt sm" data-oec="1">취소</button></div>`:''}`;}).join('');
 }
 function orgRender(){
   const box=$('tmBody');
@@ -5622,7 +5652,7 @@ function orgRender(){
      ${orgTab==='mem'&&!team?`<div class="org-note">${orgMsg||'회사 이메일이 조직도에 등록되면 팀에 자동 배정돼요. 등록 전에는 팀 코드로 직접 참여할 수 있어요.'} <button class="lnk" id="tmCodeGo">팀 코드로 참여</button></div>`:''}
      <div class="org-list">${main}</div>
      ${orgTab==='mem'&&orgD.units.length?`<details class="adv org-add"><summary>구성원 추가 · 팀장·팀원 모두 가능</summary><div class="adv-b">
-       <div class="oa-r"><input id="oaN" placeholder="이름 (예: 홍길동)" maxlength="30"><input id="oaT" placeholder="직급 (예: 대리)" maxlength="20"><input id="oaI" placeholder="아이디 (이름 초성 영어, 예: hgd)" maxlength="20" autocapitalize="none" autocomplete="off"></div>
+       <div class="oa-r"><input id="oaN" placeholder="이름 (예: 홍길동)" maxlength="30"><input id="oaT" placeholder="직급 (예: 대리)" maxlength="20"><input id="oaI" placeholder="아이디 (이름 초성 영어, 예: hgd)" maxlength="20" autocapitalize="none" autocomplete="off"><input id="oaP" type="tel" inputmode="numeric" placeholder="연락처 (010-0000-0000)" maxlength="13" autocomplete="off"></div>
        <button class="vbtn sm" id="orgAddBtn">추가</button><span class="org-s" id="orgAddMsg">${esc(orgAddMsg)}</span>
        <p class="org-s" style="margin:8px 0 0">아이디를 적어 두면 그 사람이 앱에 가입할 때 이 팀에 자동으로 들어옵니다. 다른 팀의 구성원은 서로 협의해 열기 전까지 보이지 않습니다.</p></div></details>`:''}
      ${orgAdmin?`<details class="adv"><summary>운영자 · 이메일 등록</summary><div class="adv-b"><textarea id="orgEm" class="org-ta" placeholder="이름,이메일 (한 줄에 한 명)&#10;예: 홍길동,hong@tongyanginc.co.kr"></textarea>
@@ -5633,7 +5663,7 @@ function orgRender(){
 $('tmBody').addEventListener('click',async e=>{
   const t0=e.target;let b0;
   const re=async()=>{await orgLoad();orgRender();};
-  if(t0.id==='osmAll'){orgD.people.filter(p=>p.phone).forEach(p=>orgPh.add(p.id));return orgRender();}
+  if(t0.id==='osmAll'){const v=orgVisible(),all=v.every(p=>orgPh.has(p.id));v.forEach(p=>all?orgPh.delete(p.id):orgPh.add(p.id));return orgRender();}
   if(t0.id==='osmClr'){orgPh.clear();return orgRender();}
   if(t0.id==='osmSend'){const L=orgD.people.filter(p=>orgPh.has(p.id)&&p.phone);if(!L.length)return;
     const ios=/iPhone|iPad|Mac/.test(navigator.userAgent)&&'ontouchend' in document;
@@ -5653,13 +5683,14 @@ $('tmBody').addEventListener('click',async e=>{
   if(t0.closest('[data-oec]')){orgEd=null;return orgRender();}
   if(b0=t0.closest('[data-oes]')){const r=await SB.rpc('org_member_edit',{p_pid:+b0.dataset.oes,p_name:$('oeN').value,p_title:$('oeT').value,p_leader:$('oeL').checked});
     if(r.error){toastMsg('저장하지 못했습니다');return;}
-     const pr=await SB.rpc('org_member_phone',{p_pid:+b0.dataset.oes,p_phone:$('oeP')?$('oeP').value:''});if(pr.error){toastMsg(String(pr.error.message||'연락처를 저장하지 못했습니다').replace(/^.*?:\s*/,''));return;}
      orgEd=null;toastMsg('저장했습니다');return re();}
   if(b0=t0.closest('[data-od]')){if(!confirm('이 사람을 팀 구성원 목록에서 뺄까요?\n(이미 가입한 사람의 일정은 그대로 남습니다)'))return;
     const r=await SB.rpc('org_member_del',{p_pid:+b0.dataset.od});if(r.error){toastMsg('빼지 못했습니다');return;}toastMsg('구성원에서 뺐습니다');return re();}
   if(t0.id==='orgAddBtn'){const n=$('oaN').value.trim();if(!n){orgAddMsg='이름을 적어 주세요.';return orgRender();}
     const r=await SB.rpc('org_member_add',{p_name:n,p_title:$('oaT').value.trim(),p_id:$('oaI').value.trim()});
-    orgAddMsg=r.error?(String(r.error.message||'추가하지 못했습니다').replace(/^.*?:\s*/,'')):'추가했습니다.';await orgLoad();orgRender();
+    orgAddMsg=r.error?(String(r.error.message||'추가하지 못했습니다').replace(/^.*?:\s*/,'')):'추가했습니다.';await orgLoad();
+    const ph=($('oaP')&&$('oaP').value||'').trim();if(!r.error&&ph){const np=[...orgD.people].reverse().find(p=>p.name===n&&!p.phone);if(np){const pr=await SB.rpc('org_member_phone',{p_pid:np.id,p_phone:ph});if(pr.error)orgAddMsg+=' (연락처는 저장하지 못했습니다)';else await orgLoad();}}
+    orgRender();
     if(!r.error){toastMsg('구성원을 추가했습니다');}return;}
   const t=e.target;let b;
   if(b=t.closest('[data-ot]')){const id=+b.dataset.ot;orgOpen.has(id)?orgOpen.delete(id):orgOpen.add(id);return orgRender();}
@@ -5671,7 +5702,13 @@ $('tmBody').addEventListener('click',async e=>{
 });
 $('tmBody').addEventListener('input',e=>{if(e.target.id==='orgQ'){orgQ=e.target.value;const pos=e.target.selectionStart;orgRender();const q=$('orgQ');if(q){q.focus();q.setSelectionRange(pos,pos);}if(orgQ)orgTab='mem';}});
 $('tmBody').addEventListener('change',e=>{if(e.target.id==='orgSub'){orgSub=e.target.checked;orgRender();}
-  const c=e.target.closest&&e.target.closest('[data-ophs]');if(c){const id=+c.dataset.ophs;c.checked?orgPh.add(id):orgPh.delete(id);const bar=document.querySelector('.osm');if(bar)bar.outerHTML=orgSmsBar();}});
+  const c=e.target.closest&&e.target.closest('[data-ophs]');if(c){const id=+c.dataset.ophs;c.checked?orgPh.add(id):orgPh.delete(id);const bar=document.querySelector('.omh');if(bar){bar.outerHTML=orgHead();orgIndet();}}
+  const pi=e.target.closest&&e.target.closest('[data-phid]');
+  if(pi){const id=+pi.dataset.phid;SB.rpc('org_member_phone',{p_pid:id,p_phone:pi.value}).then(r=>{
+    if(r.error){toastMsg(String(r.error.message||'연락처를 저장하지 못했습니다').replace(/^.*?:\s*/,''));return;}
+    const p=orgD.people.find(x=>x.id===id);if(p)p.phone=pi.value.replace(/\D/g,'');pi.value=p&&p.phone?fmtPh(p.phone):'';toastMsg('연락처를 저장했습니다');
+    const bar=document.querySelector('.omh');if(bar){bar.outerHTML=orgHead();orgIndet();}});}});
+function orgIndet(){const h=$('osmAll');if(h&&h.dataset.part)h.indeterminate=true;}
 async function tmOpen(){closeFind();tmView='board';tmDay=TODAY;$('tmSheet').classList.add('open');tmRender();await loadTeam();}
 $('tmBtn').onclick=tmOpen;
 $('tmOpen2').onclick=()=>{try{$('setPop').classList.remove('open');$('popBack').classList.remove('open');}catch(e){}tmOpen();};
@@ -7324,7 +7361,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v159';
+const APPVER=/*ver*/'v160';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
