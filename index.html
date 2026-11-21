@@ -1853,6 +1853,47 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .st-ask button{height:28px;padding:0 10px;border-radius:8px;border:1px solid var(--navy);background:var(--navy);color:#fff;font-size:12px;font-weight:650;white-space:nowrap}
 .st-ask button[data-ext]{background:transparent;color:var(--navy)}
 @media(max-width:700px){.st-row.asking{flex-wrap:wrap}.st-ask{flex-basis:100%;justify-content:flex-end;margin-left:0}}
+/* v159 분류 선택: 간결한 목록 · 휴대폰은 반 높이 시트 */
+.catmenu{gap:0}
+.catmenu .clist{display:flex;flex-direction:column;overflow-y:auto;min-height:0;flex:1}
+.catmenu .clist button{padding:0 10px;min-height:38px;font-size:14px;border-radius:8px;gap:10px}
+.catmenu .clist button b{font-weight:inherit}
+.catmenu .clist .ck{margin-left:4px}
+.catmenu .clist button.on b{font-weight:700}
+.catmenu .csm{margin-left:2px;padding:4px 6px;border:0;border-radius:6px;background:transparent;font-size:11px;font-weight:600;letter-spacing:0;color:var(--ink-3)}
+.catmenu .csm.on{background:transparent;color:var(--moss,#2f7d5c);border:0}
+.catmenu .csm:hover{background:var(--field);border:0}
+.catmenu .cfoot{display:grid;grid-template-columns:1fr auto auto;gap:4px;align-items:center;border-top:1px solid var(--hair);margin-top:4px;padding-top:4px}
+.catmenu .cfoot button{width:auto;min-height:36px;padding:0 10px;font-size:13px;color:var(--ink-2);border-radius:8px}
+.catmenu .cfoot button.multi,.catmenu .cfoot button:first-child{justify-self:start}
+.catmenu .cfoot button.on{color:var(--navy);font-weight:700}
+.catmenu .cfoot button.ok{color:var(--navy);font-weight:700}
+.catmenu .cfoot .mk{margin-right:6px}
+#catPop{width:min(300px,calc(100vw - 24px));display:flex;flex-direction:column}
+#catPop .catmenu{min-height:0;flex:1;display:flex}
+#catPop .grab{display:none}
+@media(hover:none){#catPop .kbd{display:none}}
+@media(max-width:700px){
+  body.cat-live .pop-back{display:none!important}
+  #catPop{left:0;right:0;bottom:0;width:auto;max-width:none;border-radius:16px 16px 0 0;border-width:1px 0 0;padding:0 12px calc(8px + env(safe-area-inset-bottom,0px));
+    max-height:44dvh;max-height:44vh;transition:max-height .22s ease,transform .22s cubic-bezier(.32,.72,0,1),opacity .16s}
+  #catPop.big{max-height:86dvh}
+  #catPop .grab{display:block;padding:9px 0 7px;cursor:grab}#catPop .grab i{display:block;width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto}
+  #catPop .pop-title{margin:0 2px 4px}
+  .catmenu .clist button{min-height:42px}
+}
+/* v159 VOC: 한 줄 현황 · 월 이동 · 목록 우선 */
+.vhead{display:flex;align-items:center;gap:8px;margin:10px 0 8px}.vhead .vsp{flex:1}
+.vmo{display:flex;align-items:center;gap:2px;height:36px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:0 4px}
+.vmo b{min-width:96px;text-align:center;font-size:14px}.vmo button{height:32px;min-width:32px;color:var(--ink-2);border-radius:8px}.vmo .tb{font-size:12px;color:var(--indigo);padding:0 8px;border-left:1px solid var(--line);border-radius:0;margin-left:4px}
+.vline{display:grid;grid-template-columns:repeat(5,1fr) auto;align-items:stretch;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;margin:0 0 8px}
+.vline button{display:flex;align-items:baseline;justify-content:center;gap:6px;height:38px;padding:0 6px;border-right:1px solid var(--hair);color:var(--ink-2);font-size:12.5px;white-space:nowrap;align-items:center}
+.vline button b{font-size:14px;font-weight:700;color:var(--ink)}
+.vline button.on{background:var(--ink);color:var(--page)}.vline button.on b{color:var(--page)}
+.vline .vpct{display:flex;align-items:center;padding:0 12px;font-size:12.5px;color:var(--ink-3);white-space:nowrap}.vline .vpct b{margin-left:4px;color:var(--ink)}
+.vlist{overflow:hidden}
+.vadmbar{margin-top:10px}
+@media(max-width:700px){.vline{grid-template-columns:repeat(4,1fr)}.vline button[data-st="hold"]{display:none}.vline .vpct{grid-column:1/-1;border-top:1px solid var(--hair);height:28px;justify-content:flex-end}.vline button{gap:4px;font-size:11.5px;padding:0 2px}.vline button b{font-size:13px}.vmo b{min-width:80px}}
 </style>
 </head>
 <body>
@@ -2019,6 +2060,7 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 </div>
 
 <div class="pop up" id="catPop">
+  <div class="grab" id="catGrab"><i></i></div>
   <div class="pop-title">분류 선택</div>
   <div class="catmenu" id="catMenu"></div>
 </div>
@@ -5696,6 +5738,7 @@ document.addEventListener('keydown',e=>{if(!$('tmMeet').classList.contains('on')
 const VK={bug:'버그·오류',improve:'개선 요청',feature:'새 기능',complaint:'불만',etc:'기타'};
 const VS={new:'접수 · 조치 전',review:'조치 중',done:'조치 완료',hold:'보류'};
 const VSS={new:'조치 전',review:'조치 중',done:'조치 완료',hold:'보류'};
+let vocMo=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');})();
 let vocV='list',vocSt='all',vocKind='all',vocSort='new',vocPosts=[],vocCm={},vocVt={},vocMe=null,vocCur=null,vocBusy=false;
 const vEsc=x=>esc(String(x==null?'':x));
 const vDate=t=>{const d=new Date(t),z=n=>String(n).padStart(2,'0');return `${z(d.getMonth()+1)}.${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`;};
@@ -5743,35 +5786,26 @@ function vocRender(){
   if(!vocMe){b.innerHTML='<div class="vempty">의견을 남기려면 먼저 로그인해 주세요.<br>설정(⚙)에서 로그인할 수 있어요.</div>';return;}
   if(vocV==='write')return vocWrite();
   if(vocV==='detail')return vocDetail();
-  let list=vocPosts.filter(x=>(vocKind==='all'||x.kind===vocKind)&&(vocSt==='all'||x.status===vocSt));
+  const mp=vocPosts.filter(x=>(x.created_at||'').slice(0,7)===vocMo);
+  let list=mp.filter(x=>(vocKind==='all'||x.kind===vocKind)&&(vocSt==='all'||x.status===vocSt));
   if(vocSort==='vote')list=[...list].sort((a,c)=>(vocVt[c.id]||[]).length-(vocVt[a.id]||[]).length||(a.created_at<c.created_at?1:-1));
   const chips=[['all','전체'],...Object.entries(VK)].map(([k,n])=>`<button data-k="${k}" class="${vocKind===k?'on':''}">${n}</button>`).join('');
-  const cnt=k=>vocPosts.filter(x=>x.status===k).length,tot=vocPosts.length,nNew=cnt('new');
-  const nDone=cnt('done'),nRev=cnt('review'),nHold=cnt('hold'),pct=tot?Math.round(nDone/tot*100):0;
-  const mo=new Date().toISOString().slice(0,7);
-  const doneMo=vocPosts.filter(x=>x.status==='done'&&(x.created_at||'').slice(0,7)===mo).length;
-  const seg=(k,n)=>n?`<i class="sg-${k}" style="flex:${n}" title="${VSS[k]} ${n}건"></i>`:'';
-  const kinds=Object.entries(VK).map(([k,n])=>{const a=vocPosts.filter(x=>x.kind===k),d=a.filter(x=>x.status==='done').length;
+  const cnt=k=>mp.filter(x=>x.status===k).length,tot=mp.length,nNew=cnt('new');
+  const nDone=cnt('done'),pct=tot?Math.round(nDone/tot*100):0;
+  const [yy,mm]=vocMo.split('-');
+  const kinds=Object.entries(VK).map(([k,n])=>{const a=mp.filter(x=>x.kind===k),d=a.filter(x=>x.status==='done').length;
     return `<div class="vk"><span>${n}</span><div class="bar"><i style="width:${a.length?d/a.length*100:0}%"></i></div><b>${d}/${a.length}</b></div>`;}).join('');
-  const stat=`<div class="vstat">
-    <div class="vtiles">
-      <div class="vtile"><span>전체 접수</span><b>${tot}</b></div>
-      <div class="vtile t-new"><span>조치 전</span><b>${nNew}</b></div>
-      <div class="vtile t-review"><span>조치 중</span><b>${nRev}</b></div>
-      <div class="vtile t-done"><span>조치 완료</span><b>${nDone}</b></div></div>
-    <div class="vprog"><div class="vbar">${seg('new',nNew)}${seg('review',nRev)}${seg('done',nDone)}${seg('hold',nHold)}</div>
-      <div class="vleg"><span>조치율 <b>${pct}%</b></span>${vocMe.admin?`<span>불만 ${vocPosts.filter(x=>x.kind==='complaint').length}건</span><span>이번 달 조치 ${doneMo}건</span>`:''}</div></div>
-    ${vocMe.admin?`<details class="vkd"><summary>분류별 조치 현황</summary>${kinds}</details>`:''}</div>`;
-  const sch=[['all','전체'],['new','조치 전'],['review','조치 중'],['done','조치 완료'],['hold','보류']].map(([k,n])=>`<button data-st="${k}" class="${vocSt===k?'on':''}">${n}${k==='all'?'':' '+cnt(k)}</button>`).join('');
+  const sch=[['all','접수',tot],['new','조치 전',cnt('new')],['review','조치 중',cnt('review')],['done','조치 완료',nDone],['hold','보류',cnt('hold')]].map(([k,n,c])=>`<button data-st="${k}" class="${vocSt===k?'on':''}"><span>${n}</span><b>${c}</b></button>`).join('');
   const rows=list.map(x=>`<button class="vrow" data-id="${x.id}"><div class="vmain"><div class="vt">${vEsc(x.title)}</div>
     <div class="vm"><span class="vtag k-${x.kind}">${VK[x.kind]}</span>
     <span>${vEsc(x.author||'익명')}</span><span>${vDate(x.created_at)}</span><span>♥ ${(vocVt[x.id]||[]).length}</span><span>댓글 ${vocCm[x.id]||0}</span></div></div>
     <span class="vst st-${x.status}">${VSS[x.status]}</span></button>`).join('');
-  b.innerHTML=`${stat}<div class="voc-top"><span class="grow vseg" id="vSt">${sch}</span>
-    <button class="vbtn alt sm" id="vSort">${vocSort==='new'?'최신순':'공감순'}</button><button class="vbtn sm" id="vWrite">글쓰기</button></div>
+  b.innerHTML=`<div class="vhead"><div class="vmo"><button data-vm="-1" aria-label="이전 달">‹</button><b>${yy}년 ${+mm}월</b><button data-vm="1" aria-label="다음 달">›</button><button data-vm="0" class="tb">이번 달</button></div>
+    <span class="vsp"></span><button class="vbtn alt sm" id="vSort">${vocSort==='new'?'최신순':'공감순'}</button><button class="vbtn sm" id="vWrite">글쓰기</button></div>
+    <div class="vline" id="vSt">${sch}<span class="vpct">조치율 <b>${pct}%</b></span></div>
     <div class="voc-chips" id="vChips">${chips}</div>
-    ${vocMe.admin?`<div class="vadmbar"><button class="vbtn alt sm" id="vAllCopy">조치 전 ${nNew}건 Claude용 복사</button><button class="vbtn alt sm" id="vExpMd">전체 .md 저장</button><button class="vbtn alt sm" id="vExpJson">전체 .json 저장</button></div>`:''}
-    <div class="card" style="overflow:hidden">${rows||'<div class="vempty">해당하는 글이 없어요.</div>'}</div>`;
+    <div class="card vlist">${rows||'<div class="vempty">이 달에 접수된 글이 없어요.</div>'}</div>
+    ${vocMe.admin?`<div class="vadmbar"><button class="vbtn alt sm" id="vAllCopy">조치 전 ${vocPosts.filter(x=>x.status==='new').length}건 Claude용 복사</button><button class="vbtn alt sm" id="vExpMd">전체 .md 저장</button><button class="vbtn alt sm" id="vExpJson">전체 .json 저장</button></div><details class="vkd"><summary>분류별 조치 현황 (${yy}년 ${+mm}월)</summary>${kinds}</details>`:''}`;
 }
 function vocWrite(){
   $('vocBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="vBack">← 목록</button><span class="grow"></span></div>
@@ -5830,7 +5864,9 @@ $('vocBtn').onclick=vocOpen;
 $('vocOpen2').onclick=()=>{try{$('setPop').classList.remove('open');$('popBack').classList.remove('open');}catch(e){}vocOpen();};
 $('vocBody').addEventListener('click',async e=>{
   const t=e.target,bt=t.closest('button'),id=bt&&bt.id;
-  if(t.closest('#vSt')&&t.dataset.st){vocSt=t.dataset.st;return vocRender();}
+  const vm=t.closest('[data-vm]');
+  if(vm){const v=+vm.dataset.vm;if(!v){const d=new Date();vocMo=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}else{const [y,m]=vocMo.split('-').map(Number),d=new Date(y,m-1+v,1);vocMo=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}return vocRender();}
+  const sb=t.closest('#vSt [data-st]');if(sb){vocSt=sb.dataset.st;return vocRender();}
   if(t.closest('#vChips')&&t.dataset.k){vocKind=t.dataset.k;return vocRender();}
   const row=t.closest('.vrow');if(row){vocCur=row.dataset.id;vocV='detail';return vocRender();}
   const cd=t.closest('[data-cd]');
@@ -6454,7 +6490,7 @@ function closeFind(){
   $('findPop').classList.remove('open');
   const sp=$('setPop');if(sp)sp.classList.remove('open');
   const yp=$('yrPop');if(yp)yp.classList.remove('open');
-  const cp=$('catPop');if(cp)cp.classList.remove('open');
+  const cp=$('catPop');if(cp){cp.classList.remove('open');cp.classList.remove('big');}document.body.classList.remove('cat-live');
   const vp=$('viewPop');if(vp)vp.classList.remove('open');
   $('popBack').classList.remove('open');}
 $('popBack').onclick=closeFind;
@@ -7288,7 +7324,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v158';
+const APPVER=/*ver*/'v159';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -7589,13 +7625,10 @@ function curSel(){
 const catNav=()=>catTarget?store.cats.map(c=>c.id):['__all'].concat(store.cats.map(c=>c.id));
 function paintCatMenu(){
   const sel2=curSel(),nav=catNav();
-  $('catMenu').innerHTML=(catTarget?'':`<button data-c="__all" class="${allMode()?'on':''}${nav[catIdx]==='__all'?' cur':''}"><i style="background:#8a8f9e"></i>전체<span class="ck">${allMode()?'✓':''}</span></button>`)+store.cats.map((c,i)=>
+  const rows=(catTarget?'':`<button data-c="__all" class="${allMode()?'on':''}${nav[catIdx]==='__all'?' cur':''}"><i style="background:#8a8f9e"></i><b>전체</b><span class="ck">${allMode()?'✓':''}</span></button>`)+store.cats.map((c,i)=>
     `<button data-c="${c.id}" class="${sel2.includes(c.id)?'on':''}${nav[catIdx]===c.id?' cur':''}">
-      <i style="background:${c.color}"></i>${esc(c.name)}<em class="csm${c.share?' on':''}" data-csm="${c.id}" title="누르면 ${c.share?'비공개':'팀에 공개'}로 바뀜">${c.share?'공유':'비공개'}</em><span class="ck">${sel2.includes(c.id)?'✓':''}</span></button>`).join('')
-    +`<button data-c="__multi" class="multi${multiCat?' on':''}"><span class="mk">${multiCat?'☑':'☐'}</span>다중 선택</button>`
-    +'<div class="kbd">↑ ↓ 로 옮기고 Enter 로 선택</div>'
-    +'<button data-c="__edit" style="color:var(--navy);font-size:13px;font-weight:600">분류 설정…</button>'
-    +'<button data-c="__close" style="color:var(--ink-2);font-size:13px">완료</button>';
+      <i style="background:${c.color}"></i><b>${esc(c.name)}</b><em class="csm${c.share?' on':''}" data-csm="${c.id}" title="누르면 ${c.share?'비공개':'팀에 공개'}로 바뀜">${c.share?'공유':'비공개'}</em><span class="ck">${sel2.includes(c.id)?'✓':''}</span></button>`).join('');
+  $('catMenu').innerHTML=`<div class="clist">${rows}</div><div class="cfoot"><button data-c="__multi" class="${multiCat?'on':''}"><span class="mk">${multiCat?'☑':'☐'}</span>다중 선택</button><button data-c="__edit">분류 설정</button><button data-c="__close" class="ok">완료</button></div><div class="kbd">↑ ↓ 로 옮기고 Enter 로 선택</div>`;
 }
 function moveCat(n){
   const N=catNav().length;if(!N)return;
@@ -7603,6 +7636,7 @@ function moveCat(n){
   const el=$('catMenu').querySelector('.cur');
   if(el&&el.scrollIntoView)el.scrollIntoView({block:'nearest'});
 }
+const catPhone=()=>window.matchMedia&&window.matchMedia('(max-width:700px)').matches;
 function pickCat(v){
   if(catTarget){
     const it=store.items.find(i=>i.id===catTarget);
@@ -7619,7 +7653,7 @@ function pickCat(v){
     try{renderMonth();renderDay();}catch(e){}
   }
   const ix=catNav().indexOf(v);if(ix>=0)catIdx=ix;
-  if(multiCat){paintCatMenu();return;}
+  if(multiCat||(!catTarget&&catPhone())){paintCatMenu();return;}
   closeFind();
   if(!catTarget){const inp=$('input');if(inp)inp.focus();}
 }
@@ -7631,7 +7665,8 @@ function openCatMenu(itemId,anchorUp){
   try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
   paintCatMenu();
   $('catPop').classList.toggle('up',anchorUp!==false);
-  $('catPop').classList.add('open');$('popBack').classList.add('open');
+  const cpEl=$('catPop');cpEl.classList.remove('big');cpEl.classList.add('open');
+  if(catPhone()&&!catTarget){document.body.classList.add('cat-live');}else{$('popBack').classList.add('open');}
 }
 document.addEventListener('keydown',e=>{
   if(!$('catPop').classList.contains('open'))return;
@@ -7642,6 +7677,11 @@ document.addEventListener('keydown',e=>{
     const id=catNav()[catIdx];if(id)pickCat(id);}
 },true);
 $('catBtn').onclick=()=>openCatMenu(null,true);
+(function(){const g=$('catGrab'),p=$('catPop');let y0=null;
+  g.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;},{passive:true});
+  g.addEventListener('touchend',e=>{if(y0==null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;
+    if(dy<-30)p.classList.add('big');else if(dy>30){if(p.classList.contains('big'))p.classList.remove('big');else closeFind();}},{passive:true});
+  g.addEventListener('click',()=>{p.classList.toggle('big');});})();
 $('catMenu').onclick=e=>{
   const sm=e.target.closest('[data-csm]');
   if(sm){e.stopPropagation();const c=store.cats.find(x=>x.id===sm.dataset.csm);if(!c)return;
