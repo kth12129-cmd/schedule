@@ -1978,6 +1978,17 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
   .hsec-memo .hbtn.seg.act{background:var(--navy)!important;color:#fff!important;border-color:var(--navy)!important}
   .hsec-memo .hbtn.seg.act svg{color:#fff;stroke:#fff}
 }
+
+@media(max-width:700px){
+  #tsSheet .sheet-body{overflow-x:hidden}
+  .tsctl{grid-template-columns:minmax(0,1fr)!important;gap:8px}
+  .tsnav{min-width:0;width:100%}
+  .tsov{overflow-x:auto;flex-wrap:nowrap;min-width:0;touch-action:pan-x;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  .tsov::-webkit-scrollbar{display:none}
+  .tsov button,.tsov span{flex:none}
+  .tsgb{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;touch-action:pan-x}.tsgb::-webkit-scrollbar{display:none}.tsgb button{flex:none}
+  .tstabs{min-width:0}
+}
 </style>
 </head>
 <body>
@@ -7457,7 +7468,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v177';
+const APPVER=/*ver*/'v178';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
