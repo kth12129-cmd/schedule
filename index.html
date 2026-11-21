@@ -5673,8 +5673,20 @@ function orgMembersHTML(){
       <span class="om-s${p.user_id?'':' dim'}">${p.user_id?'가입':'미가입'}</span>
       <div class="om-r">${q?'':`<button class="vbtn alt sm" data-oe="${p.id}" aria-label="수정" title="이름·직급 수정">수정</button><button class="vbtn alt sm" data-od="${p.id}" aria-label="목록에서 빼기" title="구성원에서 빼기">빼기</button>`}</div></div>${orgEd===p.id?`<div class="om-ed"><input id="oeN" value="${esc(p.name)}" placeholder="이름" maxlength="30"><input id="oeT" value="${esc(p.title||'')}" placeholder="직급" maxlength="20"><label><input type="checkbox" id="oeL"${p.is_leader?' checked':''}> 팀장</label><button class="vbtn sm" data-oes="${p.id}">저장</button><button class="vbtn alt sm" data-oec="1">취소</button></div>`:''}`;}).join('');
 }
+let orgSoftT=0;
+async function orgSoft(force){
+  if(!orgD||backend!=='sb'||!SB||!session)return;
+  const n=Date.now();if(!force&&n-orgSoftT<4000)return;orgSoftT=n;
+  try{const r=await SB.rpc('org_tree');if(!r.data)return;
+    if(JSON.stringify(r.data.people)===JSON.stringify(orgD.people)&&JSON.stringify(r.data.units)===JSON.stringify(orgD.units))return;
+    const ae=document.activeElement;if(ae&&ae.classList&&(ae.classList.contains('om-pi')||ae.tagName==='INPUT'&&ae.closest('#tmBody'))){return;}
+    orgD=r.data;if($('tmSheet')&&$('tmSheet').classList.contains('open')&&tmView==='board')orgRender();}catch(e){}}
+setInterval(()=>{if(!document.hidden&&$('tmSheet')&&$('tmSheet').classList.contains('open')&&tmView==='board')orgSoft(true);},8000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)orgSoft(true);});
+addEventListener('focus',()=>orgSoft(true));
 function orgRender(){
   const box=$('tmBody');
+  orgSoft();
   if(!orgD){box.innerHTML='<div class="vempty">조직도를 불러오는 중…</div>';orgLoad().then(()=>{if($('tmSheet').classList.contains('open')&&tmView==='board')orgRender();});return;}
   const u=orgD.units.find(x=>x.id===orgSel),path=u?orgPath(u.id):[];
   const tabs=[['mem','구성원'],['plan','일정'],['log','인수인계']].map(([k,n])=>`<button data-ot2="${k}" class="${orgTab===k?'on':''}">${n}</button>`).join('');
@@ -7413,7 +7425,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v165';
+const APPVER=/*ver*/'v166';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
