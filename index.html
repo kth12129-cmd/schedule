@@ -1744,7 +1744,7 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .tsc em.me{border:1px solid #6b7280;color:#4b5563}.tsc em.vc{background:#fbe9d3;color:#a45a10}
 .tst{position:relative;margin-left:42px;margin-right:2px}
 .tsr{position:absolute;left:0;right:0;border-top:1px solid var(--line)}.tsr span{position:absolute;left:-42px;top:-7px;font-size:10px;color:var(--ink-3)}
-.tsbody{position:absolute;left:0;right:0;top:0;bottom:0}
+.tscols{position:absolute;inset:0;display:grid;grid-template-columns:1fr;gap:10px}.tscols.two{grid-template-columns:1fr 1fr}.tsbody{position:relative;height:100%}.tscols.two .tsbody+.tsbody{border-left:1px solid var(--line);padding-left:10px}
 .tsb{position:absolute;overflow:hidden;border-radius:5px;border-left:3px solid var(--c);background:color-mix(in srgb,var(--c) 14%,var(--surface));padding:2px 6px;font-size:11.5px;line-height:1.3}
 .tsb b{display:block;font-size:10px;color:var(--c);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tsb span{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1781,6 +1781,19 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .tsgi .cd b{font-family:ui-monospace,monospace;letter-spacing:.08em;color:var(--ink);margin-left:4px}.tsgi button{color:var(--ink-3);font-size:12px}
 .ot-grp{margin-top:14px;border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px}.ot-grp b{font-size:12px;color:var(--ink-3);font-weight:600}
 .ot-grp button{display:grid;grid-template-columns:1fr auto;height:34px;align-items:center;padding:0 10px;border:1px solid var(--line);border-radius:9px;font-size:13px;font-weight:600;text-align:left}.ot-grp button.new{color:var(--indigo);border-style:dashed;grid-template-columns:1fr}.ot-grp i{font-style:normal;color:var(--ink-3);font-size:11.5px}
+.tstabs{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:0 0 10px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.tstabs button{height:38px;font-size:13px;font-weight:650;color:var(--ink-2);border-right:1px solid var(--line)}.tstabs button:last-child{border-right:0}
+.tstabs button.on{background:var(--navy);color:#fff}
+.tsdn{display:grid;grid-template-columns:40px 1fr 40px 64px;gap:6px;align-items:center;margin:0 0 10px}
+.tsdn b{text-align:center;font-size:15px}.tsdn button{height:36px;border:1px solid var(--line);border-radius:9px;font-size:14px;color:var(--ink-2)}
+.tsvp{overflow:hidden}.tstrack{display:flex;align-items:flex-start;width:400%;transition:transform .28s ease}
+.tspg{flex:0 0 25%;min-width:0;box-sizing:border-box;padding:0 1px}.tspg:not(.on){height:0;overflow:hidden}
+.tsh2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 2px 6px 42px;font-size:12px;font-weight:700;color:var(--ink-2)}
+.tsh2 span+span{padding-left:10px}
+.tsv{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;margin:0 0 10px;padding:9px 12px;border-radius:9px;border:1px solid var(--line);font-size:12.5px;color:var(--ink-2)}
+.tsv b{font-size:13.5px;color:var(--ink)}.tsv.ok{border-color:#9bc5a8;background:color-mix(in srgb,#2f8f5b 9%,var(--surface))}.tsv.ok b{color:#2f8f5b}
+.tsv.bad{border-color:#d98a8a;background:color-mix(in srgb,#c0392b 9%,var(--surface))}.tsv.bad b{color:#c0392b}
+.tsb.cf{outline:2px solid #c0392b;outline-offset:-2px}.tsb.cf b{color:#c0392b}
 </style>
 </head>
 <body>
@@ -4670,7 +4683,7 @@ $('an2').addEventListener('click',e=>{
 runQuery=function(){an2Render();};
 
 /* ── 팀 일정 전용 화면 ── */
-const TS2={mo:new Date(today.getFullYear(),today.getMonth(),1),day:TODAY,ovMe:true,ovVac:true,mcat:'전체',memos:[],chan:null,gid:'team',groups:[],gmem:{},gitems:[],form:''};
+const TS2={mo:new Date(today.getFullYear(),today.getMonth(),1),day:TODAY,ovMe:true,ovVac:true,mcat:'전체',memos:[],chan:null,gid:'team',groups:[],gmem:{},gitems:[],form:'',pg:0};
 try{TS2.ovMe=localStorage.getItem('ts-me')!=='0';TS2.ovVac=localStorage.getItem('ts-vac')!=='0';}catch(e){}
 const TSCATS=['공지','업무','참석','기타'];
 const tsMeId=()=>session&&session.user&&session.user.id;
@@ -4708,19 +4721,24 @@ function tsCal(){
       <span class="r2">${mine?`<em class="me">내 ${mine}</em>`:''}${vc?`<em class="vc">휴가 ${vc}</em>`:''}</span></button>`;}
   return h+'</div>';}
 function tsTable(k){
-  const tl=tsTeam(k),mine=TS2.ovMe?tsMine(k):[],timed=tl.filter(x=>x.time),plain=tl.filter(x=>!x.time);
-  const ev=timed.map(x=>({a:toMin(x.time),b:Math.max(toMin(x.time)+30,x.end?toMin(x.end):0),x,c:ownerCol(x.uid)}))
-    .concat(mine.filter(x=>x.time).map(x=>({a:toMin(x.time),b:Math.max(toMin(x.time)+30,x.end?toMin(x.end):0),x:{who:'내 개인 일정',title:x.title,time:x.time,end:x.end},c:'#6b7280',pv:true})))
-    .map(e=>({...e,b:Math.min(e.b,1440)})).sort((p,q)=>p.a-q.a||p.b-q.b);
-  let S=8,E=19;ev.forEach(e=>{S=Math.min(S,Math.floor(e.a/60));E=Math.max(E,Math.ceil(e.b/60));});E=Math.min(24,E);
-  const H=40,Y=m=>(m/60-S)*H,lanes=[];ev.forEach(e=>{let li=lanes.findIndex(z=>z<=e.a);if(li<0)li=lanes.length;lanes[li]=e.b;e.l=li;});
-  const N=Math.max(1,lanes.length);let rows='';
-  for(let hr=S;hr<=E;hr++)rows+=`<div class="tsr" style="top:${(hr-S)*H}px"><span>${pad(hr)}:00</span></div>`;
-  const blocks=ev.map(e=>`<div class="tsb${e.pv?' pv':''}${e.x.done?' dn':''}" style="--c:${e.c};top:${Y(e.a)}px;height:${Math.max(24,(e.b-e.a)/60*H-1)}px;left:${e.l/N*100}%;width:calc(${100/N}% - 3px)"><b>${e.x.time}${e.x.end?'~'+e.x.end:''} · ${esc(e.x.who)}</b><span>${esc(e.x.title)}</span></div>`).join('');
-  const chips=plain.map(x=>`<span class="tsk" style="--c:${ownerCol(x.uid)}"><b>${esc(x.who)}</b> ${esc(x.title)}</span>`).join('')+
-    (TS2.ovMe?tsMine(k).filter(x=>!x.time).map(x=>`<span class="tsk pv"><b>내 개인</b> ${esc(x.title)}</span>`).join(''):'');
+  const tl=tsTeam(k),mine=TS2.ovMe?tsMineAll(k).map(i=>({title:i.title,time:i.time||'',end:i.endTime||'',done:!!i.done})):[],timed=tl.filter(x=>x.time),plain=tl.filter(x=>!x.time);
+  const mk=(a,b0,x,c,pv)=>({a,b:Math.min(1440,Math.max(a+30,b0)),x,c,pv});
+  const T=timed.filter(x=>!x.mine||!TS2.ovMe).map(x=>mk(toMin(x.time),x.end?toMin(x.end):0,x,ownerCol(x.uid))).sort((p,q)=>p.a-q.a||p.b-q.b);
+  const M=mine.filter(x=>x.time).map(x=>mk(toMin(x.time),x.end?toMin(x.end):0,{who:'나',title:x.title,time:x.time,end:x.end},'#4b5563',true)).sort((p,q)=>p.a-q.a||p.b-q.b);
+  const hit=(p,q)=>p.a<q.b&&q.a<p.b;
+  T.forEach(t=>{t.cf=M.some(m=>hit(t,m));});M.forEach(m=>{m.cf=T.some(t=>hit(t,m));});
+  const nCf=T.filter(t=>t.cf).length;
+  let S=8,E=19;T.concat(M).forEach(e=>{S=Math.min(S,Math.floor(e.a/60));E=Math.max(E,Math.ceil(e.b/60));});E=Math.min(24,E);
+  const H=40,Y=m=>(m/60-S)*H;
+  const lay=arr=>{const lanes=[];arr.forEach(e=>{let li=lanes.findIndex(z=>z<=e.a);if(li<0)li=lanes.length;lanes[li]=e.b;e.l=li;});const N=Math.max(1,lanes.length);
+    return arr.map(e=>`<div class="tsb${e.pv?' pv':''}${e.x.done?' dn':''}${e.cf?' cf':''}" style="--c:${e.c};top:${Y(e.a)}px;height:${Math.max(32,(e.b-e.a)/60*H-1)}px;left:${e.l/N*100}%;width:calc(${100/N}% - 3px)"><b>${e.x.time}${e.x.end?'~'+e.x.end:''} · ${esc(e.x.who)}${e.cf?' · 겹침':''}</b><span>${esc(e.x.title)}</span></div>`).join('');};
+  let rows='';for(let hr=S;hr<=E;hr++)rows+=`<div class="tsr" style="top:${(hr-S)*H}px"><span>${pad(hr)}:00</span></div>`;
+  const chips=plain.filter(x=>!x.mine||!TS2.ovMe).map(x=>`<span class="tsk" style="--c:${ownerCol(x.uid)}"><b>${esc(x.who)}</b> ${esc(x.title)}</span>`).join('')+
+    (TS2.ovMe?mine.filter(x=>!x.time).map(x=>`<span class="tsk pv"><b>나 · 종일</b> ${esc(x.title)}</span>`).join(''):'');
   const vac=TS2.ovVac?tsVac(k).map(v=>`<span class="tsk vc"><b>${esc(v.name)}</b> ${esc(v.kind)}</span>`).join(''):'';
-  return `${chips||vac?`<div class="tsk-row">${vac}${chips}</div>`:''}<div class="tst" style="height:${(E-S)*H+2}px">${rows}<div class="tsbody">${blocks}</div></div>`;}
+  const verdict=TS2.ovMe?(T.length?(nCf?`<div class="tsv bad"><b>겹침 ${nCf}건</b><span>내 일정과 시간이 겹치는 팀 일정이 있습니다</span></div>`:`<div class="tsv ok"><b>참석 가능</b><span>내 일정과 겹치는 팀 일정이 없습니다</span></div>`):`<div class="tsv"><b>팀 일정 없음</b><span>이 날 시간이 정해진 팀 일정이 없습니다</span></div>`):'';
+  const two=TS2.ovMe;
+  return `${verdict}${chips||vac?`<div class="tsk-row">${vac}${chips}</div>`:''}${two?`<div class="tsh2"><span>팀 일정</span><span>내 일정</span></div>`:''}<div class="tst" style="height:${(E-S)*H+2}px">${rows}<div class="tscols${two?' two':''}"><div class="tsbody">${lay(T)}</div>${two?`<div class="tsbody">${lay(M)}</div>`:''}</div></div>`;}
 function tsDay(k){
   const tl=tsTeam(k),by={};tl.forEach(x=>(by[x.uid]=by[x.uid]||{who:x.who,uid:x.uid,rows:[]}).rows.push(x));
   let h=Object.values(by).map(g=>`<div class="tsp"><div class="tsph"><i style="background:${ownerCol(g.uid)}"></i><b>${esc(g.who)}</b><em>${g.rows.length}건</em></div>${g.rows.map(x=>`<div class="tspr${x.done?' dn':''}"><span>${x.time?x.time+(x.end?'~'+x.end:''):'종일'}</span><span>${esc(x.title)}</span></div>`).join('')}</div>`).join('')||'<div class="an2e">이 날 공개된 팀 일정이 없습니다.</div>';
@@ -4745,10 +4763,14 @@ function tsRender(){
     ${g0?`<div class="tsgi"><span>구성원 ${(TS2.gmem[g0.id]||[]).length}명 · ${(TS2.gmem[g0.id]||[]).map(m=>esc(m.name||'이름 없음')).join(', ')}</span><span class="cd">초대 코드 <b>${esc(g0.code)}</b></span><button data-tsg="__leave">나가기</button></div>`:''}`;
   el.innerHTML=gbar+`<div class="tsctl"><div class="tsnav"><button data-tsn="-1">‹</button><span>${y}년 ${m+1}월</span><button data-tsn="1">›</button><button data-tsn="0" class="tb">오늘</button></div>
     <div class="tsov"><span>함께 보기</span><button data-tso="me" class="${TS2.ovMe?'on':''}">내 일정</button><button data-tso="vac" class="${TS2.ovVac?'on':''}">휴가 일정</button></div></div>
-    <div class="tscol"><div class="tscal card">${tsCal()}<div class="mono"><span>건수 = 공개된 팀 일정</span><span>점 = 기록한 사람</span><span>내 일정·휴가는 위에서 켜고 끕니다</span></div></div>
-    <div class="tspan"><div class="an2s" style="margin-top:0">${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]}) 시간별 일정</div><div class="card an2c" id="tsTable">${tsTable(TS2.day)}</div>
-     <div class="an2s">선택한 날</div><div class="card an2c" id="tsDay">${tsDay(TS2.day)}</div>
-     <div class="an2s">메모 <em>팀원 누구나 남길 수 있습니다</em></div><div class="card an2c" id="tsMemo">${hasTeam?tsMemoHtml():'<div class="an2e">팀에 참여하면 메모를 남길 수 있습니다.</div>'}</div></div></div>`;}
+    <div class="tstabs">${['달력','시간표','선택한 날','메모'].map((t,i)=>`<button data-tspg="${i}" class="${TS2.pg===i?'on':''}">${t}</button>`).join('')}</div>
+    ${TS2.pg>0?`<div class="tsdn"><button data-tsdn="-1">‹</button><b>${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})</b><button data-tsdn="1">›</button><button data-tspg="0" class="tb">달력</button></div>`:''}
+    <div class="tsvp" id="tsVp"><div class="tstrack" style="transform:translateX(${-25*TS2.pg}%)">
+     <div class="tspg ${TS2.pg===0?'on':''}"><div class="tscal card">${tsCal()}<div class="mono"><span>건수 = 공개된 팀 일정</span><span>점 = 기록한 사람</span><span>날짜를 누르면 시간표로 이동합니다</span></div></div></div>
+     <div class="tspg ${TS2.pg===1?'on':''}"><div class="card an2c" id="tsTable">${tsTable(TS2.day)}</div></div>
+     <div class="tspg ${TS2.pg===2?'on':''}"><div class="card an2c" id="tsDay">${tsDay(TS2.day)}</div></div>
+     <div class="tspg ${TS2.pg===3?'on':''}"><div class="card an2c" id="tsMemo">${hasTeam?tsMemoHtml():'<div class="an2e">팀에 참여하면 메모를 남길 수 있습니다.</div>'}</div></div>
+    </div></div>`;}
 async function tsLoadMemos(){
   if(backend!=='sb'||!SB||!tsTid()){TS2.memos=[];return;}
   try{const r=await SB.from('team_memos').select('*').eq('team_id',tsTid()).eq('day',TS2.day).eq('hidden',false).order('created_at');TS2.memos=r.data||[];}catch(e){TS2.memos=[];}
@@ -4770,7 +4792,7 @@ async function tsOpen(form){
   if(!team){try{await loadTeam();}catch(e){}}
   await tsLoadGroups();
   if(!(team&&team.id)&&TS2.gid==='team'&&TS2.groups.length)TS2.gid=TS2.groups[0].id;
-  TS2.mo=new Date(today.getFullYear(),today.getMonth(),1);TS2.day=TODAY;TS2.form=(form==='new'||form==='join')?form:'';
+  TS2.mo=new Date(today.getFullYear(),today.getMonth(),1);TS2.day=TODAY;TS2.pg=0;TS2.form=(form==='new'||form==='join')?form:'';
   await tsLoadGItems();
   tsRender();$('tsSheet').classList.add('open');tsLoadMemos();
   if(!TS2.chan&&SB){const kick=()=>{if($('tsSheet').classList.contains('open')){tsLoadGroups().then(()=>{tsRender();tsLoadMemos();});}};
@@ -4793,9 +4815,12 @@ $('ts').addEventListener('click',async e=>{
     const r=await SB.rpc('group_join',{p_code:cd,p_my_name:tsNameOf(tsMeId())});
     if(r.error){toastMsg(r.error.message||'참여하지 못했습니다');return;}
     TS2.form='';await tsLoadGroups();TS2.gid=r.data.id;await tsLoadGItems();tsRender();tsLoadMemos();toastMsg(`'${r.data.name}' 그룹에 참여했어요`);return;}
+  const pgb=e.target.closest('[data-tspg]'),dnb=e.target.closest('[data-tsdn]');
+  if(pgb){TS2.pg=+pgb.dataset.tspg;tsRender();tsLoadMemos();return;}
+  if(dnb){const d=fromYmd(TS2.day);d.setDate(d.getDate()+ +dnb.dataset.tsdn);TS2.day=ymd(d);TS2.mo=new Date(d.getFullYear(),d.getMonth(),1);tsRender();tsLoadMemos();return;}
   const n=e.target.closest('[data-tsn]'),dd=e.target.closest('[data-tsd]'),o=e.target.closest('[data-tso]'),mc=e.target.closest('[data-tsmc]'),md2=e.target.closest('[data-tsmd]');
   if(n){const v=+n.dataset.tsn;TS2.mo=v?new Date(TS2.mo.getFullYear(),TS2.mo.getMonth()+v,1):new Date(today.getFullYear(),today.getMonth(),1);if(!v)TS2.day=TODAY;tsRender();tsLoadMemos();return;}
-  if(dd){TS2.day=dd.dataset.tsd;const d=fromYmd(TS2.day);if(d.getMonth()!==TS2.mo.getMonth())TS2.mo=new Date(d.getFullYear(),d.getMonth(),1);tsRender();tsLoadMemos();return;}
+  if(dd){TS2.day=dd.dataset.tsd;const d=fromYmd(TS2.day);if(d.getMonth()!==TS2.mo.getMonth())TS2.mo=new Date(d.getFullYear(),d.getMonth(),1);TS2.pg=1;tsRender();tsLoadMemos();return;}
   if(o){if(o.dataset.tso==='me'){TS2.ovMe=!TS2.ovMe;try{localStorage.setItem('ts-me',TS2.ovMe?'1':'0');}catch(_){}}else{TS2.ovVac=!TS2.ovVac;try{localStorage.setItem('ts-vac',TS2.ovVac?'1':'0');}catch(_){}}tsRender();tsLoadMemos();return;}
   if(mc){TS2.mcat=mc.dataset.tsmc;const box=$('tsMemo');if(box)box.innerHTML=tsMemoHtml();return;}
   if(md2){try{await SB.from('team_memos').update({hidden:true}).eq('id',md2.dataset.tsmd);}catch(_){}tsLoadMemos();return;}
@@ -4804,8 +4829,12 @@ $('ts').addEventListener('click',async e=>{
     const r=await SB.from('team_memos').insert({team_id:tsTid(),day:TS2.day,cat:$('tsMcat').value,body:b,author_id:me,author_name:nm});
     if(r.error){toastMsg('메모를 저장하지 못했습니다');return;}
     $('tsMbody').value='';tsLoadMemos();}});
+(function(){let x0=0,y0=0;const el=$('ts');
+  el.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
+  el.addEventListener('touchend',e=>{if(!e.target.closest('#tsVp')||e.target.closest('textarea,input,select'))return;const t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;
+    if(Math.abs(dx)>70&&Math.abs(dy)<45){const n=Math.max(0,Math.min(3,TS2.pg+(dx<0?1:-1)));if(n!==TS2.pg){TS2.pg=n;tsRender();tsLoadMemos();}}},{passive:true});})();
 $('ts').addEventListener('keydown',e=>{if(e.target.id==='tsMbody'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();$('tsMsend').click();}});
-const APPVER=/*ver*/'v147';
+const APPVER=/*ver*/'v148';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
