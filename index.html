@@ -2002,6 +2002,11 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
   .tsc .who{font-size:9.5px}.tsc .who i{width:5px;height:5px;margin-right:2px}
   .tsc em{font-size:9px;padding:0 3px}
 }
+
+.ds-chip{min-width:0;max-width:100%;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.ds-chip .ds-t{min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.ds-fc{align-items:flex-start}.ds-fc .ds-t{width:100%}
+.ds-fc small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 </style>
 </head>
 <body>
@@ -4945,6 +4950,14 @@ function calShow(k){
     const h=v.clientHeight-4;if(h>200&&Math.abs(h-last)>1){last=h;document.documentElement.style.setProperty('--calh',h+'px');document.documentElement.style.setProperty('--rowh',Math.max(52,Math.floor((h-84)/6))+'px');try{if(tab==='cal')renderMonth();}catch(e){}}};
   new ResizeObserver(fit).observe(v);addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));setTimeout(fit,100);})();
 document.getElementById('capTop').addEventListener('click',()=>{const b=document.getElementById('imgBtn');if(b)b.click();});
+(function(){let t=null,fired=false;const box=()=>document.getElementById('dsSheet');
+  document.addEventListener('touchstart',e=>{const c=e.target.closest&&e.target.closest('.ds-chip[data-full]');if(!c)return;fired=false;
+    clearTimeout(t);t=setTimeout(()=>{fired=true;try{toastMsg(c.dataset.full);}catch(_){}},420);},{passive:true});
+  const stop=()=>clearTimeout(t);
+  document.addEventListener('touchend',stop,{passive:true});document.addEventListener('touchmove',stop,{passive:true});document.addEventListener('touchcancel',stop,{passive:true});
+  document.addEventListener('click',e=>{if(fired&&e.target.closest&&e.target.closest('.ds-chip[data-full]')){e.stopPropagation();e.preventDefault();fired=false;}},true);
+  document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('.ds-chip[data-full]'))e.preventDefault();});
+})();
 let calRz=null;addEventListener('resize',()=>{clearTimeout(calRz);calRz=setTimeout(()=>{if(tab==='cal')renderMonth();},150);});
 function miniMonth(y,m,mark){
   const f=new Date(y,m,1),start=new Date(f);start.setDate(start.getDate()-f.getDay());
@@ -6264,9 +6277,9 @@ function paintDs(){
   const lc=$('dsLay'),tc=$('dsTheme');if(!lc||!tc)return;
   lc.innerHTML=LAYS.map(l=>`<button class="ds-chip${layout===l.k?' on':''}" data-lay="${l.k}" title="${l.d}">${l.n}</button>`).join('');
   const ck=curSkinKey();
-  tc.innerHTML=SKINS.map(x=>`<button class="ds-chip${ck===x.key?' on':''}" data-skin="${x.key}"><span class="ds-sw"><i style="background:${x.sw[0]}"></i><i style="background:${x.sw[3]}"></i></span>${x.name}</button>`).join('');
+  tc.innerHTML=SKINS.map(x=>`<button class="ds-chip${ck===x.key?' on':''}" data-skin="${x.key}" data-full="${x.name}" title="${x.name}"><span class="ds-sw"><i style="background:${x.sw[0]}"></i><i style="background:${x.sw[3]}"></i></span><span class="ds-t">${x.name}</span></button>`).join('');
   const fc=$('dsFont'),cf=curFont();
-  if(fc)fc.innerHTML=FONTS.map(f=>`<button class="ds-chip ds-fc${cf===f.key?' on':''}" data-font="${f.key}" style="${f.key==='sys'?'':`font-family:'${({pret:'Pretendard Variable',gothica:'Gothic A1',nanum:'Nanum Gothic',noto:'Noto Sans KR',plex:'IBM Plex Sans KR',serif:'Noto Serif KR',dodum:'Gowun Dodum'})[f.key]}',sans-serif`}">${f.name}<small>일정 2026.11.21</small></button>`).join('');
+  if(fc)fc.innerHTML=FONTS.map(f=>`<button class="ds-chip ds-fc${cf===f.key?' on':''}" data-font="${f.key}" data-full="${f.name}" title="${f.name}" style="${f.key==='sys'?'':`font-family:'${({pret:'Pretendard Variable',gothica:'Gothic A1',nanum:'Nanum Gothic',noto:'Noto Sans KR',plex:'IBM Plex Sans KR',serif:'Noto Serif KR',dodum:'Gowun Dodum'})[f.key]}',sans-serif`}"><span class="ds-t">${f.name}</span><small>일정 2026.11.21</small></button>`).join('');
   const nw=$('dsNow'),sk=SKINS.find(x=>x.key===ck)||SKINS[0],fo=FONTS.find(x=>x.key===cf)||FONTS[0];
   if(nw)nw.innerHTML=`현재 <b>${sk.name}</b> · <b>${fo.name}</b>`;
 }
@@ -7481,7 +7494,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v179';
+const APPVER=/*ver*/'v180';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
