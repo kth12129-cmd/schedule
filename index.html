@@ -2077,6 +2077,12 @@ function parseInput(raw,baseYmd){
   const tag=s.match(/#(\S+)/);
   if(tag){const f=store.cats.find(c=>c.name.replace(/\s/g,'').startsWith(tag[1].replace(/\s/g,'')));
     if(f){cat=f.id;s=s.replace(tag[0],' ');}}
+  /* 태그가 없으면 제목에 적힌 분류 이름(예: '가마지천 현장')으로 자동 분류 — 가장 긴 이름 우선 */
+  if(!cat){const flat=s.replace(/\s/g,'');let best=null,bl=0;
+    store.cats.forEach(c=>{const full=c.name.replace(/\s/g,'');
+      [full,full.replace(/(현장|공사|사업)$/,'')].forEach(k=>{
+        if(k.length>=2&&k.length>bl&&flat.includes(k)){best=c;bl=k.length;}});});
+    if(best)cat=best.id;}
   let wk=false;
   {const wm=s.match(WKRE);
     if(wm){const a=wkTokOff(wm[1]),b=wm[2]?wkTokOff(wm[2]):a;
@@ -4108,7 +4114,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v118';
+const APPVER=/*ver*/'v119';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
