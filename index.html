@@ -60,11 +60,10 @@ input,textarea,select{font:inherit;color:inherit}
 /* 좁은 화면(휴대폰)에서는 위아래로 쌓기 */
 @media (max-width:660px){
   /* 휴대폰: 화면을 고정하지 않고 자연스럽게 스크롤되게 한다 */
-  html,body{height:auto;min-height:100%;overflow-y:visible;
-   overflow-x:hidden;max-width:100%;width:100%}
-  body{display:block;-webkit-overflow-scrolling:touch;position:relative}
-  header{position:sticky;top:0}
-  .brandbar{position:sticky;top:0;z-index:26}
+  html,body{height:100%;height:100dvh;overflow:hidden;max-width:100%;width:100%;overscroll-behavior:none}
+  body{display:flex;flex-direction:column;position:relative}
+  header{position:relative;flex:none}
+  .brandbar{position:relative;flex:none;z-index:26}
   .navbar{max-width:620px;padding:10px 10px 8px;gap:5px}
   .brandin{padding:6px 10px 5px;gap:7px}
   .mo-btn,.yr-btn{font-size:21px}
@@ -77,8 +76,8 @@ input,textarea,select{font:inherit;color:inherit}
   .hsec-memo .hbtn{width:36px;height:36px;font-size:18px}
   .hsec-memo .ptitle{display:none}
   .memo-label .mlab{display:inline}
-  .view{display:block;max-width:620px;padding:0 10px 14px}
-  .view.on{display:block}
+  .view{display:block;max-width:620px;padding:0 10px 14px;overflow-x:hidden}
+  .view.on{display:block;flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   #banner{padding:0 10px}
   .rightcol{display:block}
   .botrow{display:block}
@@ -90,7 +89,7 @@ input,textarea,select{font:inherit;color:inherit}
   .tlwrap{flex:1;min-height:0}
   .memo-pane{display:flex;flex-direction:column;margin-bottom:9px}
   .memo-pane textarea.memo{min-height:150px;flex:none}
-  .composer{position:sticky;bottom:0;z-index:31}
+  .composer{position:relative;flex:none;z-index:31;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
   .ctip{max-width:min(250px,calc(100vw - 20px))}
 }
 .card{background:var(--surface);border-radius:10px;border:1px solid var(--line);
@@ -7439,7 +7438,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v167';
+const APPVER=/*ver*/'v168';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
