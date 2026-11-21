@@ -2007,6 +2007,12 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
 .ds-chip .ds-t{min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
 .ds-fc{align-items:flex-start}.ds-fc .ds-t{width:100%}
 .ds-fc small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+#viewMenu button{min-height:40px}
+#viewMenu .mine{margin:0}
+#viewMenu .mine .cb{width:10px;height:10px;border:1.5px solid var(--ink-3);border-radius:3px;margin:0;font-size:8px;line-height:1;background:transparent;color:#fff}
+#viewMenu .mine .cb.c{background:var(--navy);border-color:var(--navy)}
+#viewMenu .mine.on{background:transparent}
 </style>
 </head>
 <body>
@@ -5597,6 +5603,7 @@ async function loadTeam(){
         .on('postgres_changes',{event:'*',schema:'public',table:'team_members'},kick)
         .on('postgres_changes',{event:'*',schema:'public',table:'handovers'},kick).subscribe();}
   }catch(e){}
+  try{onlineStart();if(!orgD)orgLoad();}catch(_){}
   tmRender();if($('tmMeet').classList.contains('on'))meetRender();
 }
 const itemRow=o=>`<div class="tmi${o.done?' done':''}"><span class="tt">${o.time||'종일'}</span><span class="dd"><i style="background:${esc(o.color||'#8a8f9e')}"></i>${o.pri&&!o.done?'<b style="color:var(--amber)">★ </b>':''}${esc(o.title)}${o.note?`<span class="nt">${esc(o.note)}</span>`:''}</span></div>`;
@@ -7025,18 +7032,34 @@ function renderShare(){
 }
 
 /* ── 보기 대상: 나 / 팀 전체 / 특정 팀원 ── */
+const RANKS=['대표','사장','부사장','전무','상무','이사','부장','차장','과장','대리','주임','사원'];
+const rankOf=t=>{const i=RANKS.findIndex(r=>(t||'').includes(r));return i<0?99:i;};
+let onlineSet=new Set(),onlineChan=null,onlineTid=null;
+function onlineStart(){
+  if(backend!=='sb'||!SB||!session||!team||onlineTid===team.id)return;
+  try{if(onlineChan)SB.removeChannel(onlineChan);}catch(_){}
+  onlineTid=team.id;const me=session.user.id;
+  onlineChan=SB.channel('online-'+team.id,{config:{presence:{key:String(me)}}})
+    .on('presence',{event:'sync'},()=>{try{onlineSet=new Set(Object.keys(onlineChan.presenceState()));}catch(_){onlineSet=new Set();}
+      const p=$('viewPop');if(p&&p.classList.contains('open'))paintView();})
+    .subscribe(st=>{if(st==='SUBSCRIBED'){try{onlineChan.track({uid:me,at:Date.now()});}catch(_){}}});}
 function viewOwners(){
-  const m={};
-  (tmMembers||[]).forEach(x=>{if(x.user_id!==(session&&session.user.id))m[x.user_id]=tmName(x);});
-  otherItems.forEach(o=>{if(!m[o.owner])m[o.owner]=ownerName(o)||'이름 없음';});
-  return Object.keys(m).map(id=>({id,name:m[id],n:otherItems.filter(o=>o.owner===id).length}));
+  const me=session&&session.user.id,m=new Map();
+  (tmMembers||[]).forEach(x=>{if(x.user_id&&x.user_id!==me&&!m.has(x.user_id))m.set(x.user_id,{id:x.user_id,name:tmName(x),leader:x.role==='leader'||x.role==='owner'});});
+  otherItems.forEach(o=>{if(o.owner&&o.owner!==me&&!m.has(o.owner))m.set(o.owner,{id:o.owner,name:ownerName(o)||'이름 없음',leader:false});});
+  const pp=(typeof orgD!=='undefined'&&orgD&&orgD.people)||[];
+  const L=[...m.values()].map(o=>{const p=pp.find(q=>q.user_id===o.id);o.title=p&&p.title||'';o.rk=rankOf(o.title);return o;});
+  L.sort((a,b)=>(b.leader-a.leader)||(a.rk-b.rk)||a.name.localeCompare(b.name,'ko'));
+  return L;
 }
 function paintView(){
   const ow=viewOwners();
-  const row=(v,label,sub)=>`<button data-v="${v}" class="${viewWho===v?'on':''}"><i style="background:${v==='me'?'var(--ink-3)':v==='all'?'var(--navy)':'var(--moss)'}"></i>${esc(label)}<em class="csm">${sub||''}</em><span class="ck">${viewWho===v?'✓':''}</span></button>`;
-  $('viewMenu').innerHTML=row('me','나만 보기','')+`<button data-mine="1" class="mine${showMine?' on':''}"><span class="cb">${showMine?'✓':''}</span>내 일정 보기<em class="csm">${showMine?'표시 중':'숨김'}</em></button>`+row('all','팀 전체 보기',otherItems.length?otherItems.length+'건':'')
-    +(ow.length?'<div class="kbd">팀원별로 보기</div>':'<div class="kbd">공유된 팀원 일정이 아직 없습니다.</div>')
-    +ow.map(o=>row(o.id,o.name,o.n+'건')).join('');
+  const row=(v,label,sub,dot)=>`<button data-v="${v}" class="${viewWho===v?'on':''}"><i style="background:${dot}"></i>${esc(label)}<em class="csm">${sub||''}</em><span class="ck">${viewWho===v?'✓':''}</span></button>`;
+  $('viewMenu').innerHTML=row('me','나만 보기','','var(--ink-3)')
+    +`<button data-mine="1" class="mine"><span class="cb${showMine?' c':''}">${showMine?'✓':''}</span>내 일정 보기<em class="csm">${showMine?'':'숨김'}</em></button>`
+    +row('all','팀 전체 보기','','var(--navy)')
+    +(ow.length?'<div class="kbd">팀원별로 보기 · 접속 여부</div>':'<div class="kbd">팀원 정보가 아직 없습니다.</div>')
+    +ow.map(o=>row(o.id,o.name+(o.title?' '+o.title:''),onlineSet.has(o.id)?'접속 중':'',onlineSet.has(o.id)?'#2f9e63':'var(--line)')).join('');
   const b=$('viewBtn');b.classList.toggle('act',viewWho!=='me'||!showMine);
   b.dataset.tip=viewWho==='me'?'내 일정만 표시 중 · 눌러서 팀 일정 보기':viewWho==='all'?'팀 전체 일정 표시 중':'선택한 팀원 일정 표시 중';
 }
@@ -7494,7 +7517,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v180';
+const APPVER=/*ver*/'v182';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
