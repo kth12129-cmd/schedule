@@ -1815,6 +1815,7 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .tsgs-a{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .tsgs-a button,.tsgs-q button{height:36px;border-radius:9px;background:var(--navy);color:#fff;font-weight:650;font-size:13px}.tsgs-a button:disabled{opacity:.4}
 .tsgs-q{display:grid;gap:8px;justify-items:center;align-content:start;border-left:1px solid var(--line);padding-left:12px}.tsgs-q button{width:100%}
+.tsgs-q button.sub{background:transparent;color:var(--ink-2);border:1px solid var(--line)}
 .tsgs-q .qr{width:150px;height:150px;background:#fff;border-radius:8px;padding:4px}.tsgs-q .qr svg{width:100%;height:100%}
 .tsgs-q .qc{font-size:12px;color:var(--ink-2)}.tsgs-q .qc b{font-family:ui-monospace,monospace;letter-spacing:.08em;color:var(--ink)}.tsgs-q em{font-size:11px;color:var(--ink-3);font-style:normal;text-align:center}
 .tsiv{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;margin:0 0 10px;padding:9px 12px;border:1px solid #d7a85f;border-radius:10px;background:color-mix(in srgb,#d9822b 10%,var(--surface));font-size:13px}
@@ -7083,7 +7084,7 @@ function tsSendHtml(g){
   return `<div class="tsgs"><div class="tsgs-l"><div class="tsgs-h"><b>가입한 사람에게 보내기</b><input id="tsSq" placeholder="이름·직급 검색" value="${esc(TS2.send.q||'')}" autocomplete="off"></div>
     <div class="tsgs-list">${L.length?L.map(p=>`<label class="tsgs-r"><input type="checkbox" data-tssel="${p.user_id}"${sel.has(p.user_id)?' checked':''}><span class="nm">${esc(p.name)}</span><span class="tt">${esc(p.title||'')}</span></label>`).join(''):'<div class="an2e">초대할 수 있는 가입자가 없습니다.</div>'}</div>
     <div class="tsgs-a"><button data-tssend="app"${sel.size?'':' disabled'}>선택한 ${sel.size}명에게 초대 보내기</button><button data-tssend="mail"${sel.size?'':' disabled'}>메일 앱으로 보내기</button></div></div>
-   <div class="tsgs-q"><div class="qr">${tsQr(lk)}</div><div class="qc">초대 코드 <b>${esc(g.code)}</b></div><button data-tssend="copy">링크 복사</button><em>QR을 스캔하거나 링크를 열면 바로 참여합니다</em></div></div>`;}
+   <div class="tsgs-q"><div class="qr">${tsQr(lk)}</div><div class="qc">초대 코드 <b>${esc(g.code)}</b></div><button data-tssend="share">문자·카톡으로 보내기</button><button data-tssend="copy" class="sub">링크 복사</button><em>QR을 스캔하거나 링크를 열면 바로 참여합니다</em></div></div>`;}
 async function tsInvChk(){
   if(backend!=='sb'||!SB||!session)return;
   try{const r=await SB.rpc('group_invites_mine');const a=r.data||[];const nw=a.filter(v=>!(TS2.inv||[]).some(o=>o.id===v.id));TS2.inv=a;
@@ -7163,6 +7164,15 @@ $('ts').addEventListener('click',async e=>{
     tsRender();tsLoadMemos();return;}
   const sb=e.target.closest('[data-tssend]');
   if(sb&&TS2.send){const g=TS2.groups.find(x=>x.id===TS2.gid);if(!g)return;const k=sb.dataset.tssend,ids=[...TS2.send.sel];
+    if(k==='share'){const lk=tsLink(g.code),tx=`${tsNameOf(tsMeId())}님이 '${g.name}' 그룹에 초대했습니다.\n초대 코드: ${g.code}\n바로 참여: ${lk}`;
+      try{const svg=tsQr(lk),url=URL.createObjectURL(new Blob([svg.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"')],{type:'image/svg+xml'}));
+        const img=new Image();await new Promise((ok,no)=>{img.onload=ok;img.onerror=no;img.src=url;});
+        const c=document.createElement('canvas');c.width=c.height=480;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,480,480);x.imageSmoothingEnabled=false;x.drawImage(img,0,0,480,480);
+        const blob=await new Promise(r=>c.toBlob(r,'image/png'));const f=new File([blob],`group-${g.code}.png`,{type:'image/png'});
+        if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:tx,title:'그룹 초대'});return;}
+      }catch(err){if(err&&err.name==='AbortError')return;}
+      if(navigator.share){try{await navigator.share({text:tx,title:'그룹 초대'});return;}catch(err){if(err&&err.name==='AbortError')return;}}
+      location.href='sms:?&body='+encodeURIComponent(tx);return;}
     if(k==='copy'){try{await navigator.clipboard.writeText(tsLink(g.code));toastMsg('링크를 복사했어요');}catch(_){toastMsg(tsLink(g.code));}return;}
     if(!ids.length)return;
     if(k==='app'){const r=await SB.rpc('group_invite',{p_gid:g.id,p_uids:ids,p_from:tsNameOf(tsMeId())});
@@ -7202,7 +7212,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v150';
+const APPVER=/*ver*/'v151';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
