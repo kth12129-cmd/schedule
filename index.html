@@ -1925,11 +1925,7 @@ store.casesMt=store.casesMt||{};store.caseTomb=store.caseTomb||{};
 store.stagesMt=store.stagesMt||0;
 store.settings=store.settings||{alertH:20};store.settingsMt=store.settingsMt||0;
 const DEFAULT_CATS=[
-  {id:'c1',name:'회사 업무',color:'#3b4fb0'},
-  {id:'c2',name:'현장',color:'#0d7f83'},
-  {id:'c3',name:'개인',color:'#a04bb3'},
-  {id:'c4',name:'학습',color:'#3f8b52'},
-  {id:'c5',name:'기타',color:'#8a8f9e'}];
+  {id:'c3',name:'개인',color:'#a04bb3'}]; /* 처음에는 개인만(전체는 자동). 나머지는 각자 설정에서 추가 */
 if(!store.cats||!store.cats.length)store.cats=JSON.parse(JSON.stringify(DEFAULT_CATS));
 store.catsMt=store.catsMt||0;
 let curCats=(localStorage.getItem('cur-cats')||localStorage.getItem('cur-cat')||'').split(',').filter(Boolean);
@@ -1944,8 +1940,8 @@ const catsOf=i=>{const a=(Array.isArray(i.cats)&&i.cats.length?i.cats:[i.cat]).m
   const seen=new Set();return a.filter(c=>c&&!seen.has(c.id)&&seen.add(c.id));};
 const catColor=i=>catsOf(i)[0].color;
 store.items.forEach(i=>{if(i.pri===undefined)i.pri=false;if(i.note===undefined)i.note='';
-  if(!i.cat)i.cat=(store.cats&&store.cats[0]?store.cats[0].id:'c1');
-  if(!Array.isArray(i.cats))i.cats=[i.cat||(store.cats&&store.cats[0]?store.cats[0].id:'c1')];
+  if(!i.cat)i.cat=(store.cats&&store.cats[0]?store.cats[0].id:'c3');
+  if(!Array.isArray(i.cats))i.cats=[i.cat||(store.cats&&store.cats[0]?store.cats[0].id:'c3')];
   i.cat=i.cats[0];
   if(i.endDate===undefined)i.endDate=null;if(!i.mt)i.mt=1;});
 store.cases.forEach(c=>{if(!store.casesMt[c.id])store.casesMt[c.id]=1;});
@@ -4143,7 +4139,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v121';
+const APPVER=/*ver*/'v122';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
