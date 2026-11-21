@@ -1621,6 +1621,21 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .note textarea{display:block;width:100%;min-height:24px;max-height:160px;resize:none;overflow:hidden;background:transparent;border:0;border-left:2px solid var(--line);border-radius:0;padding:2px 0 2px 9px;font-size:13px;line-height:1.5;color:var(--ink-2);transition:border-color .15s}
 .note textarea:focus{outline:0;border-left-color:var(--indigo)}
 .note textarea::placeholder{color:var(--ink-3);opacity:.55}
+.catfilter{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-top:12px;padding-bottom:2px}
+.catfilter::-webkit-scrollbar{display:none}
+.cfchip{flex:none;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink-2);font-weight:500}
+.cfchip i{display:none}
+.cfchip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+#anSheet .chips{gap:14px;margin-top:10px}
+#anSheet .chips button{background:none;border:0;border-radius:0;padding:2px 0;font-size:12.5px;color:var(--ink-2);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
+#anSheet .searchbar input{box-shadow:none}
+#anSheet .searchbar button{background:var(--navy)}
+#anSheet .anctl{margin-top:12px}
+#anSheet .qsum{box-shadow:none;border:0;background:transparent;padding:14px 2px 4px}
+#anSheet .sec{margin-top:22px;font-size:13px;font-weight:650;color:var(--ink-2);border:0;padding:0 2px}
+.casesum{font-size:12.5px;color:var(--ink-2);margin:4px 2px 10px}
+.casesum b{font-weight:650}.casesum .o{color:var(--red)}.casesum .s{color:var(--amber)}
+#anSheet .addbar input{background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0}
 </style>
 </head>
 <body>
@@ -2787,12 +2802,9 @@ function viewChart(its,cs,r){
 }
 function caseBoard(){
   const states=store.cases.map(c=>({c,s:caseState(c)})),active=states.filter(x=>!x.s.complete);
-  let h=`<div class="sec">업무 사이클 진행 현황</div><div class="risk-row">
-    <div class="risk over"><div class="n">${active.filter(x=>x.s.level==='over').length}</div><div class="l">기한 초과</div></div>
-    <div class="risk soon"><div class="n">${active.filter(x=>x.s.level==='soon').length}</div><div class="l">3일 내 마감</div></div>
-    <div class="risk"><div class="n">${active.length}</div><div class="l">진행 중</div></div></div>
-    <div class="sec">진행 중인 건</div><div class="card">
-    <div class="addbar"><input id="caseInput" placeholder="건 이름" autocomplete="off"><button id="caseAdd">추가</button></div>`;
+  const nO=active.filter(x=>x.s.level==='over').length,nS=active.filter(x=>x.s.level==='soon').length;
+  let h=`<div class="sec">진행 중인 건</div><div class="casesum">진행 ${active.length}건${nO?` · <b class="o">기한 초과 ${nO}</b>`:''}${nS?` · <b class="s">3일 내 마감 ${nS}</b>`:''}</div><div class="card">
+    <div class="addbar"><input id="caseInput" placeholder="건 이름을 입력해 추가" autocomplete="off"><button id="caseAdd">추가</button></div>`;
   const sorted=states.sort((a,b)=>(a.s.complete!==b.s.complete)?(a.s.complete?1:-1):((a.s.left??999)-(b.s.left??999)));
   h+=sorted.length?sorted.map(({c,s})=>{
     const d=s.complete?'<span class="dcount idle">완료</span>':s.deadline===null?'<span class="dcount idle">시작 전</span>':
@@ -2804,8 +2816,8 @@ function caseBoard(){
       <div class="case-now">${s.complete?'모든 단계 완료':s.deadline===null?`${esc(s.stage.name)}부터 시작`:
         `다음: ${esc(s.stage.name)} · ${md(s.deadline)}까지`}</div>
       <div class="steps">${steps}</div><button class="rm" data-rm="${c.id}">삭제</button></div>`;}).join('')
-    :'<div class="empty">건을 추가하면 단계별 진행 상황이 표시됩니다.</div>';
-  return h+`</div><div style="text-align:center;margin:14px 0 6px"><button id="stageBtn" style="color:var(--indigo);font-size:13.5px;font-weight:600">단계 설정 열기</button></div>`;
+    :'';
+  return h+`</div><div style="text-align:right;margin:10px 2px 6px"><button id="stageBtn" style="color:var(--ink-2);font-size:12.5px">단계 설정</button></div>`;
 }
 function renderChips(){
   const names=[...new Set(store.cases.map(c=>c.label.split(/\s+/)[0]))].slice(0,3);
@@ -4263,7 +4275,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v129';
+const APPVER=/*ver*/'v130';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
