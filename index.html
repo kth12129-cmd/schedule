@@ -1688,6 +1688,19 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .check{width:24px;height:17px;border-radius:5px;border-width:1.5px}
 .check::after{width:8px;height:8px;margin-top:-4px;left:3px}
 .item.done .check::after{transform:translateX(10px)}
+.tlpast{position:absolute;left:-30px;right:-4px;top:0;background:color-mix(in srgb,var(--ink) 5%,transparent);pointer-events:none}
+.tlev{font-size:11.5px;padding:3px 6px;border-radius:5px}
+.tlev .t{font-size:10px}
+.tlev.auto{min-height:22px}
+.tllab{font-size:10px}
+.tlwrap{cursor:cell}.tlev{cursor:pointer}
+.tlrow.half{opacity:.35}
+.tlnow{z-index:0}
+.tlev{z-index:1}
+.tlev.sh{display:flex;align-items:center;gap:6px;padding-top:0;padding-bottom:0}
+.tlev.sh .t{flex:none}.tlev.sh .n{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlev.sh.auto{min-height:22px;height:22px!important}
+.tlev{background:color-mix(in srgb,var(--c) 14%,var(--surface))}
 </style>
 </head>
 <body>
@@ -2379,7 +2392,7 @@ function renderDay(){try{memoMaterialize();}catch(_){}
   const ni=$('newIn');if(ni)ni.focus();
   if(pipHost)renderMini();
 }
-const HH=30;
+const HH=36;
 const toMin=t=>{const[a,b]=t.split(':').map(Number);return a*60+b;};
 function renderTL(){
   const its=ordItems(sel),dls=deadlinesOn(sel);
@@ -2388,16 +2401,22 @@ function renderTL(){
     dls.map(x=>`<span class="tlchip dl">${esc(x.stage)} · ${esc(x.label)} 기한</span>`).join('')+
     plain.map(i=>`<span class="tlchip${i.done?' done':''}" style="--c:${catColor(i)}">${
       i.pri?'★ ':''}${esc(i.title)}</span>`).join('');
-  let h='';
-  for(let hr=0;hr<=24;hr++){
-    h+=`<div class="tlrow" style="top:${hr*HH}px">${hr<24?`<span class="tllab">${pad(hr)}:00</span>`:''}</div>`;
-    if(hr<24)h+=`<div class="tlrow half" style="top:${hr*HH+HH/2}px"></div>`;
-  }
+  const nowM=sel===TODAY?(new Date().getHours()*60+new Date().getMinutes()):null;
   const evs=timed.map(i=>{
     const a=toMin(i.time);
     let b=i.endTime?toMin(i.endTime):a+30;
     if(b<=a)b=a+30;
     return{i,a,b:Math.min(b,1440)};}).sort((x,y)=>x.a-y.a||x.b-y.b);
+  let S=8,E=19;
+  evs.forEach(e=>{S=Math.min(S,Math.floor(e.a/60));E=Math.max(E,Math.ceil(e.b/60));});
+  if(nowM!==null){S=Math.min(S,Math.floor(nowM/60));E=Math.max(E,Math.min(24,Math.floor(nowM/60)+2));}
+  S=Math.max(0,S);E=Math.min(24,E);
+  const Y=m=>(m/60-S)*HH;
+  let h='';
+  for(let hr=S;hr<=E;hr++){
+    h+=`<div class="tlrow" style="top:${(hr-S)*HH}px">${hr<24?`<span class="tllab">${pad(hr)}:00</span>`:''}</div>`;
+    if(hr<E)h+=`<div class="tlrow half" style="top:${(hr-S)*HH+HH/2}px"></div>`;
+  }
   const lanes=[];
   evs.forEach(e=>{
     let li=lanes.findIndex(end=>end<=e.a);
@@ -2405,25 +2424,23 @@ function renderTL(){
     lanes[li]=e.b;e.lane=li;});
   const N=Math.max(1,lanes.length);
   let body='';
+  if(nowM!==null&&nowM>S*60)body+=`<div class="tlpast" style="height:${Math.min(Y(nowM),(E-S)*HH)}px"></div>`;
   evs.forEach(e=>{
     const c=catColor(e.i);
-    const top=e.a/60*HH;
+    const top=Y(e.a);
     const fixed=!!e.i.endTime;
-    const hgt=Math.max(15,(e.b-e.a)/60*HH-1);
+    const hgt=Math.max(22,(e.b-e.a)/60*HH-1);
     const w=100/N;
     const span=fixed?`${e.i.time}~${e.i.endTime}`:e.i.time;
-    body+=`<div class="tlev${fixed?'':' auto'}${e.i.done?' done':''}${e.i.pri?' pri':''}" data-go="${e.i.id}"
-      style="--c:${c};top:${top}px;${fixed?`height:${hgt}px;`:''}left:${e.lane*w}%;width:calc(${w}% - 3px)"
+    body+=`<div class="tlev${(e.b-e.a)<=45?' sh':''}${fixed?'':' auto'}${e.i.done?' done':''}${e.i.pri?' pri':''}" data-go="${e.i.id}"
+      style="--c:${c};top:${top}px;height:${hgt}px;left:${e.lane*w}%;width:calc(${w}% - 3px)"
       title="${esc(span+' '+e.i.title)}">
       <div class="t">${span}</div><div class="n">${e.i.pri?'★ ':''}${esc(e.i.title)}</div></div>`;});
-  if(sel===TODAY){
-    const n=new Date(),m=n.getHours()*60+n.getMinutes();
-    body+=`<div class="tlnow" style="top:${m/60*HH}px"></div>`;}
-  $('tl').style.height=(24*HH+2)+'px';
+  if(nowM!==null)body+=`<div class="tlnow" style="top:${Y(nowM)}px"></div>`;
+  $('tl').dataset.s=S;
+  $('tl').style.height=((E-S)*HH+2)+'px';
   $('tl').innerHTML=h+`<div class="tlbody">${body}</div>`;
-  const w=$('tlwrap');
-  let focus=evs.length?evs[0].a:(sel===TODAY?(new Date().getHours()*60):8*60);
-  w.scrollTop=Math.max(0,focus/60*HH-HH);
+  $('tlwrap').scrollTop=0;
 }
 function renderBanner(){
   const k=addDays(TODAY,1),its=ordAll(k).filter(i=>!i.done),dls=deadlinesOn(k),n=its.length+dls.length;
@@ -4451,7 +4468,7 @@ $('an2').addEventListener('click',e=>{
       if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
     an2Render();}});
 runQuery=function(){an2Render();};
-const APPVER=/*ver*/'v133';
+const APPVER=/*ver*/'v134';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -5499,7 +5516,10 @@ $('list').addEventListener('keydown',e=>{
       if(d.getMonth()!==view.getMonth()||d.getFullYear()!==view.getFullYear())view=new Date(d.getFullYear(),d.getMonth(),1);}
     renderMonth();renderDay();renderBanner();}
   else if(e.key==='Escape'){e.preventDefault();adding=false;renderDay();}});
-$('tl').onclick=e=>{const b=e.target.closest('[data-go]');if(!b)return;
+$('tl').onclick=e=>{const b=e.target.closest('[data-go]');
+  if(!b){const t=$('tl'),r=t.getBoundingClientRect(),S=+t.dataset.s||0,m=Math.floor(((e.clientY-r.top)/HH+S)*2)*30;
+    if(m>=0&&m<1440){const inp=$('input');inp.value=`${pad(Math.floor(m/60))}:${pad(m%60)} `;inp.focus();inp.dispatchEvent(new Event('input'));}
+    return;}
   editItem=b.dataset.go;openNote=null;renderDay();
   const el=$('list').querySelector('input[data-edit]');
   if(el)el.scrollIntoView({block:'nearest'});};
