@@ -2179,6 +2179,14 @@ textarea.memo{margin:0!important}
  .rc-dnav{padding:0 6px 2px;margin:0}.rc-dnav button{height:30px}
  .rc-dt{font-size:16px}
 }
+
+/* v199 */
+@media(max-width:700px){
+ html[data-layout="cal"] #rc.full{top:50dvh!important}
+ html[data-layout="cal"] #rc.two{top:calc(100dvh - 66.6dvh)!important}
+ .rc-dnav{display:none!important}
+ .rc-grab{padding:10px 0 8px}
+}
 </style>
 </head>
 <body>
@@ -6508,7 +6516,7 @@ function setRT(r){rtab=r;try{localStorage.setItem('rt2',r);}catch(e){}
   if(r==='time')setTimeout(tlScroll,40);try{rcDnavPaint();}catch(_){}}
 
 function rcDnavPaint(){const t=$('rcDtTxt');if(!t)return;const d=fromYmd(sel);
-  t.textContent=`${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})`+(sel===TODAY?' · 오늘':'');
+  t.textContent=`${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})`+(sel===TODAY?' · 오늘':'');document.querySelectorAll('.mh-s').forEach(x=>x.textContent=t.textContent);
   const i=$('rcDate');if(i)try{i.value=sel;}catch(_){}}
 function rcReveal(){if(!document.body.classList.contains('rc-open'))return;
   const c=document.querySelector('#grid .cell.sel'),rc=$('rc'),g=$('grid');if(!c||!rc||!g)return;
@@ -6519,10 +6527,13 @@ function rcReveal(){if(!document.body.classList.contains('rc-open'))return;
   $('rcPrev').onclick=()=>go(addDays(sel,-1));$('rcNext').onclick=()=>go(addDays(sel,1));$('rcToday').onclick=()=>go(TODAY);
   $('rcDate').onchange=e=>{if(e.target.value)go(e.target.value);};
   const rc=$('rc'),gb=$('rcGrab');let g0=null;
+  const step=d=>{const z=rc.classList.contains('two');
+    if(d>0){if(!z)rc.classList.add('two');}else{if(z)rc.classList.remove('two');else openRC(false);}};
   gb.addEventListener('touchstart',e=>{g0=e.touches[0].clientY;},{passive:true});
   gb.addEventListener('touchend',e=>{if(g0==null)return;const dy=e.changedTouches[0].clientY-g0;g0=null;
-    if(dy<-30)rc.classList.add('full');else if(dy>30){if(rc.classList.contains('full'))rc.classList.remove('full');else openRC(false);}
-    else rc.classList.toggle('full');},{passive:true});
+    if(dy<-30)step(1);else if(dy>30)step(-1);
+    else{if(rc.classList.contains('two'))openRC(false);else rc.classList.add('two');}},{passive:true});
+  gb.addEventListener('click',e=>{if(!('ontouchstart' in window)){if(rc.classList.contains('two'))openRC(false);else rc.classList.add('two');}});
   /* 창 안에서 옆으로 밀면 전날 · 다음날 */
   let st=null;
   rc.addEventListener('touchstart',e=>{if(e.touches.length!==1||!document.body.classList.contains('rc-open')){st=null;return;}
@@ -6539,7 +6550,7 @@ let _rcHome=null;
 function openRC(on){const rc=$('rc');
   if(on&&rc&&rc.parentNode!==document.body){_rcHome=document.createComment('rc');rc.parentNode.insertBefore(_rcHome,rc);document.body.appendChild(rc);}
   document.body.classList.toggle('rc-open',!!on);
-  if(on){try{rcDnavPaint();}catch(_){}setTimeout(rcReveal,320);setTimeout(tlScroll,320);}else if(rc)rc.classList.remove('full');
+  if(on){try{rcDnavPaint();}catch(_){}setTimeout(rcReveal,320);setTimeout(tlScroll,320);}else if(rc)rc.classList.remove('two');
   if(!on&&rc&&_rcHome&&_rcHome.parentNode){setTimeout(()=>{if(!document.body.classList.contains('rc-open')&&_rcHome&&_rcHome.parentNode){_rcHome.parentNode.insertBefore(rc,_rcHome);_rcHome.remove();_rcHome=null;}},300);}}
 document.body.classList.remove('rc-open');
 function setLayout(l){layout=l;HTMLEL.setAttribute('data-layout',l);try{localStorage.setItem('layout',l);}catch(e){}
@@ -7960,7 +7971,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v198';
+const APPVER=/*ver*/'v199';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
