@@ -1719,6 +1719,9 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .csm{cursor:pointer;padding:3px 7px;border-radius:6px;border:1px solid var(--line)}
 .csm.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .csm:hover{border-color:var(--ink-2)}
+.tmcnt{display:block;font-size:12px;color:var(--ink-2);margin-top:2px}.tmcnt b{font-size:15px;color:var(--ink);font-weight:700}
+.tmdots{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px}.tmdots i{width:7px;height:7px;border-radius:50%}
+.tmcnt,.tmdots{align-self:flex-start;margin-left:5px;text-align:left}
 </style>
 </head>
 <body>
@@ -2265,6 +2268,8 @@ let calStart=null,calWeeks=0,calRowH=90,calKey=-1,calRaf=0;
 const dayAdd=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
 const sunOf=d=>dayAdd(new Date(d.getFullYear(),d.getMonth(),d.getDate()),-d.getDay());
 function weekIdx(d){return Math.round((sunOf(d)-calStart)/604800000);}
+const TMPAL=['#2f5bd0','#d9822b','#2f7d6b','#a23b72','#6b5bd0','#0f7a9e','#8c4a2f','#7a6b1f','#b8352f','#3f8b52'];
+const ownerCol=uid=>{if(!uid)return '#2f5bd0';let h=0;String(uid).split('').forEach(ch=>h=(h*31+ch.charCodeAt(0))>>>0);return TMPAL[h%TMPAL.length];};
 function renderMonth(){
   const g=$('grid');
   const vk=view.getFullYear()*12+view.getMonth();
@@ -2303,6 +2308,12 @@ function renderMonth(){
       ...its.filter(i=>!(i.wk&&i.endDate)).map(i=>({t:(i.endDate?'▸ ':'')+i.title,c:catColor(i),done:i.done,pri:i.pri,id:i.id})),
       ...othersFor(k).map(o=>({t:(ownerName(o)?ownerName(o)+' · ':'')+o.title,c:o.color||'#8a8f9e',done:o.done,oth:true})),
       ...(typeof vacOn==='function'?vacOn(k):[]),...(typeof extOn==='function'?extOn(k):[])];
+    if(lgTeam){
+      const ow=[...(its.length?[{u:'__me',n:its.length}]:[]),...Object.values(othersFor(k).reduce((m,o)=>{(m[o.owner]=m[o.owner]||{u:o.owner,n:0}).n++;return m;},{}))];
+      const tot=ow.reduce((a,x)=>a+x.n,0);
+      const ev2=tot?`<span class="tmcnt"><b>${tot}</b>건</span><span class="tmdots">${ow.slice(0,6).map(x=>`<i style="background:${ownerCol(x.u==='__me'?(session&&session.user&&session.user.id):x.u)}"></i>`).join('')}</span>`:'';
+      h+=`<button class="${cl.join(' ')}" data-d="${k}"><span class="num">${d.getDate()}</span>${d.getDate()===1?`<span class="mlab">${d.getMonth()+1}월</span>`:''}${hol?`<span class="holname">${esc(hol)}</span>`:''}<span class="evs">${ev2}</span></button>`;
+      continue;}
     const MAX=Math.max(1,3-Math.min(2,wkb.length));
     let ev=wkh+evs.slice(0,MAX).map((e,n)=>
       `<span class="ev${e.dl?' dl':''}${e.done?' done':''}${e.pri?' pri':''}${e.oth?' oth':''}${e.x?' '+e.x:''}" style="--c:${e.c||'var(--red)'}"`+
@@ -2415,12 +2426,15 @@ function renderDay(){try{memoMaterialize();}catch(_){}
 const HH=36;
 const toMin=t=>{const[a,b]=t.split(':').map(Number);return a*60+b;};
 function renderTL(){
-  const its=ordItems(sel),dls=deadlinesOn(sel);
+  const mineAll=ordItems(sel),dls=deadlinesOn(sel);
+  const myId=session&&session.user&&session.user.id;
+  const oth=lgTeam?othersFor(sel).map(o=>({...o,_o:1,color:ownerCol(o.owner),_n:ownerName(o)||'팀원'})):[];
+  const its=mineAll.concat(oth);
   const timed=its.filter(i=>i.time),plain=its.filter(i=>!i.time);
   $('tlall').innerHTML=
     dls.map(x=>`<span class="tlchip dl">${esc(x.stage)} · ${esc(x.label)} 기한</span>`).join('')+
-    plain.map(i=>`<span class="tlchip${i.done?' done':''}" style="--c:${catColor(i)}">${
-      i.pri?'★ ':''}${esc(i.title)}</span>`).join('');
+    plain.map(i=>`<span class="tlchip${i.done?' done':''}" style="--c:${i._o?i.color:catColor(i)}">${
+      i.pri?'★ ':''}${i._o?esc(i._n)+' · ':''}${esc(i.title)}</span>`).join('');
   const nowM=sel===TODAY?(new Date().getHours()*60+new Date().getMinutes()):null;
   const evs=timed.map(i=>{
     const a=toMin(i.time);
@@ -2446,16 +2460,16 @@ function renderTL(){
   let body='';
   if(nowM!==null&&nowM>S*60)body+=`<div class="tlpast" style="height:${Math.min(Y(nowM),(E-S)*HH)}px"></div>`;
   evs.forEach(e=>{
-    const c=catColor(e.i);
+    const c=e.i._o?e.i.color:(lgTeam&&myId?ownerCol(myId):catColor(e.i));
     const top=Y(e.a);
     const fixed=!!e.i.endTime;
     const hgt=Math.max(22,(e.b-e.a)/60*HH-1);
     const w=100/N;
     const span=fixed?`${e.i.time}~${e.i.endTime}`:e.i.time;
-    body+=`<div class="tlev${(e.b-e.a)<=45?' sh':''}${fixed?'':' auto'}${e.i.done?' done':''}${e.i.pri?' pri':''}" data-go="${e.i.id}"
+    body+=`<div class="tlev${(e.b-e.a)<=45?' sh':''}${fixed?'':' auto'}${e.i.done?' done':''}${e.i.pri?' pri':''}"${e.i._o?'':` data-go="${e.i.id}"`}
       style="--c:${c};top:${top}px;height:${hgt}px;left:${e.lane*w}%;width:calc(${w}% - 3px)"
       title="${esc(span+' '+e.i.title)}">
-      <div class="t">${span}</div><div class="n">${e.i.pri?'★ ':''}${esc(e.i.title)}</div></div>`;});
+      <div class="t">${span}${e.i._o?' · '+esc(e.i._n):''}</div><div class="n">${e.i.pri?'★ ':''}${esc(e.i.title)}</div></div>`;});
   if(nowM!==null)body+=`<div class="tlnow" style="top:${Y(nowM)}px"></div>`;
   $('tl').dataset.s=S;
   $('tl').style.height=((E-S)*HH+2)+'px';
@@ -2914,7 +2928,7 @@ function renderStages(){
 /* ── 이벤트 ── */
 function goto(k){sel=k;openNote=null;const d=fromYmd(k);
   const same=tab==='cal'&&calStart&&Math.abs(weekIdx(d)*calRowH-$('grid').scrollTop)<calRowH*40;
-  if(!same)view=new Date(d.getFullYear(),d.getMonth(),1);setTab('cal');renderDay();calShow(k);}
+  if(!same)view=new Date(d.getFullYear(),d.getMonth(),1);setTab('cal');renderDay();calShow(k);if(lgTeam){try{setRT('time');}catch(_){}}}
 function setTab(t){tab=t;
   ['cal','year','decade'].forEach(v=>$('v-'+v).classList.toggle('on',v===t));
   if(t==='cal')renderMonth();else if(t==='year')renderYear();else renderDecade();}
@@ -3688,7 +3702,8 @@ $('lgVac').onclick=async()=>{lgVac=!lgVac;lgSet('lg-vac',lgVac?'1':'0');
   paintLegend();try{renderMonth();}catch(e){}};
 $('lgTeam').onclick=async()=>{lgTeam=!lgTeam;lgSet('lg-team',lgTeam?'1':'0');
   if(lgTeam&&backend==='sb'){try{await loadShares();}catch(e){}}
-  paintLegend();try{redrawAll();}catch(e){}};
+  paintLegend();try{redrawAll();}catch(e){}
+  if(lgTeam){try{setTab('cal');setRT('time');}catch(_){}}};
 $('lgExt').onclick=()=>{lgExt=!lgExt;lgSet('lg-ext',lgExt?'1':'0');paintLegend();try{renderMonth();}catch(e){}};
 
 /* ---- ICS 해석 ---- */
@@ -4586,7 +4601,7 @@ $('an2').addEventListener('click',e=>{
       if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
     an2Render();}});
 runQuery=function(){an2Render();};
-const APPVER=/*ver*/'v141';
+const APPVER=/*ver*/'v142';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
