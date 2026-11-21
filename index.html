@@ -1956,6 +1956,10 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
 .tsu0{font-size:12.5px;color:var(--ink-3);padding:3px 0}
 .tsctl{grid-template-columns:1fr auto}
 @media(max-width:700px){.tsun.two{grid-template-columns:1fr}}
+
+#viewMenu .mine{margin:2px 0 4px}
+#viewMenu .mine .cb{width:16px;height:16px;border:1.5px solid var(--ink-3);border-radius:4px;display:inline-grid;place-items:center;font-size:11px;font-weight:800;color:#fff;margin:0 10px 0 2px;flex:none}
+#viewMenu .mine.on .cb{background:var(--navy);border-color:var(--navy)}
 </style>
 </head>
 <body>
@@ -4595,7 +4599,8 @@ try{if(!localStorage.getItem('cat-all-v1')){curCats=['__all'];localStorage.setIt
 const allMode=()=>curCats.includes('__all');
 const addCats=()=>allMode()?[store.cats[0].id]:curCats.slice();
 let lgTeam=false;
-const inView=i=>(allMode()||catsOf(i).some(c=>curCats.includes(c.id)))&&(!lgTeam||isShared(i));
+let showMine=(()=>{try{return localStorage.getItem('showMine')!=='0';}catch(e){return true;}})();
+const inView=i=>showMine&&(allMode()||catsOf(i).some(c=>curCats.includes(c.id)))&&(!lgTeam||isShared(i));
 const saveCurCats=()=>localStorage.setItem('cur-cats',curCats.join(','));
 const catOf=id=>store.cats.find(c=>c.id===id)||store.cats[store.cats.length-1];
 const catsOf=i=>{const a=(Array.isArray(i.cats)&&i.cats.length?i.cats:[i.cat]).map(catOf);
@@ -6948,14 +6953,16 @@ function viewOwners(){
 function paintView(){
   const ow=viewOwners();
   const row=(v,label,sub)=>`<button data-v="${v}" class="${viewWho===v?'on':''}"><i style="background:${v==='me'?'var(--ink-3)':v==='all'?'var(--navy)':'var(--moss)'}"></i>${esc(label)}<em class="csm">${sub||''}</em><span class="ck">${viewWho===v?'✓':''}</span></button>`;
-  $('viewMenu').innerHTML=row('me','나만 보기','')+row('all','팀 전체 보기',otherItems.length?otherItems.length+'건':'')
+  $('viewMenu').innerHTML=row('me','나만 보기','')+`<button data-mine="1" class="mine${showMine?' on':''}"><span class="cb">${showMine?'✓':''}</span>내 일정 보기<em class="csm">${showMine?'표시 중':'숨김'}</em></button>`+row('all','팀 전체 보기',otherItems.length?otherItems.length+'건':'')
     +(ow.length?'<div class="kbd">팀원별로 보기</div>':'<div class="kbd">공유된 팀원 일정이 아직 없습니다.</div>')
     +ow.map(o=>row(o.id,o.name,o.n+'건')).join('');
-  const b=$('viewBtn');b.classList.toggle('act',viewWho!=='me');
+  const b=$('viewBtn');b.classList.toggle('act',viewWho!=='me'||!showMine);
   b.dataset.tip=viewWho==='me'?'내 일정만 표시 중 · 눌러서 팀 일정 보기':viewWho==='all'?'팀 전체 일정 표시 중':'선택한 팀원 일정 표시 중';
 }
 $('viewBtn').onclick=()=>{closeFind();paintView();$('viewPop').classList.add('open');$('popBack').classList.add('open');};
-$('viewMenu').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;
+$('viewMenu').onclick=e=>{const mb=e.target.closest('[data-mine]');
+  if(mb){showMine=!showMine;try{localStorage.setItem('showMine',showMine?'1':'0');}catch(_){}paintView();redrawAll();toastMsg(showMine?'내 일정을 표시합니다':'내 일정을 숨깁니다');return;}
+  const b=e.target.closest('[data-v]');if(!b)return;
   viewWho=b.dataset.v;try{localStorage.setItem('viewWho',viewWho);}catch(_){}
   paintView();closeFind();redrawAll();
   toastMsg(viewWho==='me'?'내 일정만 표시합니다':viewWho==='all'?'팀 전체 일정을 함께 표시합니다':'선택한 팀원의 일정을 함께 표시합니다');};
@@ -7406,7 +7413,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v164';
+const APPVER=/*ver*/'v165';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
