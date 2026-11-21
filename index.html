@@ -1772,6 +1772,15 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .tsc .r2{align-self:end}
 .tsc{grid-template-rows:18px 16px auto auto}
 .tsc .who{white-space:normal;overflow:visible}.tsc .who .wl{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tsgb{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 10px}
+.tsgb button{height:34px;padding:0 14px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:600;color:var(--ink-2);background:transparent}
+.tsgb button.on{background:var(--navy);border-color:var(--navy);color:#fff}.tsgb button.add{border-style:dashed;color:var(--indigo)}
+.tsgf{display:grid;grid-template-columns:1fr 80px;gap:6px;margin:0 0 10px}
+.tsgf input{height:38px;border:1px solid var(--line);border-radius:9px;background:var(--field);padding:0 12px;font-size:14px}.tsgf button{height:38px;border-radius:9px;background:var(--navy);color:#fff;font-weight:650;font-size:13px}
+.tsgi{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;font-size:12.5px;color:var(--ink-2);margin:0 0 12px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.tsgi .cd b{font-family:ui-monospace,monospace;letter-spacing:.08em;color:var(--ink);margin-left:4px}.tsgi button{color:var(--ink-3);font-size:12px}
+.ot-grp{margin-top:14px;border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px}.ot-grp b{font-size:12px;color:var(--ink-3);font-weight:600}
+.ot-grp button{display:grid;grid-template-columns:1fr auto;height:34px;align-items:center;padding:0 10px;border:1px solid var(--line);border-radius:9px;font-size:13px;font-weight:600;text-align:left}.ot-grp button.new{color:var(--indigo);border-style:dashed;grid-template-columns:1fr}.ot-grp i{font-style:normal;color:var(--ink-3);font-size:11.5px}
 </style>
 </head>
 <body>
@@ -3138,7 +3147,7 @@ async function orgJoin(){
 }
 async function orgLoad(){
   if(backend!=='sb'||!SB||!session)return;
-  try{const[r,a]=await Promise.all([SB.rpc('org_tree'),SB.rpc('voc_is_admin')]);orgAdmin=a.data===true;
+  try{const[r,a]=await Promise.all([SB.rpc('org_tree'),SB.rpc('voc_is_admin')]);orgAdmin=a.data===true;try{await tsLoadGroups();}catch(_){}
     if(r.data){orgD=r.data;
       if(orgSel==null){const me=tmMe(),mp=orgD.people.find(x=>x.user_id===me);
         orgSel=mp?mp.unit_id:((orgD.units.find(u=>orgD.people.some(p=>p.unit_id===u.id))||orgD.units[0]||{}).id||null);
@@ -3181,7 +3190,8 @@ function orgRender(){
   const mine=team?`<span class="oc-t">${esc(team.name)} · 팀원 ${tmMembers.length}명</span>`:'';
   box.innerHTML=`<div class="org">
    <aside class="org-tree"><input class="org-q" id="orgQ" type="search" placeholder="이름 검색" value="${esc(orgQ)}" autocomplete="off">
-     <div class="ot-root">${orgTreeHTML(null,0)}</div></aside>
+     <div class="ot-root">${orgTreeHTML(null,0)}</div>
+     <div class="ot-grp"><b>내 그룹</b>${(TS2.groups||[]).map(g=>`<button data-tsg="${g.id}">${esc(g.name)}<i>${(TS2.gmem[g.id]||[]).length}</i></button>`).join('')}<button class="new" data-tsg="__new">+ 그룹 만들기</button></div></aside>
    <section class="org-main">
      <div class="org-bc">${path.map((x,i)=>`<span${i===path.length-1?' class="cur"':''}>${esc(x.name)}</span>`).join('<i>›</i>')}</div>
      <div class="org-bar"><div class="org-tabs">${tabs}</div><label class="org-sub"><input type="checkbox" id="orgSub" ${orgSub?'checked':''}> 하위부서 포함</label>
@@ -4660,20 +4670,24 @@ $('an2').addEventListener('click',e=>{
 runQuery=function(){an2Render();};
 
 /* ── 팀 일정 전용 화면 ── */
-const TS2={mo:new Date(today.getFullYear(),today.getMonth(),1),day:TODAY,ovMe:true,ovVac:true,mcat:'전체',memos:[],chan:null};
+const TS2={mo:new Date(today.getFullYear(),today.getMonth(),1),day:TODAY,ovMe:true,ovVac:true,mcat:'전체',memos:[],chan:null,gid:'team',groups:[],gmem:{},gitems:[],form:''};
 try{TS2.ovMe=localStorage.getItem('ts-me')!=='0';TS2.ovVac=localStorage.getItem('ts-vac')!=='0';}catch(e){}
 const TSCATS=['공지','업무','참석','기타'];
 const tsMeId=()=>session&&session.user&&session.user.id;
-const tsNameOf=uid=>{const m=(tmMembers||[]).find(x=>x.user_id===uid);return m?tmName(m):'팀원';};
+const tsIsGrp=()=>TS2.gid!=='team';
+const tsMembers=()=>tsIsGrp()?(TS2.gmem[TS2.gid]||[]):(tmMembers||[]);
+const tsSrc=()=>tsIsGrp()?TS2.gitems:(teamItems||[]);
+const tsNameOf=uid=>{const m=tsMembers().find(x=>x.user_id===uid)||(tmMembers||[]).find(x=>x.user_id===uid);return m?(m.name||'이름 없음'):'팀원';};
+const tsTid=()=>tsIsGrp()?TS2.gid:(team&&team.id);
 const tsOn=(o,k)=>o.date===k||(o.endDate&&o.date<=k&&k<=o.endDate);
 function tsTeam(k){
   const me=tsMeId(),L=[];
-  (teamItems||[]).forEach(o=>{if(tsOn(o,k))L.push({uid:o.owner,who:tsNameOf(o.owner),time:o.time||'',end:o.endTime||'',title:o.title||'',done:!!o.done,span:!!o.endDate&&o.endDate>o.date});});
+  tsSrc().forEach(o=>{if(tsOn(o,k))L.push({uid:o.owner,who:tsNameOf(o.owner),time:o.time||'',end:o.endTime||'',title:o.title||'',done:!!o.done,span:!!o.endDate&&o.endDate>o.date});});
   store.items.forEach(i=>{if(!i.wk&&isShared(i)&&tsOn(i,k))L.push({uid:me,who:tsNameOf(me)||'나',mine:true,time:i.time||'',end:i.endTime||'',title:i.title,done:!!i.done,span:!!i.endDate&&i.endDate>i.date});});
   return L.sort((a,b)=>(a.time||'99:99')<(b.time||'99:99')?-1:(a.time||'99:99')>(b.time||'99:99')?1:a.who<b.who?-1:1);}
 const tsMine=k=>store.items.filter(i=>!i.wk&&tsOn(i,k)&&!isShared(i)).map(i=>({title:i.title,time:i.time||'',end:i.endTime||'',done:!!i.done}));
 const tsMineAll=k=>store.items.filter(i=>!i.wk&&tsOn(i,k));
-const tsVac=k=>(tmMembers||[]).filter(m=>m.status!=='active'&&m.status_from&&tmAbsent(m,k)).map(m=>({name:tmName(m),kind:TS[m.status]||'휴가'}));
+const tsVac=k=>(tmMembers||[]).filter(m=>(!tsIsGrp()||tsMembers().some(g=>g.user_id===m.user_id))&&m.status!=='active'&&m.status_from&&tmAbsent(m,k)).map(m=>({name:tmName(m),kind:TS[m.status]||'휴가'}));
 function tsCal(){
   const y=TS2.mo.getFullYear(),m=TS2.mo.getMonth(),first=new Date(y,m,1),start=new Date(first);start.setDate(1-first.getDay());
   let h='<div class="tsw"><span class="su">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sa">토</span></div><div class="tsg">';
@@ -4682,9 +4696,10 @@ function tsCal(){
     const pp=Object.values(by);let who='';
     if(pp.length){const sh=w=>esc(String(w).length>3?String(w).slice(0,3):w);
       if(pp.length<=2)who=pp.map(p=>`<span class="wl"><i style="background:${ownerCol(p.u)}"></i>${sh(p.who)} ${p.n}개</span>`).join('');
-      else{const ld=pp.find(p=>((tmMembers||[]).find(m=>m.user_id===p.u)||{}).role==='leader')||pp.slice().sort((a,b)=>b.n-a.n)[0];
-        const isL=((tmMembers||[]).find(m=>m.user_id===ld.u)||{}).role==='leader';
-        who=`<span class="wl"><i style="background:${ownerCol(ld.u)}"></i>${sh(ld.who)}${isL?' 팀장':''}</span><span class="wl">외 ${pp.length-1}명</span>`;}}
+      else{const isLd=p=>['leader','owner'].includes((tsMembers().find(m=>m.user_id===p.u)||{}).role);
+        const ld=pp.find(isLd)||pp.slice().sort((a,b)=>b.n-a.n)[0];
+        const isL=isLd(ld);
+        who=`<span class="wl"><i style="background:${ownerCol(ld.u)}"></i>${sh(ld.who)}${isL?(tsIsGrp()?' 방장':' 팀장'):''}</span><span class="wl">외 ${pp.length-1}명</span>`;}}
     const cl=['tsc'];if(d.getMonth()!==m)cl.push('o');if(k===TODAY)cl.push('t');if(k===TS2.day)cl.push('s');if(d.getDay()===0||holOf(k))cl.push('su');else if(d.getDay()===6)cl.push('sa');
     const mine=TS2.ovMe?tsMineAll(k).length:0,vc=TS2.ovVac?tsVac(k).length:0;
     h+=`<button class="${cl.join(' ')}" data-tsd="${k}"><span class="n">${d.getDate()}</span>
@@ -4722,24 +4737,62 @@ function tsMemoHtml(){
    <div class="tsmf"><select id="tsMcat">${TSCATS.map(c=>`<option${c===(TS2.mcat==='전체'?'업무':TS2.mcat)?' selected':''}>${c}</option>`).join('')}</select><input id="tsMbody" maxlength="600" placeholder="팀원과 공유할 메모를 적으세요" autocomplete="off"><button id="tsMsend">남기기</button></div>`;}
 function tsRender(){
   const el=$('ts');if(!el)return;const y=TS2.mo.getFullYear(),m=TS2.mo.getMonth(),d=fromYmd(TS2.day);
-  const hasTeam=!!(team&&team.id);
-  el.innerHTML=`<div class="tsctl"><div class="tsnav"><button data-tsn="-1">‹</button><span>${y}년 ${m+1}월</span><button data-tsn="1">›</button><button data-tsn="0" class="tb">오늘</button></div>
+  const hasTeam=!!tsTid();
+  const g0=TS2.groups.find(g=>g.id===TS2.gid);
+  const gbar=`<div class="tsgb">${team&&team.id?`<button data-tsg="team" class="${TS2.gid==='team'?'on':''}">${esc(team.name||'내 팀')}</button>`:''}${TS2.groups.map(g=>`<button data-tsg="${g.id}" class="${TS2.gid===g.id?'on':''}">${esc(g.name)}</button>`).join('')}<button data-tsg="__new" class="add">+ 그룹 만들기</button><button data-tsg="__join" class="add">코드로 참여</button></div>
+    ${TS2.form==='new'?`<div class="tsgf"><input id="tsGname" maxlength="30" placeholder="그룹 이름 (예: 가마지천 현장팀)" autocomplete="off"><button id="tsGmake">만들기</button></div>`:''}
+    ${TS2.form==='join'?`<div class="tsgf"><input id="tsGcode" maxlength="12" placeholder="초대 코드 6자리" autocomplete="off"><button id="tsGjoin">참여</button></div>`:''}
+    ${g0?`<div class="tsgi"><span>구성원 ${(TS2.gmem[g0.id]||[]).length}명 · ${(TS2.gmem[g0.id]||[]).map(m=>esc(m.name||'이름 없음')).join(', ')}</span><span class="cd">초대 코드 <b>${esc(g0.code)}</b></span><button data-tsg="__leave">나가기</button></div>`:''}`;
+  el.innerHTML=gbar+`<div class="tsctl"><div class="tsnav"><button data-tsn="-1">‹</button><span>${y}년 ${m+1}월</span><button data-tsn="1">›</button><button data-tsn="0" class="tb">오늘</button></div>
     <div class="tsov"><span>함께 보기</span><button data-tso="me" class="${TS2.ovMe?'on':''}">내 일정</button><button data-tso="vac" class="${TS2.ovVac?'on':''}">휴가 일정</button></div></div>
     <div class="tscol"><div class="tscal card">${tsCal()}<div class="mono"><span>건수 = 공개된 팀 일정</span><span>점 = 기록한 사람</span><span>내 일정·휴가는 위에서 켜고 끕니다</span></div></div>
     <div class="tspan"><div class="an2s" style="margin-top:0">${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]}) 시간별 일정</div><div class="card an2c" id="tsTable">${tsTable(TS2.day)}</div>
      <div class="an2s">선택한 날</div><div class="card an2c" id="tsDay">${tsDay(TS2.day)}</div>
      <div class="an2s">메모 <em>팀원 누구나 남길 수 있습니다</em></div><div class="card an2c" id="tsMemo">${hasTeam?tsMemoHtml():'<div class="an2e">팀에 참여하면 메모를 남길 수 있습니다.</div>'}</div></div></div>`;}
 async function tsLoadMemos(){
-  if(backend!=='sb'||!SB||!team||!team.id){TS2.memos=[];return;}
-  try{const r=await SB.from('team_memos').select('*').eq('team_id',team.id).eq('day',TS2.day).eq('hidden',false).order('created_at');TS2.memos=r.data||[];}catch(e){TS2.memos=[];}
-  const box=$('tsMemo');if(box&&team&&team.id){const v=($('tsMbody')||{}).value||'';box.innerHTML=tsMemoHtml();if(v)$('tsMbody').value=v;}}
-async function tsOpen(){
-  if(backend!=='sb'||!session){toastMsg('로그인하고 팀에 참여하면 볼 수 있습니다');return;}
+  if(backend!=='sb'||!SB||!tsTid()){TS2.memos=[];return;}
+  try{const r=await SB.from('team_memos').select('*').eq('team_id',tsTid()).eq('day',TS2.day).eq('hidden',false).order('created_at');TS2.memos=r.data||[];}catch(e){TS2.memos=[];}
+  const box=$('tsMemo');if(box&&tsTid()){const v=($('tsMbody')||{}).value||'';box.innerHTML=tsMemoHtml();if(v)$('tsMbody').value=v;}}
+async function tsLoadGroups(){
+  if(backend!=='sb'||!SB||!session)return;
+  try{const g=await SB.from('groups').select('*').order('created_at');TS2.groups=g.data||[];
+    const m=await SB.from('group_members').select('*').eq('active',true);TS2.gmem={};
+    (m.data||[]).forEach(x=>(TS2.gmem[x.group_id]=TS2.gmem[x.group_id]||[]).push(x));
+    if(tsIsGrp()&&!TS2.groups.some(x=>x.id===TS2.gid))TS2.gid='team';
+    await tsLoadGItems();}catch(e){}}
+async function tsLoadGItems(){
+  TS2.gitems=[];if(!tsIsGrp())return;
+  const ids=(TS2.gmem[TS2.gid]||[]).map(x=>x.user_id).filter(u=>u!==tsMeId());if(!ids.length)return;
+  try{const r=await SB.from('shared_items').select('owner_id,item_id,data').in('owner_id',ids);
+    TS2.gitems=(r.data||[]).map(x=>({owner:x.owner_id,item_id:x.item_id,...x.data}));}catch(e){}}
+async function tsOpen(form){
+  if(backend!=='sb'||!session){toastMsg('로그인하면 볼 수 있습니다');return;}
   if(!team){try{await loadTeam();}catch(e){}}
-  TS2.mo=new Date(today.getFullYear(),today.getMonth(),1);TS2.day=TODAY;
+  await tsLoadGroups();
+  if(!(team&&team.id)&&TS2.gid==='team'&&TS2.groups.length)TS2.gid=TS2.groups[0].id;
+  TS2.mo=new Date(today.getFullYear(),today.getMonth(),1);TS2.day=TODAY;TS2.form=(form==='new'||form==='join')?form:'';
+  await tsLoadGItems();
   tsRender();$('tsSheet').classList.add('open');tsLoadMemos();
-  if(!TS2.chan&&SB&&team&&team.id){TS2.chan=SB.channel('tsmemo').on('postgres_changes',{event:'*',schema:'public',table:'team_memos'},()=>{if($('tsSheet').classList.contains('open'))tsLoadMemos();}).subscribe();}}
+  if(!TS2.chan&&SB){const kick=()=>{if($('tsSheet').classList.contains('open')){tsLoadGroups().then(()=>{tsRender();tsLoadMemos();});}};
+    TS2.chan=SB.channel('tsmemo').on('postgres_changes',{event:'*',schema:'public',table:'team_memos'},()=>{if($('tsSheet').classList.contains('open'))tsLoadMemos();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'group_members'},kick).on('postgres_changes',{event:'*',schema:'public',table:'shared_items'},kick).subscribe();}}
+document.addEventListener('click',e=>{const g=e.target.closest('.ot-grp [data-tsg]');if(!g)return;
+  const v=g.dataset.tsg;tsOpen(v==='__new'?'new':'').then(()=>{if(v!=='__new'&&v!=='team'){TS2.gid=v;tsLoadGItems().then(()=>{tsRender();tsLoadMemos();});}});});
 $('ts').addEventListener('click',async e=>{
+  const gb=e.target.closest('[data-tsg]');
+  if(gb){const v=gb.dataset.tsg;
+    if(v==='__new'||v==='__join'){TS2.form=TS2.form===(v==='__new'?'new':'join')?'':(v==='__new'?'new':'join');tsRender();return;}
+    if(v==='__leave'){if(!confirm('이 그룹에서 나갈까요? 나가도 다시 초대 코드로 참여할 수 있습니다.'))return;
+      try{await SB.rpc('group_leave',{p_gid:TS2.gid});}catch(_){}TS2.gid='team';await tsLoadGroups();tsRender();tsLoadMemos();return;}
+    TS2.gid=v;TS2.form='';await tsLoadGItems();tsRender();tsLoadMemos();return;}
+  if(e.target.id==='tsGmake'){const nm=$('tsGname').value.trim();if(!nm)return;
+    const r=await SB.rpc('group_create',{p_name:nm,p_my_name:tsNameOf(tsMeId())});
+    if(r.error){toastMsg(r.error.message||'그룹을 만들지 못했습니다');return;}
+    TS2.form='';await tsLoadGroups();TS2.gid=r.data.id;await tsLoadGItems();tsRender();tsLoadMemos();toastMsg('그룹을 만들었어요. 초대 코드를 공유하세요');return;}
+  if(e.target.id==='tsGjoin'){const cd=$('tsGcode').value.trim();if(!cd)return;
+    const r=await SB.rpc('group_join',{p_code:cd,p_my_name:tsNameOf(tsMeId())});
+    if(r.error){toastMsg(r.error.message||'참여하지 못했습니다');return;}
+    TS2.form='';await tsLoadGroups();TS2.gid=r.data.id;await tsLoadGItems();tsRender();tsLoadMemos();toastMsg(`'${r.data.name}' 그룹에 참여했어요`);return;}
   const n=e.target.closest('[data-tsn]'),dd=e.target.closest('[data-tsd]'),o=e.target.closest('[data-tso]'),mc=e.target.closest('[data-tsmc]'),md2=e.target.closest('[data-tsmd]');
   if(n){const v=+n.dataset.tsn;TS2.mo=v?new Date(TS2.mo.getFullYear(),TS2.mo.getMonth()+v,1):new Date(today.getFullYear(),today.getMonth(),1);if(!v)TS2.day=TODAY;tsRender();tsLoadMemos();return;}
   if(dd){TS2.day=dd.dataset.tsd;const d=fromYmd(TS2.day);if(d.getMonth()!==TS2.mo.getMonth())TS2.mo=new Date(d.getFullYear(),d.getMonth(),1);tsRender();tsLoadMemos();return;}
@@ -4748,11 +4801,11 @@ $('ts').addEventListener('click',async e=>{
   if(md2){try{await SB.from('team_memos').update({hidden:true}).eq('id',md2.dataset.tsmd);}catch(_){}tsLoadMemos();return;}
   if(e.target.id==='tsMsend'){const b=$('tsMbody').value.trim();if(!b)return;
     const me=tsMeId(),nm=tsNameOf(me);
-    const r=await SB.from('team_memos').insert({team_id:team.id,day:TS2.day,cat:$('tsMcat').value,body:b,author_id:me,author_name:nm});
+    const r=await SB.from('team_memos').insert({team_id:tsTid(),day:TS2.day,cat:$('tsMcat').value,body:b,author_id:me,author_name:nm});
     if(r.error){toastMsg('메모를 저장하지 못했습니다');return;}
     $('tsMbody').value='';tsLoadMemos();}});
 $('ts').addEventListener('keydown',e=>{if(e.target.id==='tsMbody'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();$('tsMsend').click();}});
-const APPVER=/*ver*/'v146';
+const APPVER=/*ver*/'v147';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
