@@ -1973,6 +1973,11 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
   .brandbar img,.brandbar .bt,.brandbar .bs{opacity:1;filter:none}
   header{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--page);padding-top:0;z-index:20}
 }
+
+@media(max-width:660px){
+  .hsec-memo .hbtn.seg.act{background:var(--navy)!important;color:#fff!important;border-color:var(--navy)!important}
+  .hsec-memo .hbtn.seg.act svg{color:#fff;stroke:#fff}
+}
 </style>
 </head>
 <body>
@@ -6066,8 +6071,9 @@ $('yearWrap').addEventListener('mouseleave',()=>{zMonth=null;});
   IC.vacBtn=S('<path d="M3 18h18"/><path d="M5 18a7 7 0 0 1 14 0"/><path d="M12 11V4M12 4l3 2"/>');
   IC.dsBtn=S('<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/>');
   IC.vocBtn=S('<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>');
+  IC.capTop=S('<path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.4"/>');
   IC.analyBtn=S('<path d="M4 19V9M10 19V5M16 19v-7M3 19.5h18"/><path d="m4 7 5-3 4 3 7-4"/>');
-  const LB={calBtn:'연동',vacBtn:'휴가ㆍ외근',viewBtn:'보기',tmBtn:'팀',dsBtn:'디자인',vocBtn:'VOC',findBtn:'검색',miniBtn:'미니창',analyBtn:'추정 n+1',setBtn:'설정'};
+  const LB={calBtn:'연동',vacBtn:'휴가ㆍ외근',viewBtn:'보기',tmBtn:'팀',dsBtn:'디자인',vocBtn:'VOC',findBtn:'검색',capTop:'캡처',miniBtn:'미니창',analyBtn:'추정 n+1',setBtn:'설정'};
   Object.keys(LB).forEach(id=>{const b=document.getElementById(id);if(!b)return;
     b.classList.remove('txt');b.classList.add('seg');b.innerHTML=(IC[id]||'')+'<span>'+LB[id]+'</span>';});
   const cur=()=>document.documentElement.getAttribute('data-theme')||'light';
@@ -7451,7 +7457,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v176';
+const APPVER=/*ver*/'v177';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
