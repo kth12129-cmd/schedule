@@ -1716,6 +1716,9 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .dnl b{text-align:right;font-weight:650}.dnl em{font-style:normal;text-align:right;color:var(--ink-3)}
 .ms{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line);font-size:13px;line-height:1.55}
 .ms b{font-weight:650;color:var(--ink-2)}.ms p{margin:0}
+.csm{cursor:pointer;padding:3px 7px;border-radius:6px;border:1px solid var(--line)}
+.csm.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.csm:hover{border-color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -4583,7 +4586,7 @@ $('an2').addEventListener('click',e=>{
       if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
     an2Render();}});
 runQuery=function(){an2Render();};
-const APPVER=/*ver*/'v140';
+const APPVER=/*ver*/'v141';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -4886,7 +4889,7 @@ function paintCatMenu(){
   const sel2=curSel(),nav=catNav();
   $('catMenu').innerHTML=(catTarget?'':`<button data-c="__all" class="${allMode()?'on':''}${nav[catIdx]==='__all'?' cur':''}"><i style="background:#8a8f9e"></i>전체<span class="ck">${allMode()?'✓':''}</span></button>`)+store.cats.map((c,i)=>
     `<button data-c="${c.id}" class="${sel2.includes(c.id)?'on':''}${nav[catIdx]===c.id?' cur':''}">
-      <i style="background:${c.color}"></i>${esc(c.name)}<em class="csm${c.share?' on':''}">${c.share?'공유':'비공개'}</em><span class="ck">${sel2.includes(c.id)?'✓':''}</span></button>`).join('')
+      <i style="background:${c.color}"></i>${esc(c.name)}<em class="csm${c.share?' on':''}" data-csm="${c.id}" title="누르면 ${c.share?'비공개':'팀에 공개'}로 바뀜">${c.share?'공유':'비공개'}</em><span class="ck">${sel2.includes(c.id)?'✓':''}</span></button>`).join('')
     +`<button data-c="__multi" class="multi${multiCat?' on':''}"><span class="mk">${multiCat?'☑':'☐'}</span>다중 선택</button>`
     +'<div class="kbd">↑ ↓ 로 옮기고 Enter 로 선택</div>'
     +'<button data-c="__edit" style="color:var(--navy);font-size:13px;font-weight:600">분류 설정…</button>'
@@ -4937,7 +4940,14 @@ document.addEventListener('keydown',e=>{
     const id=catNav()[catIdx];if(id)pickCat(id);}
 },true);
 $('catBtn').onclick=()=>openCatMenu(null,true);
-$('catMenu').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;
+$('catMenu').onclick=e=>{
+  const sm=e.target.closest('[data-csm]');
+  if(sm){e.stopPropagation();const c=store.cats.find(x=>x.id===sm.dataset.csm);if(!c)return;
+    c.share=!c.share;store.catsMt=NOW();
+    store.items.forEach(i=>{if(i.share!==undefined&&i.share!==null&&catsOf(i).some(x=>x.id===c.id)){delete i.share;touch(i);}});
+    save();paintCatMenu();try{redrawAll();}catch(_){}
+    toastMsg(`'${c.name}' ${c.share?'팀에 공개':'비공개'}로 바꿨어요`);return;}
+  const b=e.target.closest('[data-c]');if(!b)return;
   const v=b.dataset.c;
   if(v==='__edit'){closeFind();renderCats();$('catSheet').classList.add('open');return;}
   if(v==='__close'){closeFind();return;}
