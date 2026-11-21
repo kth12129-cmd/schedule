@@ -2043,6 +2043,25 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
 .mnav button{width:32px;height:36px;border:1px solid var(--line);border-radius:9px;font-size:16px;color:var(--ink-2);background:var(--surface)}
 .mnav input{height:36px;border:1px solid var(--fieldline);border-radius:9px;background:var(--field);color:var(--ink);padding:0 8px;font-size:13.5px;font-weight:600;min-width:0;width:140px}
 @media(max-width:660px){.memo-head{flex-wrap:wrap}.mnav{width:100%}.mnav input{flex:1;width:auto}}
+
+@media (hover:hover) and (pointer:fine){[data-tip]::after{display:none!important}}
+#dtip{position:fixed;z-index:200;left:0;top:0;max-width:min(320px,calc(100vw - 16px));background:var(--ink);color:var(--page);font-size:11.5px;font-weight:500;line-height:1.35;padding:5px 9px;border-radius:7px;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none;opacity:0;transition:opacity .12s;white-space:normal;word-break:keep-all}
+#dtip.on{opacity:1}
+#pickBar{position:fixed;z-index:120;top:calc(env(safe-area-inset-top,0px) + 8px);right:10px;display:none;align-items:center;gap:6px;padding:6px 6px 6px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);box-shadow:0 10px 30px rgba(10,20,50,.18);font-size:13px}
+#pickBar.on{display:flex}
+#pickBar b{margin-right:4px;white-space:nowrap}
+#pickBar button{height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:13px;font-weight:650;white-space:nowrap}
+#pickBar .del{background:var(--red);border-color:var(--red);color:#fff}
+#list .item.picked{background:color-mix(in srgb,var(--navy) 12%,var(--surface))!important;box-shadow:inset 0 0 0 2px var(--navy)}
+#grid .ev.picked{outline:2px solid var(--navy);outline-offset:-1px}
+body.picking #list .item .acts{pointer-events:none;opacity:.35}
+#ctxMenu{position:fixed;z-index:210;display:none;min-width:200px;max-width:280px;padding:6px;border-radius:12px;background:var(--surface);border:1px solid var(--line);box-shadow:0 14px 40px rgba(10,20,50,.22)}
+#ctxMenu.on{display:block}
+#ctxMenu .cm-h{font-size:12px;color:var(--ink-3);padding:6px 10px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:1px solid var(--hair);margin-bottom:4px}
+#ctxMenu button{display:block;width:100%;text-align:left;padding:8px 10px;border-radius:8px;font-size:13.5px}
+#ctxMenu button:hover{background:var(--field)}#ctxMenu .del{color:var(--red);font-weight:650}
+#ctxMenu .cm-f{font-size:11px;color:var(--ink-3);padding:6px 10px 4px;border-top:1px solid var(--hair);margin-top:4px}
+@media (pointer:coarse){#list .item{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}}
 </style>
 </head>
 <body>
@@ -5023,6 +5042,85 @@ $('remDlg').onclick=e=>{
   const p=document.getElementById('memoPrev'),n=document.getElementById('memoNext'),d=document.getElementById('memoDate');
   if(p)p.onclick=()=>mv(-1);if(n)n.onclick=()=>mv(1);
   if(d)d.onchange=()=>{if(d.value)try{goto(d.value);}catch(_){}};})();
+/* ── 떠 있는 설명(툴팁): 칸 밖으로 나와도 잘리지 않게, 화면 안으로 맞춤 ── */
+(function(){
+  const tip=document.createElement('div');tip.id='dtip';document.body.appendChild(tip);let cur=null,hideT=null;
+  function show(el){const t=el.getAttribute('data-tip');if(!t)return;cur=el;tip.textContent=t;tip.className='on';
+    const r=el.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight,W=innerWidth,H=innerHeight;
+    let x=r.left+r.width/2-w/2;x=Math.max(8,Math.min(W-w-8,x));
+    let y=r.bottom+7;if(y+h>H-8)y=r.top-h-7;if(y<8)y=8;
+    tip.style.left=x+'px';tip.style.top=y+'px';}
+  function hide(){cur=null;tip.className='';}
+  const fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+  if(fine){
+    document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-tip]');if(el&&el!==cur)show(el);else if(!el&&cur)hide();});
+    document.addEventListener('mousedown',hide,true);addEventListener('scroll',hide,true);}
+  window.dtipShow=(el,ms)=>{show(el);clearTimeout(hideT);hideT=setTimeout(hide,ms||1800);};
+})();
+
+/* ── 일정 선택·삭제: PC 우클릭·Ctrl/Shift 클릭, 휴대폰 길게 누르기 ── */
+const pickSet=new Set();let pickAnchor=null,pickMode=false,pkT=null,pkFired=false,pkXY=null;
+function pickPaint(){
+  document.querySelectorAll('#list .item[data-id]').forEach(li=>li.classList.toggle('picked',pickSet.has(li.dataset.id)));
+  document.querySelectorAll('#grid .ev[data-drag]').forEach(e=>e.classList.toggle('picked',pickSet.has(e.dataset.drag)));
+  const b=$('pickBar');if(!b)return;
+  if(!pickSet.size){b.classList.remove('on');pickMode=false;document.body.classList.remove('picking');return;}
+  document.body.classList.add('picking');
+  b.innerHTML=`<b>${pickSet.size}개 선택</b>${pickSet.size===1?'<button data-pk="mv">날짜 옮기기</button>':''}<button data-pk="all">이 날 모두</button><button data-pk="del" class="del">삭제</button><button data-pk="x">취소</button>`;
+  b.classList.add('on');}
+function pickToggle(id){if(pickSet.has(id))pickSet.delete(id);else pickSet.add(id);pickAnchor=id;pickPaint();}
+function pickClear(){pickSet.clear();pickPaint();}
+function pickDel(ids){ids=[...ids].filter(id=>store.items.some(i=>i.id===id));if(!ids.length)return;
+  const n=ids.length,t=NOW();ids.forEach(id=>{store.tomb[id]=t;});store.items=store.items.filter(i=>!ids.includes(i.id));
+  pickSet.clear();save();redrawAll();pickPaint();setTimeout(()=>toastMsg(`일정 ${n}개를 삭제했습니다`,'되돌리기',()=>{undoDo();}),0);}
+(function(){
+  const bar=document.createElement('div');bar.id='pickBar';document.body.appendChild(bar);
+  bar.onclick=e=>{const b=e.target.closest('[data-pk]');if(!b)return;const k=b.dataset.pk;
+    if(k==='mv'){const id=[...pickSet][0];pickClear();moveTarget=id;fillPicker();$('findPop').classList.add('up');$('findPop').classList.add('open');$('popBack').classList.add('open');$('goDate').textContent='이 날짜로 옮기기';return;}
+    if(k==='x')pickClear();else if(k==='del')pickDel(pickSet);
+    else if(k==='all'){ordAll(sel).forEach(i=>pickSet.add(i.id));pickPaint();}};
+  const menu=document.createElement('div');menu.id='ctxMenu';document.body.appendChild(menu);
+  const closeM=()=>menu.classList.remove('on');
+  document.addEventListener('mousedown',e=>{if(!e.target.closest('#ctxMenu'))closeM();});
+  addEventListener('scroll',closeM,true);addEventListener('resize',closeM);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeM();if(pickSet.size)pickClear();}
+    if((e.key==='Delete'||e.key==='Backspace')&&pickSet.size&&!/INPUT|TEXTAREA/.test((document.activeElement||{}).tagName||'')){e.preventDefault();pickDel(pickSet);}});
+  document.addEventListener('contextmenu',e=>{
+    if(matchMedia('(pointer:coarse)').matches)return;
+    const li=e.target.closest('#list .item[data-id]'),ev=e.target.closest('#grid .ev[data-drag]');
+    const id=li?li.dataset.id:ev?ev.dataset.drag:null;if(!id)return;
+    const it=store.items.find(i=>i.id===id);if(!it)return;e.preventDefault();
+    const day=it.date,many=pickSet.size>0;
+    menu.innerHTML=`<div class="cm-h">${esc(it.title)}</div>`+
+      (many?`<button data-cm="delsel" class="del">선택한 ${pickSet.size}개 삭제</button>`:'')+
+      `<button data-cm="del" class="del">이 일정 삭제</button>`+
+      `<button data-cm="pick">${pickSet.has(id)?'선택 해제':'선택에 추가'}</button>`+
+      `<button data-cm="day">${md(day)} 일정 모두 선택</button>`+
+      `<div class="cm-f">Ctrl 클릭: 여러 개 · Shift 클릭: 범위 · Delete: 삭제</div>`;
+    menu.classList.add('on');const w=menu.offsetWidth,h=menu.offsetHeight;
+    menu.style.left=Math.min(e.clientX,innerWidth-w-8)+'px';menu.style.top=Math.min(e.clientY,innerHeight-h-8)+'px';
+    menu.onclick=x=>{const b=x.target.closest('[data-cm]');if(!b)return;const k=b.dataset.cm;closeM();
+      if(k==='del')pickDel([id]);else if(k==='delsel')pickDel(pickSet);else if(k==='pick')pickToggle(id);
+      else if(k==='day'){if(sel!==day){try{goto(day);}catch(_){}}ordAll(day).forEach(i=>pickSet.add(i.id));pickPaint();}};});
+  /* PC: Ctrl/⌘ 클릭 = 하나씩, Shift 클릭 = 범위 / 선택 중에는 클릭 = 토글 */
+  document.addEventListener('click',e=>{
+    const li=e.target.closest&&e.target.closest('#list .item[data-id]');if(!li)return;
+    if(pkFired){e.preventDefault();e.stopPropagation();pkFired=false;return;}
+    const id=li.dataset.id;
+    if(e.shiftKey&&pickAnchor){const ids=[...document.querySelectorAll('#list .item[data-id]')].map(x=>x.dataset.id),a=ids.indexOf(pickAnchor),b=ids.indexOf(id);
+      if(a>=0&&b>=0){ids.slice(Math.min(a,b),Math.max(a,b)+1).forEach(x=>pickSet.add(x));pickPaint();e.preventDefault();e.stopPropagation();return;}}
+    if(e.ctrlKey||e.metaKey||e.shiftKey||pickSet.size){if(e.target.closest('textarea,input'))return;e.preventDefault();e.stopPropagation();pickToggle(id);}
+  },true);
+  /* 휴대폰: 길게 누르면 선택 시작 (버튼 위에서는 설명 보기) */
+  document.addEventListener('touchstart',e=>{pkFired=false;const t=e.touches[0];pkXY=[t.clientX,t.clientY];clearTimeout(pkT);
+    const tipEl=e.target.closest('[data-tip]'),li=e.target.closest('#list .item[data-id]');
+    if(tipEl&&(!li||tipEl!==li)&&tipEl.closest('button,a,.mtag')){pkT=setTimeout(()=>{pkFired=true;window.dtipShow&&dtipShow(tipEl,2200);},450);return;}
+    if(!li||e.target.closest('textarea,input'))return;
+    pkT=setTimeout(()=>{pkFired=true;try{navigator.vibrate&&navigator.vibrate(12);}catch(_){}pickToggle(li.dataset.id);},450);},{passive:true});
+  document.addEventListener('touchmove',e=>{if(!pkXY)return;const t=e.touches[0];if(Math.abs(t.clientX-pkXY[0])>8||Math.abs(t.clientY-pkXY[1])>8)clearTimeout(pkT);},{passive:true});
+  document.addEventListener('touchend',e=>{clearTimeout(pkT);if(pkFired){e.preventDefault();setTimeout(()=>{pkFired=false;},350);}},{passive:false});
+  document.addEventListener('click',e=>{if(pkFired&&e.target.closest&&e.target.closest('[data-tip]')){e.preventDefault();e.stopPropagation();pkFired=false;}},true);
+})();
 let calRz=null;addEventListener('resize',()=>{clearTimeout(calRz);calRz=setTimeout(()=>{if(tab==='cal')renderMonth();},150);});
 function miniMonth(y,m,mark){
   const f=new Date(y,m,1),start=new Date(f);start.setDate(start.getDate()-f.getDay());
@@ -5046,7 +5144,7 @@ function renderYear(){
   let h='';for(let m=0;m<12;m++)h+=miniMonth(yearView,m,null);
   $('yearWrap').innerHTML=h;
 }
-function renderDay(){try{memoMaterialize();}catch(_){}
+function renderDay(){try{memoMaterialize();}catch(_){}setTimeout(()=>{try{pickPaint();}catch(_){}},0);
   
   const d=fromYmd(sel);
   const holN=holOf(sel);
@@ -7002,7 +7100,7 @@ async function doPush(){
     pushing=false;if(dirty)schedulePush();
   }
 }
-function redrawAll(){renderMonth();renderDay();renderBanner();
+function redrawAll(){renderMonth();renderDay();renderBanner();try{pickPaint();}catch(_){}
   if($('anSheet').classList.contains('open')){runQuery($('q').value||'');}}
 
 /* ── 일정 공유 ── */
@@ -7577,7 +7675,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v186';
+const APPVER=/*ver*/'v187';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -8618,7 +8716,7 @@ $('list').addEventListener('touchstart',e=>{
   lpId=li.dataset.id;
   clearTimeout(lpT);
   lpT=setTimeout(()=>{
-    if(!lpId)return;
+    if(!lpId||!window.__mvReq)return;
     moveTarget=lpId;
     if(navigator.vibrate)navigator.vibrate(18);
     fillPicker();$('findPop').classList.add('up');
