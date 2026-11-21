@@ -2038,6 +2038,11 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
 .list{column-count:auto;column-width:330px}
 @media(max-width:660px){.list{column-count:1!important;column-width:auto}}
 .mtag.rmt{cursor:pointer;border:0;background:none;padding:0;font-size:11.5px;font-weight:700;line-height:1.3}
+
+.mnav{display:flex;align-items:center;gap:4px;flex:none}
+.mnav button{width:32px;height:36px;border:1px solid var(--line);border-radius:9px;font-size:16px;color:var(--ink-2);background:var(--surface)}
+.mnav input{height:36px;border:1px solid var(--fieldline);border-radius:9px;background:var(--field);color:var(--ink);padding:0 8px;font-size:13.5px;font-weight:600;min-width:0;width:140px}
+@media(max-width:660px){.memo-head{flex-wrap:wrap}.mnav{width:100%}.mnav input{flex:1;width:auto}}
 </style>
 </head>
 <body>
@@ -2088,7 +2093,7 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
       <a class="lgchip lgvac" id="lgLink" href="https://tongyang-dashboard.vercel.app/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;opacity:1;color:var(--ink)">휴가ㆍ외근 ↗</a><span class="lgnote" id="lgNote"></span></div>
   </div>
   <div class="rightcol" id="rc" data-rt="day">
-  <div class="rt-tabs" id="rtTabs"><button data-rt="day">선택한 날</button><button data-rt="status">현황</button><button data-rt="time">시간표</button><button data-rt="memo">메모</button><button class="rt-x" id="rcClose" aria-label="닫기">✕</button></div>
+  <div class="rt-tabs" id="rtTabs"><button data-rt="day">당일</button><button data-rt="status">3일</button><button data-rt="time">시간표</button><button data-rt="memo">메모</button><button class="rt-x" id="rcClose" aria-label="닫기">✕</button></div>
   <div class="card pane status-pane" id="stPane"><div id="stBody"></div></div>
   <div class="card pane list-pane">
     <div class="day-head"><h2 id="dayTitle"></h2><span class="cnt" id="dayCnt"></span>
@@ -2104,7 +2109,7 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
     </div>
     <div class="card pane memo-pane">
       <div class="pane-hd"><span>메모</span><span class="saved" id="saved">저장됨</span></div>
-      <div class="memo-head"><input id="memoTitle" class="memo-title" autocomplete="off" aria-label="메모 제목" maxlength="60">
+      <div class="memo-head"><div class="mnav"><button id="memoPrev" aria-label="전날">‹</button><input type="date" id="memoDate" aria-label="날짜로 이동"><button id="memoNext" aria-label="다음날">›</button></div><input id="memoTitle" class="memo-title" autocomplete="off" aria-label="메모 제목" maxlength="60">
         <label class="memo-carry" data-tip="켜 두면 다음 날 메모가 이 내용으로 시작됩니다. 지난 날의 메모는 그대로 남습니다."><input type="checkbox" id="memoCarry"><span>다음날 이어쓰기</span></label></div>
       <div class="memo-from" id="memoFrom"></div>
       <textarea class="memo" id="memo" placeholder=""></textarea>
@@ -5014,6 +5019,10 @@ $('remDlg').onclick=e=>{
     if(remSt.to==='team'){it.tn=1;if(!isShared(it))it.share=1;}else delete it.tn;
     touch(it);toastMsg(it.time&&remSt.min?(remSt.to==='team'?'나와 팀원에게 ':'')+(remSt.min>=60?remSt.min/60+'시간':remSt.min+'분')+' 전에 알립니다':'중요 표시했습니다');}}
   $('remDlg').classList.remove('on');try{redrawAll();}catch(_){try{renderDay();renderMonth();}catch(__){}}};
+(function(){const mv=n=>{try{goto(addDays(sel,n));}catch(_){}};
+  const p=document.getElementById('memoPrev'),n=document.getElementById('memoNext'),d=document.getElementById('memoDate');
+  if(p)p.onclick=()=>mv(-1);if(n)n.onclick=()=>mv(1);
+  if(d)d.onchange=()=>{if(d.value)try{goto(d.value);}catch(_){}};})();
 let calRz=null;addEventListener('resize',()=>{clearTimeout(calRz);calRz=setTimeout(()=>{if(tab==='cal')renderMonth();},150);});
 function miniMonth(y,m,mark){
   const f=new Date(y,m,1),start=new Date(f);start.setDate(start.getDate()-f.getDay());
@@ -6323,7 +6332,7 @@ const FONTS=[
   {key:'dodum',name:'둥근 고딕',ref:'',css:'family=Gowun+Dodum'}
 ];
 const LAYS=[
-  {k:'focus',n:'한눈에 보기',d:'달력은 크게, 오른쪽은 현황·선택한 날·시간표·메모를 탭으로 전환',t:'<i class="a"></i><i class="b"><u></u><u></u></i>'},
+  {k:'focus',n:'한눈에 보기',d:'달력은 크게, 오른쪽은 3일·당일·시간표·메모를 탭으로 전환',t:'<i class="a"></i><i class="b"><u></u><u></u></i>'},
   {k:'split',n:'분할하여 보기',d:'달력 · 일정 · 시간표 · 메모를 한 화면에 모두 나눠서 표시',t:'<i class="a"></i><i class="c"><u></u><u></u><u></u></i>'},
   {k:'cal',n:'달력 확대',d:'달력만 크게. 날짜를 누르면 오른쪽에서 일정이 열립니다',t:'<i class="a full"></i><i class="dr"></i>'},
   {k:'list',n:'목록 확대',d:'달력을 접고 현황과 할 일 목록을 크게 표시',t:'<i class="b full"><u></u><u></u></i>'}
@@ -6663,7 +6672,8 @@ $('grid').onclick=e=>{const b=e.target.closest('.cell');if(!b)return;
   if(e.target.closest('.ev.vac')&&!e.shiftKey&&typeof vacOpen==='function'){sel=b.dataset.d;try{renderMonth();renderDay();}catch(_){}vacOpen(b.dataset.d);return;}
   if(e.shiftKey){e.preventDefault();rngClick(b.dataset.d);return;}
   sel=b.dataset.d;openNote=null;editItem=null;adding=false;
-  if(layout==='cal'){setRT('day');openRC(true);}else if(layout!=='split')setRT('day');
+  const keep=rtab==='memo'||rtab==='time';
+  if(layout==='cal'){if(!keep)setRT('day');openRC(true);}else if(layout!=='split'&&!keep)setRT('day');
   renderMonth();renderDay();
   if(!CAN_HOVER)showTip($('grid').querySelector('.cell.sel'),true);};
 
@@ -6885,7 +6895,7 @@ function memoView(day){
 function memoPaint(){
   const v=memoView(sel);
   $('memo').value=v.text;
-  $('memoTitle').value=v.meta.t||memoDef(sel);
+  $('memoTitle').value=v.meta.t||memoDef(sel);try{$('memoDate').value=sel;}catch(_){}
   $('memoTitle').classList.toggle('def',!v.meta.t);
   $('memoCarry').checked=v.meta.c!==0;
   $('memoFrom').textContent=v.from?'↳ '+md(v.from)+' 메모에서 이어서 시작했습니다. 이 날의 내용은 따로 저장됩니다.':'';
@@ -7467,7 +7477,7 @@ function tsRender(){
     ${TS2.form==='join'?`<div class="tsgf"><input id="tsGcode" maxlength="12" placeholder="초대 코드 6자리" autocomplete="off"><button id="tsGjoin">참여</button></div>`:''}
     ${g0?`<div class="tsgi"><span>구성원 ${(TS2.gmem[g0.id]||[]).length}명 · ${(TS2.gmem[g0.id]||[]).map(m=>esc(m.name||'이름 없음')).join(', ')}</span><span class="cd">초대 코드 <b>${esc(g0.code)}</b></span><button data-tsg="__send" class="sd">코드 보내기</button><button data-tsg="__leave">나가기</button></div>`:''}${g0&&TS2.send?tsSendHtml(g0):''}${(TS2.inv||[]).map(v=>`<div class="tsiv"><span><b>${esc(v.from_name||'팀원')}</b>님이 <b>${esc(v.group_name)}</b> 그룹에 초대했습니다</span><button data-tsiv="${v.id}" data-y="1">참여</button><button data-tsiv="${v.id}" data-y="0" class="no">거절</button></div>`).join('')}`;
   const tog=`<div class="tsov"><span>함께 보기</span><button data-tso="me" class="${TS2.ovMe?'on':''}">내 일정</button><button data-tso="vac" class="${TS2.ovVac?'on':''}">휴가 일정</button></div>`;
-  el.innerHTML=gbar+`<div class="tstabs">${['시간표','달력','선택한 날','메모'].map((t,i)=>`<button data-tspg="${i}" class="${TS2.pg===i?'on':''}">${t}</button>`).join('')}</div>
+  el.innerHTML=gbar+`<div class="tstabs">${['시간표','달력','당일','메모'].map((t,i)=>`<button data-tspg="${i}" class="${TS2.pg===i?'on':''}">${t}</button>`).join('')}</div>
     ${TS2.pg===1?`<div class="tsctl"><div class="tsnav"><button data-tsn="-1">‹</button><span>${y}년 ${m+1}월</span><button data-tsn="1">›</button><button data-tsn="0" class="tb">오늘</button></div>${tog}</div>`
      :`<div class="tsctl"><div class="tsnav"><button data-tsdn="-1">‹</button><span>${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})</span><button data-tsdn="1">›</button><button data-tsdn="0" class="tb">오늘</button></div>${tog}</div>`}
     <div class="tsvp" id="tsVp"><div class="tstrack" style="transform:translateX(${-25*TS2.pg}%)">
@@ -7567,7 +7577,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v185';
+const APPVER=/*ver*/'v186';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
