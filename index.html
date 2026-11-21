@@ -1684,6 +1684,10 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .tr b{text-align:right;font-weight:650}
 .ds-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .ds-opts .ds-chip{width:100%;justify-content:flex-start;box-sizing:border-box}
+.item{grid-template-columns:28px minmax(0,1fr) auto}
+.check{width:24px;height:17px;border-radius:5px;border-width:1.5px}
+.check::after{width:8px;height:8px;margin-top:-4px;left:3px}
+.item.done .check::after{transform:translateX(10px)}
 </style>
 </head>
 <body>
@@ -4447,7 +4451,7 @@ $('an2').addEventListener('click',e=>{
       if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
     an2Render();}});
 runQuery=function(){an2Render();};
-const APPVER=/*ver*/'v132';
+const APPVER=/*ver*/'v133';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
