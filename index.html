@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="TY-Scheduler">
-<script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus")}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
+<script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
@@ -1206,12 +1206,22 @@ textarea.memo{background:transparent}
 .hsec-memo .hbtn.seg{margin:0!important;align-self:stretch}
 
 /* ===== v88 화면 구성 · 현황 · 디자인 시안 ===== */
-:root[data-skin="indigo"]{--page:#08090a;--surface:#101113;--field:#16181b;--chip:#1b1d21;--ink:#f7f8f8;--ink-2:#a8acb4;--ink-3:#6b6f78;--line:#26282d;--hair:#1a1c20;--fieldline:#2e3036;--navy:#5e6ad2;--navy-2:#9aa3f0}
-:root[data-skin="stripe"]{--page:#f6f9fc;--surface:#fff;--field:#eef2f7;--chip:#e6ebf1;--ink:#0a2540;--ink-2:#425466;--ink-3:#8898aa;--line:#d9e1ea;--hair:#e8edf3;--fieldline:#cfd7e1;--navy:#635bff;--navy-2:#4b44d6}
-:root[data-skin="paper"]{--page:#f7f6f3;--surface:#fff;--field:#f1f0ec;--chip:#ebeae5;--ink:#37352f;--ink-2:#6f6e69;--ink-3:#a5a39d;--line:#e3e2de;--hair:#edece8;--fieldline:#d9d8d3;--navy:#2383e2;--navy-2:#1a6bc0}
-:root[data-skin="mono"]{--page:#fafafa;--surface:#fff;--field:#f2f2f2;--chip:#ededed;--ink:#000;--ink-2:#555;--ink-3:#999;--line:#d8d8d8;--hair:#ececec;--fieldline:#cfcfcf;--navy:#000;--navy-2:#000}
-:root[data-skin="green"]{--page:#0c0c0c;--surface:#161616;--field:#1f1f1f;--chip:#262626;--ink:#fff;--ink-2:#b3b3b3;--ink-3:#727272;--line:#2c2c2c;--hair:#202020;--fieldline:#333;--navy:#1a9f4a;--navy-2:#3ddc7a}
-:root[data-skin="coral"]{--page:#f7f7f7;--surface:#fff;--field:#f0f0f0;--chip:#ebebeb;--ink:#222;--ink-2:#6a6a6a;--ink-3:#a8a8a8;--line:#ddd;--hair:#ebebeb;--fieldline:#d2d2d2;--navy:#ff385c;--navy-2:#e0204a}
+:root[data-skin="indigo"]{--page:#0b1220;--surface:#121b2d;--field:#18233a;--chip:#1d2a45;--ink:#eef1f7;--ink-2:#aab3c5;--ink-3:#6f7b92;--line:#26334d;--hair:#18233a;--fieldline:#2f3e5c;--navy:#a8741a;--navy-2:#e2b45c;--globe:#e2b45c}
+:root[data-skin="stripe"]{--page:#eaf1f2;--surface:#fbfefe;--field:#e0eaec;--chip:#d6e3e6;--ink:#10282d;--ink-2:#41585d;--ink-3:#7c9296;--line:#c3d4d7;--hair:#d9e5e7;--fieldline:#b4c8cc;--navy:#0f6f78;--navy-2:#0b565d;--globe:#2aa3ad}
+:root[data-skin="paper"]{--page:#f5efe3;--surface:#fffcf5;--field:#efe7d6;--chip:#e8dec9;--ink:#3a2f25;--ink-2:#6b5d4e;--ink-3:#a39683;--line:#ddd1ba;--hair:#e9dfca;--fieldline:#d2c4a8;--navy:#b4532a;--navy-2:#8f3f1d;--globe:#d2824f}
+:root[data-skin="mono"]{--page:#fafafa;--surface:#fff;--field:#f2f2f2;--chip:#ededed;--ink:#000;--ink-2:#555;--ink-3:#999;--line:#d8d8d8;--hair:#ececec;--fieldline:#cfcfcf;--navy:#000;--navy-2:#000;--globe:#555}
+:root[data-skin="green"]{--page:#0d1511;--surface:#141f19;--field:#1b2a22;--chip:#22342a;--ink:#e8efe9;--ink-2:#a3b5a9;--ink-3:#6a7f72;--line:#2a3d32;--hair:#1b2a22;--fieldline:#33493c;--navy:#2c8a57;--navy-2:#6fd49b;--globe:#6fd49b}
+:root[data-skin="coral"]{--page:#f7f1f1;--surface:#fffdfd;--field:#f0e6e7;--chip:#e9dcde;--ink:#2a1518;--ink-2:#64484d;--ink-3:#a58b90;--line:#e2d0d3;--hair:#ece0e2;--fieldline:#d7c1c5;--navy:#8c1f3b;--navy-2:#6b152c;--globe:#c25670}
+:root[data-skin="olive"]{--page:#f1f1e6;--surface:#fdfdf6;--field:#e8e8d8;--chip:#e0e0cd;--ink:#272a1a;--ink-2:#555a3f;--ink-3:#8f947a;--line:#d3d4bc;--hair:#e3e3d0;--fieldline:#c6c8ac;--navy:#5b6a1c;--navy-2:#44510f;--globe:#8a9a3a}
+/* 글자체: 선택한 글자체를 화면 전체에 적용 */
+:root[data-font] body,:root[data-font] button,:root[data-font] input,:root[data-font] textarea,:root[data-font] select{font-family:var(--fnt),-apple-system,"Apple SD Gothic Neo",system-ui,sans-serif}
+:root[data-font="noto"]{--fnt:"Noto Sans KR"}:root[data-font="plex"]{--fnt:"IBM Plex Sans KR"}:root[data-font="serif"]{--fnt:"Noto Serif KR"}:root[data-font="dodum"]{--fnt:"Gowun Dodum"}
+.ds-now{margin:14px 2px 0;padding:11px 14px;border:1px solid var(--line);border-left:3px solid var(--navy);border-radius:9px;background:var(--surface);font-size:13px;line-height:1.55;color:var(--ink-2)}
+.ds-now b{color:var(--ink)}
+.thumb.pv{display:block;height:auto;padding:0;overflow:hidden;border:1px solid;border-radius:8px}
+.thumb.pv .pb{height:7px}.thumb.pv .pr{display:flex;gap:6px;align-items:center;padding:8px 9px 3px}.thumb.pv .pr em{font-style:normal;font-size:15px;font-weight:700;line-height:1}.thumb.pv .pr u{margin-left:auto;width:26px;height:9px;border-radius:5px}
+.thumb.pv .ps{display:flex;gap:4px;padding:3px 9px 9px}.thumb.pv .ps s{flex:1;height:12px;border-radius:3px;border:1px solid}
+.ds-font{font-size:21px;font-weight:600;line-height:1.25;margin-bottom:2px}
 
 /* 헤더 가운데: 화면 구성 전환 */
 .lay{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);height:36px}
@@ -1732,9 +1742,12 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
   <div class="sheet-body">
     <div class="ds-h">화면 구성</div>
     <div class="ds-grid" id="dsLay"></div>
-    <div class="ds-h">색상 시안</div>
+    <div class="ds-now" id="dsNow"></div>
+    <div class="ds-h">색상 조합</div>
     <div class="ds-grid ds-themes" id="dsTheme"></div>
-    <div class="hint-txt" style="margin:14px 2px">시안은 여러 서비스의 디자인 원칙(색·여백·선)을 참고해 직접 구성한 것이며, 로고나 고유 요소는 쓰지 않았습니다. 고른 구성은 이 기기에 저장됩니다.</div>
+    <div class="ds-h">글자체</div>
+    <div class="ds-grid" id="dsFont"></div>
+    <div class="hint-txt" style="margin:14px 2px">색 조합은 직접 구성한 것이고, 글자체는 누구나 자유롭게 쓸 수 있는 오픈 라이선스(OFL) 글꼴입니다. 특정 회사의 로고·상표·고유 디자인은 쓰지 않았습니다. 고른 구성은 이 기기에 저장됩니다.</div>
   </div>
 </div>
 <div class="sheet" id="calSheet">
@@ -3423,14 +3436,22 @@ $('stBody').addEventListener('drop',e=>{const z=stZone(e);if(!z)return;e.prevent
 
 /* 디자인 시트 */
 const SKINS=[
-  {key:'light',skin:'',mode:'light',name:'화이트',ref:'기본 · 선명한 흰 바탕',sw:['#f4f5f8','#ffffff','#0a0c12','#041a72','#cdd2de']},
-  {key:'dark',skin:'',mode:'dark',name:'다크',ref:'기본 · 검정 바탕',sw:['#000000','#0a0b0e','#f3f4f8','#3f72ff','#2b2e37']},
-  {key:'indigo',skin:'indigo',mode:'dark',name:'인디고 다크',ref:'Linear 참고 · 절제된 보라 포인트',sw:['#08090a','#101113','#f7f8f8','#5e6ad2','#26282d']},
-  {key:'stripe',skin:'stripe',mode:'light',name:'퍼플 라이트',ref:'Stripe 참고 · 푸른 회색 + 보라',sw:['#f6f9fc','#ffffff','#0a2540','#635bff','#d9e1ea']},
-  {key:'paper',skin:'paper',mode:'light',name:'웜 페이퍼',ref:'Notion 참고 · 따뜻한 종이 느낌',sw:['#f7f6f3','#ffffff','#37352f','#2383e2','#e3e2de']},
-  {key:'mono',skin:'mono',mode:'light',name:'모노',ref:'Vercel 참고 · 흑백 정밀',sw:['#fafafa','#ffffff','#000000','#000000','#d8d8d8']},
-  {key:'green',skin:'green',mode:'dark',name:'그린 다크',ref:'Spotify 참고 · 짙은 회색 + 초록',sw:['#0c0c0c','#161616','#ffffff','#1a9f4a','#2c2c2c']},
-  {key:'coral',skin:'coral',mode:'light',name:'코랄',ref:'Airbnb 참고 · 따뜻한 코랄 포인트',sw:['#f7f7f7','#ffffff','#222222','#ff385c','#dddddd']}
+  {key:'light',skin:'',mode:'light',name:'동양 화이트',ref:'회사 기본 · 흰 바탕에 짙은 남색. 가장 정돈된 업무용',sw:['#f4f5f8','#ffffff','#0a0c12','#041a72','#cdd2de']},
+  {key:'dark',skin:'',mode:'dark',name:'동양 다크',ref:'검정 바탕에 푸른 포인트. 밤·어두운 곳에서 눈이 편함',sw:['#000000','#0a0b0e','#f3f4f8','#3f72ff','#2b2e37']},
+  {key:'stripe',skin:'stripe',mode:'light',name:'슬레이트 틸',ref:'푸른 회색 바탕 + 청록. 차분하고 신뢰감 있는 느낌',sw:['#eaf1f2','#fbfefe','#10282d','#0f6f78','#c3d4d7']},
+  {key:'paper',skin:'paper',mode:'light',name:'웜 페이퍼',ref:'크림색 종이 + 테라코타. 따뜻하고 문서·보고서 같은 느낌',sw:['#f5efe3','#fffcf5','#3a2f25','#b4532a','#ddd1ba']},
+  {key:'olive',skin:'olive',mode:'light',name:'샌드 올리브',ref:'모래빛 바탕 + 올리브 녹색. 현장·자연을 닮은 안정감',sw:['#f1f1e6','#fdfdf6','#272a1a','#5b6a1c','#d3d4bc']},
+  {key:'coral',skin:'coral',mode:'light',name:'와인',ref:'연한 분홍 회색 + 짙은 와인색. 격식 있고 선명한 포인트',sw:['#f7f1f1','#fffdfd','#2a1518','#8c1f3b','#e2d0d3']},
+  {key:'mono',skin:'mono',mode:'light',name:'잉크 모노',ref:'흑백만 사용. 가장 담백하고 인쇄물 같은 느낌',sw:['#fafafa','#ffffff','#000000','#000000','#d8d8d8']},
+  {key:'green',skin:'green',mode:'dark',name:'포레스트 다크',ref:'깊은 숲색 바탕 + 연한 초록. 어둡지만 부드러운 느낌',sw:['#0d1511','#141f19','#e8efe9','#2c8a57','#2a3d32']},
+  {key:'indigo',skin:'indigo',mode:'dark',name:'미드나이트 골드',ref:'짙은 남색 바탕 + 금색. 고급스럽고 임원 보고용 느낌',sw:['#0b1220','#121b2d','#eef1f7','#a8741a','#26334d']}
+];
+const FONTS=[
+  {key:'sys',name:'기본 고딕',ref:'기기 기본 글자체. 가장 빠르고 깔끔함',css:''},
+  {key:'noto',name:'노토 산스',ref:'균형 잡힌 표준 고딕. 어떤 화면에서도 읽기 편함',css:'family=Noto+Sans+KR:wght@400;500;700'},
+  {key:'plex',name:'플렉스 산스',ref:'각이 살아 있는 정밀한 고딕. 숫자·표가 또렷함',css:'family=IBM+Plex+Sans+KR:wght@400;500;700'},
+  {key:'serif',name:'노토 세리프',ref:'명조체. 보고서·계약서처럼 격식 있는 느낌',css:'family=Noto+Serif+KR:wght@400;600;700'},
+  {key:'dodum',name:'고운 돋움',ref:'둥글고 부드러운 글자. 편안하고 친근한 느낌',css:'family=Gowun+Dodum'}
 ];
 const LAYS=[
   {k:'focus',n:'한눈에 보기',d:'달력은 크게, 오른쪽은 현황·선택한 날·시간표·메모를 탭으로 전환',t:'<i class="a"></i><i class="b"><u></u><u></u></i>'},
@@ -3443,7 +3464,21 @@ function paintDs(){
   const lc=$('dsLay'),tc=$('dsTheme');if(!lc||!tc)return;
   lc.innerHTML=LAYS.map(l=>`<button class="ds-card${layout===l.k?' on':''}" data-lay="${l.k}"><div class="thumb lt-${l.k}">${l.t}</div><b>${l.n}</b><span>${l.d}</span></button>`).join('');
   const ck=curSkinKey();
-  tc.innerHTML=SKINS.map(x=>`<button class="ds-card${ck===x.key?' on':''}" data-skin="${x.key}"><div class="thumb sw" style="background:${x.sw[0]};border-color:${x.sw[4]}"><i style="background:${x.sw[1]};border-color:${x.sw[4]}"></i><i style="background:${x.sw[1]};border-color:${x.sw[4]}"><u style="background:${x.sw[3]}"></u></i><s style="background:${x.sw[2]}"></s><s style="background:${x.sw[4]}"></s></div><b>${x.name}</b><span>${x.ref}</span></button>`).join('');
+  tc.innerHTML=SKINS.map(x=>`<button class="ds-card${ck===x.key?' on':''}" data-skin="${x.key}"><div class="thumb pv" style="background:${x.sw[0]};border-color:${x.sw[4]}"><div class="pb" style="background:${x.sw[3]}"></div><div class="pr" style="background:${x.sw[1]};color:${x.sw[2]}"><em>가나다 12</em><u style="background:${x.sw[3]}"></u></div><div class="ps"><s style="background:${x.sw[1]};border-color:${x.sw[4]}"></s><s style="background:${x.sw[1]};border-color:${x.sw[4]}"></s><s style="background:${x.sw[3]};border-color:${x.sw[3]}"></s></div></div><b>${x.name}</b><span>${x.ref}</span></button>`).join('');
+  const fc=$('dsFont'),cf=curFont();
+  if(fc)fc.innerHTML=FONTS.map(f=>`<button class="ds-card${cf===f.key?' on':''}" data-font="${f.key}"><div class="ds-font" style="${f.key==='sys'?'':`font-family:'${({noto:'Noto Sans KR',plex:'IBM Plex Sans KR',serif:'Noto Serif KR',dodum:'Gowun Dodum'})[f.key]}'`}">일정 한눈에 2026.11.21</div><b>${f.name}</b><span>${f.ref}</span></button>`).join('');
+  const nw=$('dsNow'),sk=SKINS.find(x=>x.key===ck)||SKINS[0],fo=FONTS.find(x=>x.key===cf)||FONTS[0];
+  if(nw)nw.innerHTML=`현재 선택 · 색상 <b>${sk.name}</b> (${sk.ref}) · 글자체 <b>${fo.name}</b> (${fo.ref})`;
+}
+function curFont(){try{return localStorage.getItem('font')||'sys';}catch(e){return 'sys';}}
+function loadFont(k){const f=FONTS.find(x=>x.key===k);if(!f||!f.css)return;
+  if(document.getElementById('fnt-'+k))return;
+  const l=document.createElement('link');l.id='fnt-'+k;l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?'+f.css+'&display=swap';document.head.appendChild(l);}
+function applyFont(k,quiet){
+  const f=FONTS.find(x=>x.key===k)||FONTS[0];
+  if(f.key==='sys')HTMLEL.removeAttribute('data-font');else{loadFont(f.key);HTMLEL.setAttribute('data-font',f.key);}
+  try{localStorage.setItem('font',f.key);}catch(e){}
+  paintDs();if(!quiet)toastMsg('글자체: '+f.name);
 }
 function applyLook(key){
   const sk=SKINS.find(x=>x.key===key)||SKINS[0];
@@ -3456,7 +3491,9 @@ function applyLook(key){
 }
 $('themeSel').onchange=()=>{if($('themeSel').value)applyLook($('themeSel').value);};
 $('dsLay').onclick=e=>{const b=e.target.closest('[data-lay]');if(b)setLayout(b.dataset.lay);};
-$('dsTheme').onclick=e=>{const b=e.target.closest('[data-skin]');if(b)applyLook(b.dataset.skin);};
+$('dsTheme').onclick=e=>{const b=e.target.closest('[data-skin]');if(b){applyLook(b.dataset.skin);const x=SKINS.find(z=>z.key===b.dataset.skin);if(x)toastMsg('색상: '+x.name);}};
+$('dsFont').onclick=e=>{const b=e.target.closest('[data-font]');if(b)applyFont(b.dataset.font);};
+if(curFont()!=='sys')loadFont(curFont());
 $('dsBtn').onclick=()=>{closeFind();paintDs();$('dsSheet').classList.add('open');};
 $('setDs').onclick=()=>{closeFind();paintDs();$('dsSheet').classList.add('open');};
 (function(){const ts=$('themeSel');if(ts){const k=curSkinKey();ts.value=(k==='light'||k==='dark')?k:'';}})();
@@ -4184,7 +4221,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v124';
+const APPVER=/*ver*/'v125';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
