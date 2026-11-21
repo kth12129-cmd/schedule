@@ -4447,7 +4447,7 @@ function an2Forecast(pats){
   const hz=addDays(TODAY,60),rows=[];
   pats.forEach(G=>an2Proj(G,hz).forEach(p=>rows.push(p)));
   rows.sort((a,b)=>a.date.localeCompare(b.date));
-  const late=rows.filter(r=>r.late),soon=rows.filter(r=>!r.late).slice(0,14);
+  const late=rows.filter(r=>r.late&&r.G.dates.length>=3),soon=rows.filter(r=>!r.late).slice(0,14);
   const row=(r)=>{const dd=diffDays(r.date,TODAY);
     const b=r.late?`<b class="bd late">${-dd}일 지남</b>`:dd===0?'<b class="bd now">오늘</b>':`<b class="bd">${dd}일 후</b>`;
     return `<div class="fr"><i style="background:${r.G.color}"></i>${b}<span class="fd">${md(r.date)}(${WD[fromYmd(r.date).getDay()]})</span><span class="ft">${esc(an2PName(r))}</span><span class="fn">${an2Every(r.G)} · ${r.G.dates.length}회</span></div>`;};
@@ -4601,7 +4601,7 @@ $('an2').addEventListener('click',e=>{
       if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
     an2Render();}});
 runQuery=function(){an2Render();};
-const APPVER=/*ver*/'v142';
+const APPVER=/*ver*/'v143';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
