@@ -1947,6 +1947,15 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
 .bars.yr .bs i{border-radius:3px 3px 0 0}
 .mono{padding-top:12px}
 .an2c{border-radius:12px}
+
+.tsun{display:grid;grid-template-columns:1fr;gap:10px;margin:0 0 10px}.tsun.two{grid-template-columns:1fr 1fr}
+.tsun em{display:block;font-style:normal;font-size:11.5px;font-weight:600;color:var(--ink-3);margin-bottom:5px}
+.tsu{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:13px;line-height:1.35}
+.tsu i{flex:none;width:20px;height:20px;border:1.5px solid var(--ink-2);border-radius:4px;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:700;color:var(--ink)}
+.tsu.pv i{border-style:dashed;color:var(--ink-2)}.tsu span{min-width:0;overflow-wrap:anywhere}
+.tsu0{font-size:12.5px;color:var(--ink-3);padding:3px 0}
+.tsctl{grid-template-columns:1fr auto}
+@media(max-width:700px){.tsun.two{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -7192,7 +7201,7 @@ runQuery=function(){an2Render();};
 
 /* ── 팀 일정 전용 화면 ── */
 const TS2={mo:new Date(today.getFullYear(),today.getMonth(),1),day:TODAY,ovMe:true,ovVac:true,mcat:'전체',memos:[],chan:null,pres:[],gid:'team',groups:[],gmem:{},gitems:[],form:'',pg:0,send:null,inv:[]};
-try{TS2.ovMe=localStorage.getItem('ts-me')!=='0';TS2.ovVac=localStorage.getItem('ts-vac')!=='0';}catch(e){}
+try{TS2.ovMe=localStorage.getItem('ts-me2')==='1';TS2.ovVac=localStorage.getItem('ts-vac')!=='0';}catch(e){}
 const TSCATS=['공지','업무','참석','기타'];
 const tsMeId=()=>session&&session.user&&session.user.id;
 const tsIsGrp=()=>TS2.gid!=='team';
@@ -7230,7 +7239,7 @@ function tsCal(){
   return h+'</div>';}
 function tsTable(k){
   const tl=tsTeam(k),mine=TS2.ovMe?tsMineAll(k).map(i=>({title:i.title,time:i.time||'',end:i.endTime||'',done:!!i.done})):[],timed=tl.filter(x=>x.time),plain=tl.filter(x=>!x.time);
-  const mk=(a,b0,x,c,pv)=>({a,b:Math.min(1440,Math.max(a+30,b0)),x,c,pv});
+  const mk=(a,b0,x,c,pv)=>({a,b:Math.min(1440,b0>a?b0:a+60),x,c,pv});
   const T=timed.filter(x=>!x.mine||!TS2.ovMe).map(x=>mk(toMin(x.time),x.end?toMin(x.end):0,x,ownerCol(x.uid))).sort((p,q)=>p.a-q.a||p.b-q.b);
   const M=mine.filter(x=>x.time).map(x=>mk(toMin(x.time),x.end?toMin(x.end):0,{who:'나',title:x.title,time:x.time,end:x.end},'#4b5563',true)).sort((p,q)=>p.a-q.a||p.b-q.b);
   const hit=(p,q)=>p.a<q.b&&q.a<p.b;
@@ -7239,21 +7248,22 @@ function tsTable(k){
   const S=0,E=24,all=T.concat(M),st=Math.max(0,(all.length?Math.min(...all.map(e=>e.a))/60:8)-1);
   const H=40,Y=m=>(m/60-S)*H;
   const lay=arr=>{const lanes=[];arr.forEach(e=>{let li=lanes.findIndex(z=>z<=e.a);if(li<0)li=lanes.length;lanes[li]=e.b;e.l=li;});const N=Math.max(1,lanes.length);
-    return arr.map(e=>`<div class="tsb${e.pv?' pv':''}${e.x.done?' dn':''}${e.cf?' cf':''}" style="--c:${e.c};top:${Y(e.a)}px;height:${Math.max(32,(e.b-e.a)/60*H-1)}px;left:${e.l/N*100}%;width:calc(${100/N}% - 3px)"><b>${e.x.time}${e.x.end?'~'+e.x.end:''} · ${esc(e.x.who)}${e.cf?' · 겹침':''}</b><span>${esc(e.x.title)}</span></div>`).join('');};
+    return arr.map(e=>`<div class="tsb${e.pv?' pv':''}${e.x.done?' dn':''}${e.cf?' cf':''}" style="--c:${e.c};top:${Y(e.a)}px;height:${Math.max(24,(e.b-e.a)/60*H-1)}px;left:${e.l/N*100}%;width:calc(${100/N}% - 3px)"><b>${e.x.time}${e.x.end?'~'+e.x.end:''} · ${esc(e.x.who)}${e.cf?' · 겹침':''}</b><span>${esc(e.x.title)}</span></div>`).join('');};
   let rows='';for(let hr=S;hr<=E;hr++)rows+=`<div class="tsr" style="top:${(hr-S)*H}px"><span>${pad(hr)}:00</span></div>`;
-  const chips=plain.filter(x=>!x.mine||!TS2.ovMe).map(x=>`<span class="tsk" style="--c:${ownerCol(x.uid)}"><b>${esc(x.who)}</b> ${esc(x.title)}</span>`).join('')+
-    (TS2.ovMe?mine.filter(x=>!x.time).map(x=>`<span class="tsk pv"><b>나 · 종일</b> ${esc(x.title)}</span>`).join(''):'');
+  const un=(arr,cls)=>arr.length?arr.map((x,n)=>`<div class="tsu${cls||''}"><i>${n+1}</i><span>${x.who?`<b>${esc(x.who)}</b> `:''}${esc(x.title)}</span></div>`).join(''):'<div class="tsu0">없음</div>';
+  const pT=plain.filter(x=>!x.mine||!TS2.ovMe),pM=TS2.ovMe?mine.filter(x=>!x.time):[];
+  const chips=(pT.length||pM.length)?`<div class="tsun${TS2.ovMe?' two':''}"><div><em>시간 미정 · 팀</em>${un(pT)}</div>${TS2.ovMe?`<div><em>시간 미정 · 내 일정</em>${un(pM,' pv')}</div>`:''}</div>`:'';
   const vac=TS2.ovVac?tsVac(k).map(v=>`<span class="tsk vc"><b>${esc(v.name)}</b> ${esc(v.kind)}</span>`).join(''):'';
   const verdict=TS2.ovMe?(T.length?(nCf?`<div class="tsv bad"><b>겹침 ${nCf}건</b><span>내 일정과 시간이 겹치는 팀 일정이 있습니다</span></div>`:`<div class="tsv ok"><b>참석 가능</b><span>내 일정과 겹치는 팀 일정이 없습니다</span></div>`):`<div class="tsv"><b>팀 일정 없음</b><span>이 날 시간이 정해진 팀 일정이 없습니다</span></div>`):'';
   const two=TS2.ovMe;
-  return `${verdict}${chips||vac?`<div class="tsk-row">${vac}${chips}</div>`:''}${two?`<div class="tsh2"><span>팀 일정</span><span>내 일정</span></div>`:''}<div class="tsscr" data-st="${Math.round(st*H)}"><div class="tst" style="height:${(E-S)*H+2}px">${rows}<div class="tscols${two?' two':''}"><div class="tsbody">${lay(T)}</div>${two?`<div class="tsbody">${lay(M)}</div>`:''}</div></div></div>`;}
+  return `${verdict}${vac?`<div class="tsk-row">${vac}</div>`:''}${chips}${two?`<div class="tsh2"><span>팀 일정</span><span>내 일정</span></div>`:''}<div class="tsscr" data-st="${Math.round(st*H)}"><div class="tst" style="height:${(E-S)*H+2}px">${rows}<div class="tscols${two?' two':''}"><div class="tsbody">${lay(T)}</div>${two?`<div class="tsbody">${lay(M)}</div>`:''}</div></div></div>`;}
 function tsDay(k){
   const tl=tsTeam(k),by={};tl.forEach(x=>(by[x.uid]=by[x.uid]||{who:x.who,uid:x.uid,rows:[]}).rows.push(x));
   let h=Object.values(by).map(g=>`<div class="tsp"><div class="tsph"><i style="background:${ownerCol(g.uid)}"></i><b>${esc(g.who)}</b><em>${g.rows.length}건</em></div>${g.rows.map(x=>`<div class="tspr${x.done?' dn':''}"><span>${x.time?x.time+(x.end?'~'+x.end:''):'종일'}</span><span>${esc(x.title)}</span></div>`).join('')}</div>`).join('')||'<div class="an2e">이 날 공개된 팀 일정이 없습니다.</div>';
   if(TS2.ovVac){const v=tsVac(k);if(v.length)h+=`<div class="tsp"><div class="tsph"><i style="background:#d9822b"></i><b>휴가 · 외근</b><em>${v.length}명</em></div>${v.map(x=>`<div class="tspr"><span>${esc(x.kind)}</span><span>${esc(x.name)}</span></div>`).join('')}</div>`;}
   if(TS2.ovMe){const my=tsMineAll(k),ov=[];
-    tl.filter(x=>x.time&&!x.mine).forEach(t=>{const a=toMin(t.time),b=Math.max(a+30,t.end?toMin(t.end):0);
-      my.filter(i=>i.time).forEach(i=>{const c=toMin(i.time),d=Math.max(c+30,i.endTime?toMin(i.endTime):0);if(a<d&&c<b)ov.push(`${t.time} ${esc(t.who)} ${esc(t.title)} ↔ 내 ${i.time} ${esc(i.title)}`);});});
+    tl.filter(x=>x.time&&!x.mine).forEach(t=>{const a=toMin(t.time),b=t.end&&toMin(t.end)>a?toMin(t.end):a+60;
+      my.filter(i=>i.time).forEach(i=>{const c=toMin(i.time),d=i.endTime&&toMin(i.endTime)>c?toMin(i.endTime):c+60;if(a<d&&c<b)ov.push(`${t.time} ${esc(t.who)} ${esc(t.title)} ↔ 내 ${i.time} ${esc(i.title)}`);});});
     h+=`<div class="tsp me"><div class="tsph"><i style="background:#6b7280"></i><b>내 일정과 비교</b><em>내 일정 ${my.length}건</em></div>${ov.length?ov.slice(0,4).map(x=>`<div class="tspr"><span>겹침</span><span>${x}</span></div>`).join(''):`<div class="tspr"><span>확인</span><span>${my.length?'시간이 겹치는 팀 일정이 없습니다.':'이 날 내 일정이 없습니다.'}</span></div>`}</div>`;}
   return h;}
 const tsLink=c=>location.origin+location.pathname.replace(/index\.html$/,'')+'?g='+encodeURIComponent(c);
@@ -7295,10 +7305,10 @@ function tsRender(){
     ${TS2.form==='new'?`<div class="tsgf"><input id="tsGname" maxlength="30" placeholder="그룹 이름 (예: 가마지천 현장팀)" autocomplete="off"><button id="tsGmake">만들기</button></div>`:''}
     ${TS2.form==='join'?`<div class="tsgf"><input id="tsGcode" maxlength="12" placeholder="초대 코드 6자리" autocomplete="off"><button id="tsGjoin">참여</button></div>`:''}
     ${g0?`<div class="tsgi"><span>구성원 ${(TS2.gmem[g0.id]||[]).length}명 · ${(TS2.gmem[g0.id]||[]).map(m=>esc(m.name||'이름 없음')).join(', ')}</span><span class="cd">초대 코드 <b>${esc(g0.code)}</b></span><button data-tsg="__send" class="sd">코드 보내기</button><button data-tsg="__leave">나가기</button></div>`:''}${g0&&TS2.send?tsSendHtml(g0):''}${(TS2.inv||[]).map(v=>`<div class="tsiv"><span><b>${esc(v.from_name||'팀원')}</b>님이 <b>${esc(v.group_name)}</b> 그룹에 초대했습니다</span><button data-tsiv="${v.id}" data-y="1">참여</button><button data-tsiv="${v.id}" data-y="0" class="no">거절</button></div>`).join('')}`;
-  el.innerHTML=gbar+`<div class="tsctl"><div class="tsnav"><button data-tsn="-1">‹</button><span>${y}년 ${m+1}월</span><button data-tsn="1">›</button><button data-tsn="0" class="tb">오늘</button></div>
-    <div class="tsov"><span>함께 보기</span><button data-tso="me" class="${TS2.ovMe?'on':''}">내 일정</button><button data-tso="vac" class="${TS2.ovVac?'on':''}">휴가 일정</button></div></div>
-    <div class="tstabs">${['시간표','달력','선택한 날','메모'].map((t,i)=>`<button data-tspg="${i}" class="${TS2.pg===i?'on':''}">${t}</button>`).join('')}</div>
-    ${TS2.pg!==1?`<div class="tsdn"><button data-tsdn="-1">‹</button><b>${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})</b><button data-tsdn="1">›</button><button data-tspg="1" class="tb">달력</button></div>`:''}
+  const tog=`<div class="tsov"><span>함께 보기</span><button data-tso="me" class="${TS2.ovMe?'on':''}">내 일정</button><button data-tso="vac" class="${TS2.ovVac?'on':''}">휴가 일정</button></div>`;
+  el.innerHTML=gbar+`<div class="tstabs">${['시간표','달력','선택한 날','메모'].map((t,i)=>`<button data-tspg="${i}" class="${TS2.pg===i?'on':''}">${t}</button>`).join('')}</div>
+    ${TS2.pg===1?`<div class="tsctl"><div class="tsnav"><button data-tsn="-1">‹</button><span>${y}년 ${m+1}월</span><button data-tsn="1">›</button><button data-tsn="0" class="tb">오늘</button></div>${tog}</div>`
+     :`<div class="tsctl"><div class="tsnav"><button data-tsdn="-1">‹</button><span>${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})</span><button data-tsdn="1">›</button><button data-tsdn="0" class="tb">오늘</button></div>${tog}</div>`}
     <div class="tsvp" id="tsVp"><div class="tstrack" style="transform:translateX(${-25*TS2.pg}%)">
      <div class="tspg ${TS2.pg===0?'on':''}"><div class="card an2c" id="tsTable">${tsTable(TS2.day)}</div></div>
      <div class="tspg ${TS2.pg===1?'on':''}"><div class="tscal card">${tsCal()}<div class="mono"><span>건수 = 공개된 팀 일정</span><span>점 = 기록한 사람</span><span>날짜를 누르면 그 날 시간표로 이동합니다</span></div></div></div>
@@ -7383,11 +7393,11 @@ $('ts').addEventListener('click',async e=>{
     TS2.form='';await tsLoadGroups();TS2.gid=r.data.id;await tsLoadGItems();tsRender();tsLoadMemos();toastMsg(`'${r.data.name}' 그룹에 참여했어요`);return;}
   const pgb=e.target.closest('[data-tspg]'),dnb=e.target.closest('[data-tsdn]');
   if(pgb){TS2.pg=+pgb.dataset.tspg;tsRender();tsLoadMemos();tsTrack();return;}
-  if(dnb){const d=fromYmd(TS2.day);d.setDate(d.getDate()+ +dnb.dataset.tsdn);TS2.day=ymd(d);TS2.mo=new Date(d.getFullYear(),d.getMonth(),1);tsRender();tsLoadMemos();return;}
+  if(dnb){const d=+dnb.dataset.tsdn?fromYmd(TS2.day):fromYmd(TODAY);d.setDate(d.getDate()+ +dnb.dataset.tsdn);TS2.day=ymd(d);TS2.mo=new Date(d.getFullYear(),d.getMonth(),1);tsRender();tsLoadMemos();return;}
   const n=e.target.closest('[data-tsn]'),dd=e.target.closest('[data-tsd]'),o=e.target.closest('[data-tso]'),mc=e.target.closest('[data-tsmc]'),md2=e.target.closest('[data-tsmd]');
   if(n){const v=+n.dataset.tsn;TS2.mo=v?new Date(TS2.mo.getFullYear(),TS2.mo.getMonth()+v,1):new Date(today.getFullYear(),today.getMonth(),1);if(!v)TS2.day=TODAY;tsRender();tsLoadMemos();return;}
   if(dd){TS2.day=dd.dataset.tsd;const d=fromYmd(TS2.day);if(d.getMonth()!==TS2.mo.getMonth())TS2.mo=new Date(d.getFullYear(),d.getMonth(),1);TS2.pg=0;tsRender();tsLoadMemos();return;}
-  if(o){if(o.dataset.tso==='me'){TS2.ovMe=!TS2.ovMe;try{localStorage.setItem('ts-me',TS2.ovMe?'1':'0');}catch(_){}}else{TS2.ovVac=!TS2.ovVac;try{localStorage.setItem('ts-vac',TS2.ovVac?'1':'0');}catch(_){}}tsRender();tsLoadMemos();return;}
+  if(o){if(o.dataset.tso==='me'){TS2.ovMe=!TS2.ovMe;try{localStorage.setItem('ts-me2',TS2.ovMe?'1':'0');}catch(_){}}else{TS2.ovVac=!TS2.ovVac;try{localStorage.setItem('ts-vac',TS2.ovVac?'1':'0');}catch(_){}}tsRender();tsLoadMemos();return;}
   if(mc){TS2.mcat=mc.dataset.tsmc;const box=$('tsMemo');if(box)box.innerHTML=tsMemoHtml();return;}
   if(md2){try{await SB.from('team_memos').update({hidden:true}).eq('id',md2.dataset.tsmd);}catch(_){}tsLoadMemos();return;}
 });
@@ -7396,7 +7406,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v163';
+const APPVER=/*ver*/'v164';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
