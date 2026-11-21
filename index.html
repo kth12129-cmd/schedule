@@ -1256,6 +1256,8 @@ html[data-layout="cal"] .rightcol{position:fixed;top:0;right:0;bottom:0;width:mi
 html[data-layout="cal"] body.rc-open .rightcol,html[data-layout="cal"].x body.rc-open .rightcol{transform:none}
 #rcBack{display:none;position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.35)}
 html[data-layout="cal"] body.rc-open #rcBack{display:block}
+@media(max-width:700px){#rcBack{background:transparent!important}}
+html:not([data-layout="cal"]) #rcBack{display:none!important}
 #rcOpen{display:none;position:fixed;right:18px;bottom:96px;z-index:60;padding:10px 16px;border-radius:22px;background:var(--ink);color:var(--page);font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 html[data-layout="cal"] #rcOpen{display:block}
 html[data-layout="cal"] body.rc-open #rcOpen{display:none}
@@ -4828,7 +4830,7 @@ const isShared=i=>i.share!==undefined&&i.share!==null?!!i.share:catsOf(i).some(c
 let otherItems=[],myShares=[],inShares=[];
 const viewOff=new Set((()=>{try{return JSON.parse(localStorage.getItem('sh-off')||'[]');}catch(e){return [];}})());
 const ownerName=o=>o.owner_name||o.owner_label||'';
-let viewWho=(()=>{try{return localStorage.getItem('viewWho')||'me';}catch(e){return 'me';}})();
+let viewWho=(()=>{try{if(!localStorage.getItem('vw191')){localStorage.setItem('vw191','1');localStorage.setItem('viewWho','me');return 'me';}return localStorage.getItem('viewWho')||'me';}catch(e){return 'me';}})();
 const showOwner=o=>lgTeam?true:viewWho==='me'?false:viewWho==='all'?!viewOff.has(o.owner):o.owner===viewWho;
 const othersFor=day=>otherItems.filter(o=>showOwner(o)&&(o.date===day||(o.endDate&&o.date<=day&&day<=o.endDate)))
   .sort((a,b)=>((a.time||'99:99')<(b.time||'99:99')?-1:1));
@@ -6343,6 +6345,7 @@ function setRT(r){rtab=r;try{localStorage.setItem('rt2',r);}catch(e){}
   $('rtTabs').querySelectorAll('[data-rt]').forEach(b=>b.classList.toggle('on',b.dataset.rt===r));
   if(r==='status')renderStatus();}
 function openRC(on){document.body.classList.toggle('rc-open',!!on);}
+document.body.classList.remove('rc-open');
 function setLayout(l){layout=l;HTMLEL.setAttribute('data-layout',l);try{localStorage.setItem('layout',l);}catch(e){}
   openRC(false);
   $('layBar').querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on',b.dataset.l===l));
@@ -7730,7 +7733,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v191';
+const APPVER=/*ver*/'v192';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
