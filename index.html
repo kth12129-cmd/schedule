@@ -1614,6 +1614,7 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .ds-chip:hover{border-color:var(--ink-2)}.ds-chip.on{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy);font-weight:650}
 .ds-sw{display:inline-flex}.ds-sw i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(128,128,128,.45)}.ds-sw i+i{margin-left:-5px}
 .ds-fc{flex-direction:column;align-items:flex-start;gap:2px;border-radius:12px;padding:9px 14px}.ds-fc small{font-size:12px;color:var(--ink-3);font-weight:400}
+.item.todo .check{border-color:var(--moss);background:linear-gradient(135deg,transparent 50%,var(--moss) 50%)}
 </style>
 </head>
 <body>
@@ -2286,7 +2287,7 @@ function renderDay(){try{memoMaterialize();}catch(_){}
     <div class="body"><div class="meta"><span class="no">${n}</span><span class="mdate">${md(sel)}</span><span class="mtag">기한</span></div>
     <div class="title">${esc(x.stage)} · ${esc(x.label)}</div></div><div class="acts"></div></li>`;});
   its.forEach(i=>{n++;const isOpen=openNote===i.id,has=!!(i.note&&i.note.trim());
-    h+=`<li class="item${i.done?' done':''}${i.pri?' pri':''}${isOpen?' open':''}" data-id="${i.id}"
+    h+=`<li class="item${i.done?' done':''}${i.todo&&!i.done?' todo':''}${i.pri?' pri':''}${isOpen?' open':''}" data-id="${i.id}"
       ${editItem===i.id?'':`draggable="true" data-drag="${i.id}"`}>
       <button class="check" data-act="toggle"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></button>
       <div class="body"><div class="meta"><span class="no">${n}</span><span class="mdate">${i.wk&&i.endDate?`<b class="wkl">${wkLabel(i)}</b> ${md(i.date)}~${md(i.endDate)}`:md(i.date)+(i.endDate?'~'+md(i.endDate):'')}</span>
@@ -2297,10 +2298,6 @@ function renderDay(){try{memoMaterialize();}catch(_){}
              <div class="edit-tip">시간·날짜도 같이 고칠 수 있습니다. Enter 저장, Esc 취소</div>`
           :`<div class="title" data-act="open">${esc(i.title)}${has&&!isOpen?'<span class="caret">⌄</span>':''}</div>`}</div>
       <div class="acts"><button class="flag${i.pri?' on':''}" data-act="pri" data-tip="${i.pri?'중요 해제':'중요 표시'}">${i.pri?'★':'☆'}</button>
-        <button class="rembtn${remOn(i)?' on':''}" data-act="rem" data-tip="${remTip(i)}">${remOn(i)?'🔔':'🔕'}</button>
-        <button class="todobtn${i.todo?' on':''}" data-act="todo" data-tip="${i.todo?'해야 할 일에서 빼기':'꼭 해야 할 일로 담기'}">${i.todo?'☑':'☐'}</button>
-        <button class="missbtn${i.miss?' on':''}" data-act="miss" data-tip="${i.miss?'못 끝낸 일에서 빼기':'못 끝낸 일로 표시'}">↷</button>
-        <button class="tnbtn${i.tn?' on':''}" data-act="tn" data-tip="${i.tn?'팀원에게도 알림 중 · 누르면 끔':'팀원에게도 알림 보내기'}">📣</button>
         <button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'팀에 공개 중 · 누르면 나만 보기':'나만 보기 · 누르면 팀에 공개'}">${isShared(i)?'👥':'🔒'}</button>
         <button data-act="edit" data-tip="내용 수정">✎</button>
         <button class="tip-r" data-act="del" data-tip="삭제">×</button></div>
@@ -3891,7 +3888,7 @@ $('list').onclick=e=>{
   const li=btn.closest('.item');if(!li||!li.dataset.id)return;
   const it=store.items.find(i=>i.id===li.dataset.id);if(!it)return;
   const a=btn.dataset.act;
-  if(a==='toggle'){it.done=!it.done;it.doneAt=it.done?new Date().toISOString().slice(0,16).replace('T',' '):null;touch(it);}
+  if(a==='toggle'){if(it.done){it.done=false;it.todo=0;it.doneAt=null;}else if(it.todo){it.done=true;it.doneAt=new Date().toISOString().slice(0,16).replace('T',' ');}else{it.todo=1;it.miss=0;}touch(it);}
   else if(a==='edit'){editItem=editItem===it.id?null:it.id;openNote=null;renderDay();return;}
   else if(a==='img'){imgTarget=it.id;$('imgFile').click();return;}
   else if(a==='cat'){openCatMenu(it.id,false);return;}
@@ -3981,7 +3978,20 @@ $('wkOk').onclick=()=>{wkSel=wkTmp?{...wkTmp}:null;paintWk();wkClose();$('input'
 $('wkPop').addEventListener('click',e=>e.stopPropagation());
 document.addEventListener('click',e=>{if($('wkPop').classList.contains('open')&&!e.target.closest('#wkBtn'))wkClose();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')wkClose();});
+function shareCmd(v){
+  const on=/(공유|공개).*(싶|해줘|해 줘|하자|해라|바꿔|전환|설정|할게)/.test(v)&&!/비공개|공유\s*(안|취소|해제)/.test(v);
+  const off=/비공개|나만\s*보|공유\s*(취소|해제)/.test(v);
+  if(!on&&!off)return false;
+  const flat=v.replace(/\s/g,'');let best=null,bl=0;
+  store.cats.forEach(c=>{const full=c.name.replace(/\s/g,'');
+    [full,full.replace(/(현장|공사|사업)$/,'')].forEach(k=>{if(k.length>=2&&k.length>bl&&flat.includes(k)){best=c;bl=k.length;}});});
+  if(!best)return false;
+  best.share=on&&!off;store.catsMt=NOW();
+  let n=0;store.items.forEach(i=>{if(catsOf(i).some(c=>c.id===best.id)){if(i.share!==undefined&&i.share!==null){delete i.share;touch(i);}n++;}});
+  save();redrawAll();
+  toastMsg(`'${best.name}' ${best.share?'팀원에게 공개':'나만 보기'}로 바꿨어요 (일정 ${n}건)`);return true;}
 function add(){const v=$('input').value.trim();if(!v)return;
+  if(shareCmd(v)){$('input').value='';$('send').disabled=true;return;}
   const p=parseInput(v,sel);
   if(!p.wk&&wkSel){p.wk=true;p.date=wkMon(wkSel.s);p.endDate=wkFri(wkSel.e);}
   store.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
@@ -4247,7 +4257,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v127';
+const APPVER=/*ver*/'v128';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
