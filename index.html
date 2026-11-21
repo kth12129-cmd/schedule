@@ -1794,6 +1794,17 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .tsv b{font-size:13.5px;color:var(--ink)}.tsv.ok{border-color:#9bc5a8;background:color-mix(in srgb,#2f8f5b 9%,var(--surface))}.tsv.ok b{color:#2f8f5b}
 .tsv.bad{border-color:#d98a8a;background:color-mix(in srgb,#c0392b 9%,var(--surface))}.tsv.bad b{color:#c0392b}
 .tsb.cf{outline:2px solid #c0392b;outline-offset:-2px}.tsb.cf b{color:#c0392b}
+.tsq4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tsq{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column;min-height:300px}
+.tsqh{display:flex;justify-content:space-between;align-items:center;height:34px;padding:0 12px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--navy) 6%,var(--surface))}
+.tsqh b{font-size:13px;color:var(--navy)}.tsqh em{font-size:11px;color:var(--ink-3);font-style:normal}
+.tsqb{flex:1;padding:0 12px 8px;background-image:repeating-linear-gradient(to bottom,transparent 0 31px,var(--line) 31px 32px);background-position:0 0}
+.tsql{display:grid;grid-template-columns:auto 1fr 20px;gap:8px;align-items:start;min-height:32px;line-height:31px;font-size:13px}
+.tsql .n{font-weight:700;color:var(--ink-2);font-size:11.5px;white-space:nowrap}.tsql .t{word-break:break-all;line-height:20px;padding:5px 0 6px}
+.tsql button{color:var(--ink-3);font-size:15px;line-height:31px}
+.tsqi{display:block;width:100%;height:32px;border:0;background:transparent;font-size:13px;outline:0;padding:0}
+.tsqi:focus{background:color-mix(in srgb,var(--navy) 5%,transparent)}
+.tspres{display:flex;align-items:center;gap:6px;min-height:20px;margin:0 0 8px;font-size:12px;color:var(--ink-2)}.tspres .pd{width:7px;height:7px;border-radius:50%;background:#2f8f5b}
 </style>
 </head>
 <body>
@@ -4683,7 +4694,7 @@ $('an2').addEventListener('click',e=>{
 runQuery=function(){an2Render();};
 
 /* ── 팀 일정 전용 화면 ── */
-const TS2={mo:new Date(today.getFullYear(),today.getMonth(),1),day:TODAY,ovMe:true,ovVac:true,mcat:'전체',memos:[],chan:null,gid:'team',groups:[],gmem:{},gitems:[],form:'',pg:0};
+const TS2={mo:new Date(today.getFullYear(),today.getMonth(),1),day:TODAY,ovMe:true,ovVac:true,mcat:'전체',memos:[],chan:null,pres:[],gid:'team',groups:[],gmem:{},gitems:[],form:'',pg:0};
 try{TS2.ovMe=localStorage.getItem('ts-me')!=='0';TS2.ovVac=localStorage.getItem('ts-vac')!=='0';}catch(e){}
 const TSCATS=['공지','업무','참석','기타'];
 const tsMeId=()=>session&&session.user&&session.user.id;
@@ -4748,11 +4759,13 @@ function tsDay(k){
       my.filter(i=>i.time).forEach(i=>{const c=toMin(i.time),d=Math.max(c+30,i.endTime?toMin(i.endTime):0);if(a<d&&c<b)ov.push(`${t.time} ${esc(t.who)} ${esc(t.title)} ↔ 내 ${i.time} ${esc(i.title)}`);});});
     h+=`<div class="tsp me"><div class="tsph"><i style="background:#6b7280"></i><b>내 일정과 비교</b><em>내 일정 ${my.length}건</em></div>${ov.length?ov.slice(0,4).map(x=>`<div class="tspr"><span>겹침</span><span>${x}</span></div>`).join(''):`<div class="tspr"><span>확인</span><span>${my.length?'시간이 겹치는 팀 일정이 없습니다.':'이 날 내 일정이 없습니다.'}</span></div>`}</div>`;}
   return h;}
+function tsPresHtml(){const me=String(tsMeId()),L=(TS2.pres||[]).filter(p=>p.tid===tsTid());
+  return L.length?`<span class="pd"></span>지금 함께 보는 사람 · ${L.map(p=>esc(p.name||'팀원')+(String(p.uid)===me?'(나)':'')+(p.day!==TS2.day?'':'')).join(', ')}`:'';}
+function tsTrack(){try{if(TS2.chan)TS2.chan.track({uid:tsMeId(),name:tsNameOf(tsMeId()),tid:tsTid(),day:TS2.day});}catch(_){}}
 function tsMemoHtml(){
-  const L=TS2.memos.filter(m=>TS2.mcat==='전체'||m.cat===TS2.mcat),me=tsMeId();
-  return `<div class="tsmc">${['전체',...TSCATS].map(c=>`<button data-tsmc="${c}" class="${TS2.mcat===c?'on':''}">${c}</button>`).join('')}</div>
-   <div class="tsml">${L.map(m=>`<div class="tsm"><div><b>${esc(m.author_name||'팀원')}</b><em>${esc(m.cat)}</em><span>${new Date(m.created_at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:false})}</span>${m.author_id===me?`<button data-tsmd="${m.id}">삭제</button>`:''}</div><p>${esc(m.body)}</p></div>`).join('')||'<div class="an2e">남긴 메모가 없습니다.</div>'}</div>
-   <div class="tsmf"><select id="tsMcat">${TSCATS.map(c=>`<option${c===(TS2.mcat==='전체'?'업무':TS2.mcat)?' selected':''}>${c}</option>`).join('')}</select><input id="tsMbody" maxlength="600" placeholder="팀원과 공유할 메모를 적으세요" autocomplete="off"><button id="tsMsend">남기기</button></div>`;}
+  const me=tsMeId(),Q=['공지','업무','참석','기타'];
+  return `<div class="tspres" id="tsPres">${tsPresHtml()}</div><div class="tsq4">${Q.map(c=>{const L=TS2.memos.filter(m=>m.cat===c);
+    return `<div class="tsq"><div class="tsqh"><b>${c}</b><em>${L.length?L.length+'건':''}</em></div><div class="tsqb">${L.map(m=>`<div class="tsql"><span class="n">${esc(m.author_name||'팀원')}</span><span class="t">${esc(m.body)}</span>${m.author_id===me?`<button data-tsmd="${m.id}" title="삭제">×</button>`:''}</div>`).join('')}<input class="tsqi" data-cat="${c}" maxlength="600" placeholder="여기에 쓰고 Enter" autocomplete="off"></div></div>`;}).join('')}</div>`;}
 function tsRender(){
   const el=$('ts');if(!el)return;const y=TS2.mo.getFullYear(),m=TS2.mo.getMonth(),d=fromYmd(TS2.day);
   const hasTeam=!!tsTid();
@@ -4771,10 +4784,10 @@ function tsRender(){
      <div class="tspg ${TS2.pg===2?'on':''}"><div class="card an2c" id="tsDay">${tsDay(TS2.day)}</div></div>
      <div class="tspg ${TS2.pg===3?'on':''}"><div class="card an2c" id="tsMemo">${hasTeam?tsMemoHtml():'<div class="an2e">팀에 참여하면 메모를 남길 수 있습니다.</div>'}</div></div>
     </div></div>`;}
-async function tsLoadMemos(){
+async function tsLoadMemos(){tsTrack();
   if(backend!=='sb'||!SB||!tsTid()){TS2.memos=[];return;}
   try{const r=await SB.from('team_memos').select('*').eq('team_id',tsTid()).eq('day',TS2.day).eq('hidden',false).order('created_at');TS2.memos=r.data||[];}catch(e){TS2.memos=[];}
-  const box=$('tsMemo');if(box&&tsTid()){const v=($('tsMbody')||{}).value||'';box.innerHTML=tsMemoHtml();if(v)$('tsMbody').value=v;}}
+  const box=$('tsMemo');if(box&&tsTid()){const v={};document.querySelectorAll('.tsqi').forEach(i=>{if(i.value)v[i.dataset.cat]=i.value;});const foc=(document.activeElement||{}).dataset?document.activeElement.dataset.cat:null;box.innerHTML=tsMemoHtml();document.querySelectorAll('.tsqi').forEach(i=>{if(v[i.dataset.cat])i.value=v[i.dataset.cat];if(foc&&i.dataset.cat===foc)i.focus();});}}
 async function tsLoadGroups(){
   if(backend!=='sb'||!SB||!session)return;
   try{const g=await SB.from('groups').select('*').order('created_at');TS2.groups=g.data||[];
@@ -4796,8 +4809,8 @@ async function tsOpen(form){
   await tsLoadGItems();
   tsRender();$('tsSheet').classList.add('open');tsLoadMemos();
   if(!TS2.chan&&SB){const kick=()=>{if($('tsSheet').classList.contains('open')){tsLoadGroups().then(()=>{tsRender();tsLoadMemos();});}};
-    TS2.chan=SB.channel('tsmemo').on('postgres_changes',{event:'*',schema:'public',table:'team_memos'},()=>{if($('tsSheet').classList.contains('open'))tsLoadMemos();})
-      .on('postgres_changes',{event:'*',schema:'public',table:'group_members'},kick).on('postgres_changes',{event:'*',schema:'public',table:'shared_items'},kick).subscribe();}}
+    TS2.chan=SB.channel('tsmemo',{config:{presence:{key:String(tsMeId())}}}).on('presence',{event:'sync'},()=>{try{TS2.pres=Object.values(TS2.chan.presenceState()).map(a=>a[0]).filter(Boolean);}catch(_){TS2.pres=[];}const b=$('tsPres');if(b)b.innerHTML=tsPresHtml();}).on('postgres_changes',{event:'*',schema:'public',table:'team_memos'},()=>{if($('tsSheet').classList.contains('open'))tsLoadMemos();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'group_members'},kick).on('postgres_changes',{event:'*',schema:'public',table:'shared_items'},kick).subscribe(st=>{if(st==='SUBSCRIBED')tsTrack();});}else tsTrack();}
 document.addEventListener('click',e=>{const g=e.target.closest('.ot-grp [data-tsg]');if(!g)return;
   const v=g.dataset.tsg;tsOpen(v==='__new'?'new':'').then(()=>{if(v!=='__new'&&v!=='team'){TS2.gid=v;tsLoadGItems().then(()=>{tsRender();tsLoadMemos();});}});});
 $('ts').addEventListener('click',async e=>{
@@ -4816,7 +4829,7 @@ $('ts').addEventListener('click',async e=>{
     if(r.error){toastMsg(r.error.message||'참여하지 못했습니다');return;}
     TS2.form='';await tsLoadGroups();TS2.gid=r.data.id;await tsLoadGItems();tsRender();tsLoadMemos();toastMsg(`'${r.data.name}' 그룹에 참여했어요`);return;}
   const pgb=e.target.closest('[data-tspg]'),dnb=e.target.closest('[data-tsdn]');
-  if(pgb){TS2.pg=+pgb.dataset.tspg;tsRender();tsLoadMemos();return;}
+  if(pgb){TS2.pg=+pgb.dataset.tspg;tsRender();tsLoadMemos();tsTrack();return;}
   if(dnb){const d=fromYmd(TS2.day);d.setDate(d.getDate()+ +dnb.dataset.tsdn);TS2.day=ymd(d);TS2.mo=new Date(d.getFullYear(),d.getMonth(),1);tsRender();tsLoadMemos();return;}
   const n=e.target.closest('[data-tsn]'),dd=e.target.closest('[data-tsd]'),o=e.target.closest('[data-tso]'),mc=e.target.closest('[data-tsmc]'),md2=e.target.closest('[data-tsmd]');
   if(n){const v=+n.dataset.tsn;TS2.mo=v?new Date(TS2.mo.getFullYear(),TS2.mo.getMonth()+v,1):new Date(today.getFullYear(),today.getMonth(),1);if(!v)TS2.day=TODAY;tsRender();tsLoadMemos();return;}
@@ -4824,17 +4837,13 @@ $('ts').addEventListener('click',async e=>{
   if(o){if(o.dataset.tso==='me'){TS2.ovMe=!TS2.ovMe;try{localStorage.setItem('ts-me',TS2.ovMe?'1':'0');}catch(_){}}else{TS2.ovVac=!TS2.ovVac;try{localStorage.setItem('ts-vac',TS2.ovVac?'1':'0');}catch(_){}}tsRender();tsLoadMemos();return;}
   if(mc){TS2.mcat=mc.dataset.tsmc;const box=$('tsMemo');if(box)box.innerHTML=tsMemoHtml();return;}
   if(md2){try{await SB.from('team_memos').update({hidden:true}).eq('id',md2.dataset.tsmd);}catch(_){}tsLoadMemos();return;}
-  if(e.target.id==='tsMsend'){const b=$('tsMbody').value.trim();if(!b)return;
-    const me=tsMeId(),nm=tsNameOf(me);
-    const r=await SB.from('team_memos').insert({team_id:tsTid(),day:TS2.day,cat:$('tsMcat').value,body:b,author_id:me,author_name:nm});
-    if(r.error){toastMsg('메모를 저장하지 못했습니다');return;}
-    $('tsMbody').value='';tsLoadMemos();}});
-(function(){let x0=0,y0=0;const el=$('ts');
-  el.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
-  el.addEventListener('touchend',e=>{if(!e.target.closest('#tsVp')||e.target.closest('textarea,input,select'))return;const t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;
-    if(Math.abs(dx)>70&&Math.abs(dy)<45){const n=Math.max(0,Math.min(3,TS2.pg+(dx<0?1:-1)));if(n!==TS2.pg){TS2.pg=n;tsRender();tsLoadMemos();}}},{passive:true});})();
-$('ts').addEventListener('keydown',e=>{if(e.target.id==='tsMbody'&&e.key==='Enter'&&!e.isComposing){e.preventDefault();$('tsMsend').click();}});
-const APPVER=/*ver*/'v148';
+});
+async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;inp.value='';
+  const me=tsMeId();const r=await SB.from('team_memos').insert({team_id:tsTid(),day:TS2.day,cat:inp.dataset.cat,body:b,author_id:me,author_name:tsNameOf(me)});
+  if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
+$('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
+$('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
+const APPVER=/*ver*/'v149';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
