@@ -1591,6 +1591,7 @@ body.copying .cell.dropo{outline:2px dashed var(--navy);outline-offset:-3px}
 body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .missbtn{font-size:15px}.missbtn.on{color:var(--red)}
 .st-tile.dropz{box-shadow:0 0 0 2px var(--navy)}
+.rembtn.on,.tnbtn.on{color:var(--navy)}.rembtn,.tnbtn{font-size:14px}.tnbtn:not(.on){opacity:.45}
 </style>
 </head>
 <body>
@@ -1834,6 +1835,8 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
   </div></div>
   <div class="sg"><div class="sg-h">알림</div><div class="sg-b">
   <div class="setrow"><label>아침 알림</label><button id="briefOpen">설정</button></div>
+  <div class="setrow"><label>중요 일정 직전 알림</label><select id="impRem"><option value="0">끔</option><option value="10">10분 전</option><option value="30">30분 전</option><option value="60">1시간 전</option><option value="120">2시간 전</option></select></div>
+  <div class="setrow"><label>중요 일정은 팀원에게도</label><input type="checkbox" id="impTeam" style="width:22px;height:22px;accent-color:var(--navy)"></div>
   <div class="setrow"><label>하루 전 알림</label><select id="alertH"></select></div>
   <div class="setrow"><label>알림 권한</label><button id="permBtn2">허용하기</button></div>
   <div class="setrow"><label>테스트 알림</label><button id="testBtn">보내기</button></div>
@@ -2070,9 +2073,17 @@ function wkTokOff(t){
 const WKTOK='(이번\\s*주|금주|다다음\\s*주|차차주|다음\\s*다음\\s*주|다음\\s*주|담주|차주|지난\\s*주|저번\\s*주|\\d{1,2}\\s*월\\s*\\d\\s*주\\s*차?)';
 const WKRE=new RegExp(WKTOK+'(?:\\s*(?:~|-|–|—|부터|에서)\\s*'+WKTOK+')?(?:\\s*(?:중|내|쯤|경|까지|안에|에|동안))?(?!\\s*[일월화수목금토]요일)(?=\\s|$|[,.])');
 
+const remTxt=n=>n>=60&&n%60===0?(n/60)+'시간 전':n+'분 전';
+const remVal=i=>i.rem!==undefined&&i.rem!==null?(+i.rem||0):(i.pri?(store.settings.impRem===undefined?30:(+store.settings.impRem||0)):0);
+const remOn=i=>!!i.time&&!i.done&&remVal(i)>0;
+const remTip=i=>i.rem===undefined?(i.pri?'중요 일정 기본: '+(remVal(i)?remTxt(remVal(i))+' 알림':'알림 없음')+' · 누르면 변경':'알림 없음 · 누르면 설정'):(i.rem?remTxt(i.rem)+' 알림 · 누르면 변경':'알림 끔 · 누르면 변경');
 function parseInput(raw,baseYmd){
   let s=' '+raw.trim()+' ',d=fromYmd(baseYmd),hit=false,time=null,endTime=null,endDate=null,pri=false;
   if(/!|중요/.test(s)){pri=true;s=s.replace(/!/g,' ').replace(/중요/g,' ');}
+  let rem=null,tn=null;
+  {const rm=s.match(/(\d{1,3})\s*분\s*전\s*알림|알림\s*(\d{1,3})\s*분\s*전/);
+    if(rm){rem=+(rm[1]||rm[2]);s=s.replace(rm[0],' ');}
+    const tm2=s.match(/팀\s*알림/);if(tm2){tn=1;if(rem===null)rem=30;s=s.replace(tm2[0],' ');}}
   let cat=null;
   const tag=s.match(/#(\S+)/);
   if(tag){const f=store.cats.find(c=>c.name.replace(/\s/g,'').startsWith(tag[1].replace(/\s/g,'')));
@@ -2128,7 +2139,7 @@ function parseInput(raw,baseYmd){
     const tm=s.match(/(오전|오후|아침|저녁|밤|새벽)?\s*(\d{1,2})\s*(?::|시)\s*(\d{1,2})?\s*분?/);
     if(tm){const t=to24(tm[1],tm[2],tm[3]);
       if(t){time=t;s=s.replace(tm[0],' ');}}}
-  return{date:ymd(d),endDate,time,endTime,pri,cat,wk,title:s.replace(/\s+/g,' ').trim()||raw.trim()};
+  return{date:ymd(d),endDate,time,endTime,pri,cat,wk,rem,tn,title:s.replace(/\s+/g,' ').trim()||raw.trim()};
 }
 
 /* ── 달력 ── */
@@ -2265,8 +2276,10 @@ function renderDay(){try{memoMaterialize();}catch(_){}
              <div class="edit-tip">시간·날짜도 같이 고칠 수 있습니다. Enter 저장, Esc 취소</div>`
           :`<div class="title" data-act="open">${esc(i.title)}${has&&!isOpen?'<span class="caret">⌄</span>':''}</div>`}</div>
       <div class="acts"><button class="flag${i.pri?' on':''}" data-act="pri" data-tip="${i.pri?'중요 해제':'중요 표시'}">${i.pri?'★':'☆'}</button>
+        <button class="rembtn${remOn(i)?' on':''}" data-act="rem" data-tip="${remTip(i)}">${remOn(i)?'🔔':'🔕'}</button>
         <button class="todobtn${i.todo?' on':''}" data-act="todo" data-tip="${i.todo?'해야 할 일에서 빼기':'꼭 해야 할 일로 담기'}">${i.todo?'☑':'☐'}</button>
         <button class="missbtn${i.miss?' on':''}" data-act="miss" data-tip="${i.miss?'못 끝낸 일에서 빼기':'못 끝낸 일로 표시'}">↷</button>
+        <button class="tnbtn${i.tn?' on':''}" data-act="tn" data-tip="${i.tn?'팀원에게도 알림 중 · 누르면 끔':'팀원에게도 알림 보내기'}">📣</button>
         <button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'팀에 공개 중 · 누르면 나만 보기':'나만 보기 · 누르면 팀에 공개'}">${isShared(i)?'👥':'🔒'}</button>
         <button data-act="edit" data-tip="내용 수정">✎</button>
         <button class="tip-r" data-act="del" data-tip="삭제">×</button></div>
@@ -3768,7 +3781,12 @@ $('list').onclick=e=>{
   else if(a==='edit'){editItem=editItem===it.id?null:it.id;openNote=null;renderDay();return;}
   else if(a==='img'){imgTarget=it.id;$('imgFile').click();return;}
   else if(a==='cat'){openCatMenu(it.id,false);return;}
-  else if(a==='pri'){it.pri=!it.pri;touch(it);}
+  else if(a==='pri'){it.pri=!it.pri;touch(it);if(it.pri&&it.time&&it.rem===undefined)toastMsg('중요 일정이라 '+(store.settings.impRem===0?'알림은 꺼져 있습니다(설정에서 변경)':remTxt(store.settings.impRem??30)+' 알림이 자동으로 켜졌습니다'));}
+  else if(a==='rem'){const seq=[undefined,10,30,60,0],k=seq.indexOf(it.rem),nx=seq[(k+1)%seq.length];
+    if(nx===undefined)delete it.rem;else it.rem=nx;
+    if(!it.time&&nx!==0)toastMsg('시간이 있는 일정에서만 알림이 갑니다');
+    else toastMsg(nx===0?'이 일정 알림 끔':nx===undefined?'기본 규칙을 따릅니다':remTxt(nx)+' 알림');touch(it);}
+  else if(a==='tn'){it.tn=it.tn?0:1;if(it.tn&&!isShared(it)){it.share=1;}toastMsg(it.tn?'팀원에게도 알립니다(팀에 공개됨)':'팀원 알림 끔');touch(it);}
   else if(a==='miss'){it.miss=it.miss?0:1;touch(it);toastMsg(it.miss?'못 끝낸 일로 표시했습니다':'못 끝낸 일에서 뺐습니다');}
   else if(a==='todo'){it.todo=it.todo?0:1;touch(it);toastMsg(it.todo?'해야 할 일에 담았습니다':'해야 할 일에서 뺐습니다');}
   else if(a==='share'){
@@ -3788,6 +3806,7 @@ function saveEdit(id,val){
   it.wk=(p.wk||(it.wk&&p.endDate&&fromYmd(p.date).getDay()===1&&fromYmd(p.endDate).getDay()===5))?1:0;
   if(p.pri)it.pri=true;
   if(p.cat){it.cats=[p.cat];it.cat=p.cat;}
+  if(p.rem!=null)it.rem=p.rem;if(p.tn)it.tn=1;
   touch(it);editItem=null;save();
   sel=it.date;const d=fromYmd(sel);
   if(d.getMonth()!==view.getMonth()||d.getFullYear()!==view.getFullYear())view=new Date(d.getFullYear(),d.getMonth(),1);
@@ -3853,7 +3872,7 @@ function add(){const v=$('input').value.trim();if(!v)return;
   if(!p.wk&&wkSel){p.wk=true;p.date=wkMon(wkSel.s);p.endDate=wkFri(wkSel.e);}
   store.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
     date:p.date,endDate:p.endDate,wk:p.wk?1:0,time:p.time,endTime:p.endTime,title:p.title,pri:p.pri||priOn,
-    cats:p.cat?[p.cat]:addCats(),cat:p.cat||addCats()[0],
+    cats:p.cat?[p.cat]:addCats(),cat:p.cat||addCats()[0],...(p.rem!=null?{rem:p.rem}:{}),...(p.tn?{tn:1}:{}),
     note:'',done:false,doneAt:null,mt:NOW()});
   save();$('input').value='';$('send').disabled=true;
   priOn=false;paintPri();wkSel=null;paintWk();
@@ -4114,7 +4133,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v119';
+const APPVER=/*ver*/'v120';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -4386,6 +4405,7 @@ function installInfo(){
 function openSet(){
   let h='';for(let i=6;i<=23;i++)h+=`<option value="${i}"${i===(store.settings.alertH??20)?' selected':''}>${i}시</option>`;
   $('alertH').innerHTML=h;
+  $('impRem').value=String(store.settings.impRem===undefined?30:store.settings.impRem);$('impTeam').checked=!!store.settings.impTeam;
   $('briefOn').checked=!!store.settings.briefOn;$('briefTime').value=store.settings.briefTime||'07:30';
   const perm=('Notification'in window)?Notification.permission:'unsupported';
   $('permBtn2').textContent=perm==='granted'?'허용됨':perm==='denied'?'차단됨':perm==='unsupported'?'지원 안 함':'허용하기';
@@ -4748,7 +4768,7 @@ async function openMini(){
     const p=parseInput(v,TODAY);
     store.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
       date:p.date,endDate:p.endDate,wk:p.wk?1:0,time:p.time,endTime:p.endTime,title:p.title,pri:p.pri,
-      cats:p.cat?[p.cat]:addCats(),cat:p.cat||addCats()[0],
+      cats:p.cat?[p.cat]:addCats(),cat:p.cat||addCats()[0],...(p.rem!=null?{rem:p.rem}:{}),...(p.tn?{tn:1}:{}),
       note:'',done:false,doneAt:null,mt:NOW()});
     save();inp.value='';renderMini();renderDay();renderMonth();renderBanner();});
   pipWin.addEventListener('pagehide',()=>{pipWin=null;pipHost=null;});
@@ -5152,7 +5172,7 @@ $('list').addEventListener('keydown',e=>{
     const p=parseInput(v,sel);
     store.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
       date:p.date,endDate:p.endDate,wk:p.wk?1:0,time:p.time,endTime:p.endTime,title:p.title,pri:p.pri,
-      cats:p.cat?[p.cat]:addCats(),cat:p.cat||addCats()[0],note:'',done:false,doneAt:null,mt:NOW()});
+      cats:p.cat?[p.cat]:addCats(),cat:p.cat||addCats()[0],...(p.rem!=null?{rem:p.rem}:{}),...(p.tn?{tn:1}:{}),note:'',done:false,doneAt:null,mt:NOW()});
     save();inp.value='';
     if(p.date!==sel){sel=p.date;const d=fromYmd(sel);
       if(d.getMonth()!==view.getMonth()||d.getFullYear()!==view.getFullYear())view=new Date(d.getFullYear(),d.getMonth(),1);}
@@ -5264,6 +5284,8 @@ $('pushTest').onclick=async()=>{const m=$('pushMsg');
 $('briefOn').addEventListener('change',renderBP);$('briefTime').addEventListener('change',renderBP);
 if(/[?&]brief=1/.test(location.search)){setTimeout(()=>{openBrief();try{history.replaceState(null,'',location.pathname);}catch(e){}},1500);}
 if('serviceWorker'in navigator){navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.brief)openBrief();});}
+$('impRem').onchange=()=>{store.settings.impRem=+$('impRem').value;store.settingsMt=NOW();save();};
+$('impTeam').onchange=()=>{store.settings.impTeam=$('impTeam').checked;store.settingsMt=NOW();save();};
 $('alertH').onchange=()=>{store.settings.alertH=+$('alertH').value;store.settingsMt=NOW();save();};
 $('permBtn2').onclick=()=>{if(!('Notification'in window))return;
   Notification.requestPermission().then(()=>{openSet();notify();renderBanner();});};
