@@ -7054,7 +7054,7 @@ function tsTable(k){
   const hit=(p,q)=>p.a<q.b&&q.a<p.b;
   T.forEach(t=>{t.cf=M.some(m=>hit(t,m));});M.forEach(m=>{m.cf=T.some(t=>hit(t,m));});
   const nCf=T.filter(t=>t.cf).length;
-  let S=8,E=19;T.concat(M).forEach(e=>{S=Math.min(S,Math.floor(e.a/60));E=Math.max(E,Math.ceil(e.b/60));});E=Math.min(24,E);
+  let S=7,E=23;T.concat(M).forEach(e=>{S=Math.min(S,Math.floor(e.a/60));E=Math.max(E,Math.ceil(e.b/60));});E=Math.min(24,E);
   const H=40,Y=m=>(m/60-S)*H;
   const lay=arr=>{const lanes=[];arr.forEach(e=>{let li=lanes.findIndex(z=>z<=e.a);if(li<0)li=lanes.length;lanes[li]=e.b;e.l=li;});const N=Math.max(1,lanes.length);
     return arr.map(e=>`<div class="tsb${e.pv?' pv':''}${e.x.done?' dn':''}${e.cf?' cf':''}" style="--c:${e.c};top:${Y(e.a)}px;height:${Math.max(32,(e.b-e.a)/60*H-1)}px;left:${e.l/N*100}%;width:calc(${100/N}% - 3px)"><b>${e.x.time}${e.x.end?'~'+e.x.end:''} · ${esc(e.x.who)}${e.cf?' · 겹침':''}</b><span>${esc(e.x.title)}</span></div>`).join('');};
@@ -7212,7 +7212,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v151';
+const APPVER=/*ver*/'v152';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
