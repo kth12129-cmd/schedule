@@ -2068,6 +2068,14 @@ body.picking #list .item .acts{pointer-events:none;opacity:.35}
   #capSheet:has(#capList:not(:empty)),#capSheet:has(#capPrev[src]:not([style*="none"])){max-height:92dvh}
   #capSheet .sheet-bar{border-radius:18px 18px 0 0}
 }
+
+#rband{position:fixed;z-index:150;display:none;border:1.5px solid var(--navy);background:color-mix(in srgb,var(--navy) 12%,transparent);border-radius:3px;pointer-events:none}
+body.banding,body.banding *{user-select:none!important;-webkit-user-select:none!important;cursor:crosshair!important}
+#pickBar{top:auto;bottom:calc(90px + env(safe-area-inset-bottom,0px));right:50%;transform:translateX(50%);padding:8px 8px 8px 16px;border:1px solid var(--navy);box-shadow:0 14px 40px rgba(10,20,50,.28)}
+@media(max-width:700px){#pickBar{top:calc(env(safe-area-inset-top,0px) + 8px);bottom:auto;right:10px;transform:none}}
+#pickBar .del{min-width:72px}
+
+@media (hover:hover) and (pointer:fine){.cal-pane,.list-pane .item .meta,.list-pane .pane-hd,.list-pane .tlist{-webkit-user-select:none;user-select:none}}
 </style>
 </head>
 <body>
@@ -5127,6 +5135,32 @@ function pickDel(ids){ids=[...ids].filter(id=>store.items.some(i=>i.id===id));if
   document.addEventListener('touchend',e=>{clearTimeout(pkT);if(pkFired){e.preventDefault();setTimeout(()=>{pkFired=false;},350);}},{passive:false});
   document.addEventListener('click',e=>{if(pkFired&&e.target.closest&&e.target.closest('[data-tip]')){e.preventDefault();e.stopPropagation();pkFired=false;}},true);
 })();
+/* ── PC: 마우스로 끌어서 범위 선택 (목록 빈 곳·달력 칸에서 시작) ── */
+(function(){
+  if(!matchMedia('(hover:hover) and (pointer:fine)').matches)return;
+  const band=document.createElement('div');band.id='rband';document.body.appendChild(band);
+  let st=null,on=false,base=null,eat=false;
+  document.addEventListener('mousedown',e=>{
+    if(e.button!==0)return;
+    const area=e.target.closest('.list-pane,.cal-pane');if(!area)return;
+    if(e.target.closest('.ev,.item[data-id] .pk,.item[data-id] .acts,.item[data-id] .mtag,.cattag,button:not(.cell),input,textarea,a,[draggable="true"]'))return;
+    if(e.target.closest('.note,.edit-in'))return;
+    e.preventDefault();try{getSelection().removeAllRanges();}catch(_){}
+    st={x:e.clientX,y:e.clientY,area};on=false;base=new Set(e.ctrlKey||e.metaKey||e.shiftKey?pickSet:[]);},true);
+  document.addEventListener('mousemove',e=>{if(!st)return;
+    const dx=e.clientX-st.x,dy=e.clientY-st.y;
+    if(!on){if(Math.abs(dx)<7&&Math.abs(dy)<7)return;on=true;document.body.classList.add('banding');}
+    e.preventDefault();
+    const x1=Math.min(st.x,e.clientX),y1=Math.min(st.y,e.clientY),x2=Math.max(st.x,e.clientX),y2=Math.max(st.y,e.clientY);
+    Object.assign(band.style,{left:x1+'px',top:y1+'px',width:(x2-x1)+'px',height:(y2-y1)+'px',display:'block'});
+    pickSet.clear();base.forEach(id=>pickSet.add(id));
+    document.querySelectorAll('#list .item[data-id],#grid .ev[data-drag]').forEach(el=>{const r=el.getBoundingClientRect();
+      if(r.width&&r.right>x1&&r.left<x2&&r.bottom>y1&&r.top<y2)pickSet.add(el.dataset.id||el.dataset.drag);});
+    pickPaint();});
+  document.addEventListener('mouseup',()=>{if(!st)return;if(on){eat=true;setTimeout(()=>{eat=false;},50);}
+    st=null;on=false;band.style.display='none';document.body.classList.remove('banding');});
+  document.addEventListener('click',e=>{if(eat){e.preventDefault();e.stopPropagation();eat=false;}},true);
+})();
 let calRz=null;addEventListener('resize',()=>{clearTimeout(calRz);calRz=setTimeout(()=>{if(tab==='cal')renderMonth();},150);});
 function miniMonth(y,m,mark){
   const f=new Date(y,m,1),start=new Date(f);start.setDate(start.getDate()-f.getDay());
@@ -7681,7 +7715,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v188';
+const APPVER=/*ver*/'v189';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
