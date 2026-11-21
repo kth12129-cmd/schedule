@@ -1722,6 +1722,7 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .tmcnt{display:block;font-size:12px;color:var(--ink-2);margin-top:2px}.tmcnt b{font-size:15px;color:var(--ink);font-weight:700}
 .tmdots{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px}.tmdots i{width:7px;height:7px;border-radius:50%}
 .tmcnt,.tmdots{align-self:flex-start;margin-left:5px;text-align:left}
+.shtg{cursor:pointer;border:0;font:inherit}.shtg:hover{filter:brightness(.95);opacity:1!important}
 </style>
 </head>
 <body>
@@ -2396,7 +2397,7 @@ function renderDay(){try{memoMaterialize();}catch(_){}
       ${editItem===i.id?'':`draggable="true" data-drag="${i.id}"`}>
       <button class="check" data-act="toggle"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></button>
       <div class="body"><div class="meta"><span class="no">${n}</span><span class="mdate">${i.wk&&i.endDate?`<b class="wkl">${wkLabel(i)}</b> ${md(i.date)}~${md(i.endDate)}`:md(i.date)+(i.endDate?'~'+md(i.endDate):'')}</span>
-        ${i.time?`<span class="mtime">${i.time}${i.endTime?'~'+i.endTime:''}</span>`:''}${i.pri?'<span class="mtag pri">중요</span>':''}${isShared(i)?'<span class="mtag sh">팀 공개</span>':'<span class="mtag" style="opacity:.6">🔒 비공개</span>'}
+        ${i.time?`<span class="mtime">${i.time}${i.endTime?'~'+i.endTime:''}</span>`:''}${i.pri?'<span class="mtag pri">중요</span>':''}${isShared(i)?'<button class="mtag sh shtg" data-act="share" data-tip="누르면 비공개로">팀 공개</button>':'<button class="mtag shtg" data-act="share" data-tip="누르면 팀에 공개" style="opacity:.7">🔒 비공개</button>'}
         ${catsOf(i).map(c=>`<button class="cattag" data-act="cat" data-tip="분류 변경" style="--c:${c.color}">${esc(c.name)}</button>`).join('')}</div>
         ${editItem===i.id
           ?`<input class="edit-in" data-edit="${i.id}" value="${esc((i.endDate?md(i.date)+'~'+md(i.endDate)+' ':'')+(i.time?i.time+(i.endTime?'~'+i.endTime:'')+' ':'')+i.title)}">
@@ -4605,7 +4606,7 @@ $('an2').addEventListener('click',e=>{
       if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
     an2Render();}});
 runQuery=function(){an2Render();};
-const APPVER=/*ver*/'v144';
+const APPVER=/*ver*/'v145';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
