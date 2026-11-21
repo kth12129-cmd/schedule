@@ -1254,6 +1254,16 @@ html[data-layout="list"] .rightcol{flex:1}
 html[data-layout="cal"] .rightcol{position:fixed;top:0;right:0;bottom:0;width:min(480px,94vw);z-index:70;padding:14px;background:var(--page);
   border-left:1px solid var(--line);transform:translateX(104%);transition:transform .25s cubic-bezier(.2,.8,.2,1);box-shadow:-18px 0 50px rgba(0,0,0,.25)}
 html[data-layout="cal"] body.rc-open .rightcol,html[data-layout="cal"].x body.rc-open .rightcol{transform:none}
+#rcX{display:none}
+html[data-layout="cal"] body.rc-open #rcX{display:grid;position:fixed;z-index:9990;top:calc(10px + env(safe-area-inset-top,0px));right:12px;width:38px;height:38px;place-items:center;border-radius:50%;background:var(--ink);color:var(--page);font-size:16px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.pop-title .pclose{display:none}
+@media(max-width:700px){#catPop .pop-title{display:flex;align-items:center;justify-content:space-between}
+  #catPop .pop-title .pclose{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--field);color:var(--ink-2);font-size:14px}
+  html[data-layout="cal"] .rightcol{padding-top:calc(14px + env(safe-area-inset-top,0px) + 44px)}}
+.item.swp{transition:none}.item.swback{transition:transform .2s,opacity .2s}
+.item.hid{opacity:.45}
+.hidbar{display:block;width:100%;padding:10px;margin-top:4px;border-radius:10px;background:var(--field);color:var(--ink-2);font-size:13px;font-weight:600}
+#priHide{margin-left:auto;font-size:12px;padding:0 10px}
 #rcBack{display:none;position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.35)}
 html[data-layout="cal"] body.rc-open #rcBack{display:block}
 @media(max-width:700px){#rcBack{background:transparent!important}}
@@ -2099,7 +2109,7 @@ body.banding,body.banding *{user-select:none!important;-webkit-user-select:none!
       <button class="mo-btn tip-l" id="moBtn" data-tip="연도 보기로 전환 (트랙패드 축소 · Ctrl+휠)"><span id="mTitle">9월</span></button>
       <button class="yr-btn" id="yrBtn" data-tip="연도 선택"><span id="yTitle">2026</span><span class="cv">▾</span></button>
       <div class="arrows"><button class="arrow" id="prev" data-tip="이전">‹</button><button class="arrow" id="next" data-tip="다음">›</button></div>
-      <span class="zlab"></span>
+      <span class="zlab"></span><button class="hbtn txt" id="priHide" aria-pressed="false" data-tip="중요 표시한 일정을 달력·목록에서 숨기기">중요 숨기기</button>
     </div>
     <div class="hsec hsec-list"><div class="lay" id="layBar"><button data-l="focus">한눈에</button><button data-l="split">분할</button><button data-l="cal">달력</button><button data-l="list">목록</button></div></div>
     <div class="hsec hsec-memo">
@@ -2158,7 +2168,7 @@ body.banding,body.banding *{user-select:none!important;-webkit-user-select:none!
   </div>
 </section>
 
-<div id="rcBack"></div><button id="rcOpen">현황 · 할 일 ▸</button>
+<div id="rcBack"></div><button id="rcX" aria-label="닫기">✕</button><button id="rcOpen">현황 · 할 일 ▸</button>
 <section class="view" id="v-year"><div class="year-wrap" id="yearWrap"></div></section>
 <section class="view" id="v-decade"><div class="dec-wrap" id="decWrap"></div></section>
 
@@ -2251,7 +2261,7 @@ body.banding,body.banding *{user-select:none!important;-webkit-user-select:none!
 
 <div class="pop up" id="catPop">
   <div class="grab" id="catGrab"><i></i></div>
-  <div class="pop-title">분류 선택</div>
+  <div class="pop-title">분류 선택<button class="pclose" id="catX" aria-label="닫기">✕</button></div>
   <div class="catmenu" id="catMenu"></div>
 </div>
 <div class="pop left" id="viewPop">
@@ -4724,7 +4734,8 @@ const allMode=()=>curCats.includes('__all');
 const addCats=()=>allMode()?[store.cats[0].id]:curCats.slice();
 let lgTeam=false;
 let showMine=(()=>{try{return localStorage.getItem('showMine')!=='0';}catch(e){return true;}})();
-const inView=i=>showMine&&(allMode()||catsOf(i).some(c=>curCats.includes(c.id)))&&(!lgTeam||isShared(i));
+let hidePri=(()=>{try{return localStorage.getItem('hidePri')==='1';}catch(e){return false;}})(),showHid=false;
+const inView=i=>(showHid||!i.hid)&&!(hidePri&&i.pri)&&showMine&&(allMode()||catsOf(i).some(c=>curCats.includes(c.id)))&&(!lgTeam||isShared(i));
 const saveCurCats=()=>localStorage.setItem('cur-cats',curCats.join(','));
 const catOf=id=>store.cats.find(c=>c.id===id)||store.cats[store.cats.length-1];
 const catsOf=i=>{const a=(Array.isArray(i.cats)&&i.cats.length?i.cats:[i.cat]).map(catOf);
@@ -4999,7 +5010,17 @@ function renderMonth(){
   g.innerHTML=h;
   g.scrollTop=weekIdx(c)*rowH+off;
   $('mTitle').textContent=(view.getMonth()+1)+'월';$('yTitle').textContent=view.getFullYear();
+  try{fitCells();}catch(_){}
 }
+function fitCells(){
+  document.querySelectorAll('#grid .cell .evs').forEach(box=>{
+    const evs=[...box.querySelectorAll(':scope>.ev')];if(!evs.length)return;
+    const lim=box.getBoundingClientRect().bottom+0.5;let hid=0;
+    evs.forEach(e=>{e.style.visibility='';e.style.display='';});
+    for(let k=evs.length-1;k>=0;k--){const r=evs[k].getBoundingClientRect();if(r.bottom>lim){evs[k].style.display='none';hid++;}}
+    if(hid){let m=box.querySelector(':scope>.evmore');if(!m){m=document.createElement('span');m.className='evmore';box.appendChild(m);}
+      if(!m.querySelector('b')){const b=document.createElement('b');b.textContent='+'+hid;m.appendChild(b);}}
+  });}
 function calSync(){
   const g=$('grid');if(tab!=='cal'||!calStart)return;
   const idx=Math.round(g.scrollTop/calRowH);
@@ -5207,17 +5228,17 @@ function renderDay(){try{memoMaterialize();}catch(_){}setTimeout(()=>{try{pickPa
     <div class="body"><div class="meta"><span class="no">${n}</span><span class="mdate">${md(sel)}</span><span class="mtag">기한</span></div>
     <div class="title">${esc(x.stage)} · ${esc(x.label)}</div></div><div class="acts"></div></li>`;});
   its.forEach(i=>{n++;const isOpen=openNote===i.id,has=!!(i.note&&i.note.trim());
-    h+=`<li class="item${i.done?' done':''}${i.todo&&!i.done?' todo':''}${i.pri?' pri':''}${isOpen?' open':''}" data-id="${i.id}"
+    h+=`<li class="item${i.hid?' hid':''}${i.done?' done':''}${i.todo&&!i.done?' todo':''}${i.pri?' pri':''}${isOpen?' open':''}" data-id="${i.id}"
       ${editItem===i.id?'':`draggable="true" data-drag="${i.id}"`}>
       <button class="pk${i.pri?' on':''}" data-act="pri" data-tip="${i.pri?'중요 해제':'중요 표시 · 알림 설정'}" aria-label="중요 표시">${i.pri?'<svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8-4.3-4.1 5.9-.9z"/></svg>':''}</button>
       <div class="body"><div class="meta"><span class="no">${n}</span><span class="mdate">${i.wk&&i.endDate?`<b class="wkl">${wkLabel(i)}</b> ${md(i.date)}~${md(i.endDate)}`:md(i.date)+(i.endDate?'~'+md(i.endDate):'')}</span>
-        ${i.time?`<span class="mtime">${i.time}${i.endTime?'~'+i.endTime:''}</span>`:''}${i.pri?`<button class="mtag pri rmt" data-act="pri2" data-tip="알림 설정 변경">중요${i.time&&remVal(i)?' · '+(remVal(i)>=60?remVal(i)/60+'시간':remVal(i)+'분')+' 전'+(i.tn?' · 팀':''):''}</button>`:''}${isShared(i)?'<button class="mtag sh shtg" data-act="share" data-tip="누르면 비공개로">팀 공개</button>':'<button class="mtag shtg" data-act="share" data-tip="누르면 팀에 공개" style="opacity:.7">🔒 비공개</button>'}
+        ${i.time?`<span class="mtime">${i.time}${i.endTime?'~'+i.endTime:''}</span>`:''}${i.pri?`<button class="mtag pri rmt" data-act="pri2" data-tip="알림 설정 변경">중요${i.time&&remVal(i)?' · '+(remVal(i)>=60?remVal(i)/60+'시간':remVal(i)+'분')+' 전'+(i.tn?' · 팀':''):''}</button>`:''}
         ${catsOf(i).map(c=>`<button class="cattag" data-act="cat" data-tip="분류 변경" style="--c:${c.color}">${esc(c.name)}</button>`).join('')}</div>
         ${editItem===i.id
           ?`<input class="edit-in" data-edit="${i.id}" value="${esc((i.endDate?md(i.date)+'~'+md(i.endDate)+' ':'')+(i.time?i.time+(i.endTime?'~'+i.endTime:'')+' ':'')+i.title)}">
              <div class="edit-tip">시간·날짜도 같이 고칠 수 있습니다. Enter 저장, Esc 취소</div>`
           :`<div class="title" data-act="open">${esc(i.title)}${has&&!isOpen?'<span class="caret">⌄</span>':''}</div>`}</div>
-      <div class="acts"><button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'팀에 공개 중 · 누르면 나만 보기':'나만 보기 · 누르면 팀에 공개'}">${isShared(i)?'👥':'🔒'}</button>
+      <div class="acts"><button class="shbtn${isShared(i)?' on':''}" data-act="share" data-tip="${isShared(i)?'열림 · 팀에 공개 중 (누르면 잠금)':'잠김 · 나만 보기 (누르면 팀에 공개)'}" aria-label="${isShared(i)?'팀에 공개 중':'나만 보기'}">${isShared(i)?'<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" fill="currentColor" fill-opacity=".15"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/></svg>':'<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" fill="currentColor" fill-opacity=".15"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'}</button>
         <button data-act="edit" data-tip="내용 수정">✎</button>
         <button class="tip-r" data-act="del" data-tip="삭제">×</button></div>
       ${i.img?`<img class="thumb" src="${i.img}" data-img="${i.id}" alt="">`:''}
@@ -5229,6 +5250,8 @@ function renderDay(){try{memoMaterialize();}catch(_){}setTimeout(()=>{try{pickPa
       <div class="body"><div class="meta"><span class="mtag ownr">${esc(ownerName(o)||'공유받음')}</span><span class="mdate">${md(o.date)}${o.endDate?'~'+md(o.endDate):''}</span>
         ${o.time?`<span class="mtime">${o.time}${o.endTime?'~'+o.endTime:''}</span>`:''}${o.cat?`<span class="mtag" style="color:${o.color}">${esc(o.cat)}</span>`:''}</div>
         <div class="title">${esc(o.title)}</div></div><div class="acts"></div></li>`;});
+  {const nh=ordAll(sel).filter(i=>i.hid).length;
+   if(nh)h+=`<li class="hidli"><button class="hidbar" data-hidtoggle="1">${showHid?'숨긴 일정 가리기':'숨긴 일정 '+nh+'건 보기'}</button></li>`;}
   $('list').innerHTML=h||'<li class="empty">아래에 한 줄로 적으면 이 날에 들어갑니다.</li>';
   memoPaint();
   renderTL();
@@ -6344,7 +6367,11 @@ function setRT(r){rtab=r;try{localStorage.setItem('rt2',r);}catch(e){}
   $('rc').dataset.rt=r;
   $('rtTabs').querySelectorAll('[data-rt]').forEach(b=>b.classList.toggle('on',b.dataset.rt===r));
   if(r==='status')renderStatus();}
-function openRC(on){document.body.classList.toggle('rc-open',!!on);}
+let _rcHome=null;
+function openRC(on){const rc=$('rc');
+  if(on&&rc&&rc.parentNode!==document.body){_rcHome=document.createComment('rc');rc.parentNode.insertBefore(_rcHome,rc);document.body.appendChild(rc);}
+  document.body.classList.toggle('rc-open',!!on);
+  if(!on&&rc&&_rcHome&&_rcHome.parentNode){setTimeout(()=>{if(!document.body.classList.contains('rc-open')&&_rcHome&&_rcHome.parentNode){_rcHome.parentNode.insertBefore(rc,_rcHome);_rcHome.remove();_rcHome=null;}},300);}}
 document.body.classList.remove('rc-open');
 function setLayout(l){layout=l;HTMLEL.setAttribute('data-layout',l);try{localStorage.setItem('layout',l);}catch(e){}
   openRC(false);
@@ -6361,7 +6388,7 @@ $('layBar').onclick=e=>{const b=e.target.closest('[data-l]');if(!b||b.dataset.l=
       HTMLEL.classList.remove('lay-sw');}));
   },140);};
 $('rtTabs').onclick=e=>{const b=e.target.closest('[data-rt]');if(b)setRT(b.dataset.rt);};
-$('rcClose').onclick=()=>openRC(false);$('rcBack').onclick=()=>openRC(false);
+$('rcClose').onclick=()=>openRC(false);$('rcBack').onclick=()=>openRC(false);$('rcX').onclick=()=>openRC(false);
 $('rcOpen').onclick=()=>{setRT('day');openRC(true);};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('rc-open'))openRC(false);});
 
@@ -6871,6 +6898,7 @@ function closeFind(){
   const vp=$('viewPop');if(vp)vp.classList.remove('open');
   $('popBack').classList.remove('open');}
 $('popBack').onclick=closeFind;
+{const cx=$('catX');if(cx)cx.onclick=e=>{e.stopPropagation();closeFind();};}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeFind();
   if(document.body.dataset.zoom&&!/^(INPUT|TEXTAREA)$/.test(e.target.tagName))zoom(document.body.dataset.zoom);}});
 $('pY').onchange=$('pM').onchange=()=>fillDays(+$('pD').value||1);
@@ -7269,6 +7297,26 @@ function paintView(){
   const b=$('viewBtn');b.classList.toggle('act',viewWho!=='me'||!showMine);
   b.dataset.tip=viewWho==='me'?'내 일정만 표시 중 · 눌러서 팀 일정 보기':viewWho==='all'?'팀 전체 일정 표시 중':'선택한 팀원 일정 표시 중';
 }
+function paintPriHide(){const b=$('priHide');if(!b)return;b.classList.toggle('act',hidePri);b.setAttribute('aria-pressed',hidePri);b.textContent=hidePri?'중요 보이기':'중요 숨기기';}
+$('priHide').onclick=()=>{hidePri=!hidePri;try{localStorage.setItem('hidePri',hidePri?'1':'0');}catch(_){}paintPriHide();redrawAll();toastMsg(hidePri?'중요 일정을 숨겼어요':'중요 일정을 다시 표시합니다');};
+paintPriHide();
+(function(){const L=$('list');let t=null;
+  L.addEventListener('click',e=>{const b=e.target.closest('[data-hidtoggle]');if(!b)return;e.stopPropagation();showHid=!showHid;redrawAll();},true);
+  L.addEventListener('touchstart',e=>{const li=e.target.closest('li.item[data-id]');if(!li||e.touches.length!==1||/^(INPUT|TEXTAREA)$/.test(e.target.tagName)){t=null;return;}
+    t={li,x:e.touches[0].clientX,y:e.touches[0].clientY,dx:0,on:false};},{passive:true});
+  L.addEventListener('touchmove',e=>{if(!t)return;const dx=e.touches[0].clientX-t.x,dy=e.touches[0].clientY-t.y;
+    if(!t.on){if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){t=null;return;}if(dx>12&&dx>Math.abs(dy)*1.5)t.on=true;else return;}
+    t.dx=Math.max(0,dx);t.li.classList.remove('swback');t.li.classList.add('swp');
+    t.li.style.transform='translateX('+t.dx+'px)';t.li.style.opacity=String(Math.max(.3,1-t.dx/320));},{passive:true});
+  L.addEventListener('touchend',()=>{if(!t)return;const o=t;t=null;if(!o.on)return;
+    const li=o.li;li.classList.remove('swp');li.classList.add('swback');
+    if(o.dx>90){const id=li.dataset.id,it=store.items.find(x=>x.id===id);
+      li.style.transform='translateX(110%)';li.style.opacity='0';
+      setTimeout(()=>{if(!it){redrawAll();return;}it.hid=!it.hid;if(!it.hid)delete it.hid;touch(it);save();redrawAll();
+        toastMsg(it.hid?'숨겼어요 · 목록 아래 "숨긴 일정 보기"에서 되돌릴 수 있어요':'다시 표시합니다');},180);}
+    else{li.style.transform='';li.style.opacity='';}},{passive:true});
+  L.addEventListener('touchcancel',()=>{if(t){t.li.style.transform='';t.li.style.opacity='';t=null;}},{passive:true});
+})();
 $('viewBtn').onclick=()=>{closeFind();paintView();$('viewPop').classList.add('open');$('popBack').classList.add('open');};
 $('viewMenu').onclick=e=>{const mb=e.target.closest('[data-mine]');
   if(mb){showMine=!showMine;try{localStorage.setItem('showMine',showMine?'1':'0');}catch(_){}paintView();redrawAll();toastMsg(showMine?'내 일정을 표시합니다':'내 일정을 숨깁니다');return;}
@@ -7733,7 +7781,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v192';
+const APPVER=/*ver*/'v193';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
