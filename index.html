@@ -76,13 +76,13 @@ input,textarea,select{font:inherit;color:inherit}
   .hsec-memo .hbtn{width:36px;height:36px;font-size:18px}
   .hsec-memo .ptitle{display:none}
   .memo-label .mlab{display:inline}
-  .view{display:block;max-width:620px;padding:0 10px 14px;overflow-x:hidden}
+  .view{display:none;max-width:620px;padding:0 10px 14px;overflow-x:hidden}
   .view.on{display:block;flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   #banner{padding:0 10px}
   .rightcol{display:block}
   .botrow{display:block}
   .pane,.card{display:block}
-  .cal-pane{display:flex;flex-direction:column;height:62vh;margin-bottom:9px}
+  .cal-pane{display:flex;flex-direction:column;height:var(--calh,62vh);min-height:340px;margin-bottom:9px}
   .list-pane{display:flex;flex-direction:column;margin-bottom:9px}
   .list{column-count:1;overflow:visible;max-height:none}
   .tl-pane{display:flex;flex-direction:column;height:300px;margin-bottom:9px}
@@ -1834,8 +1834,8 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .tsscr{max-height:min(640px,calc(100vh - 330px));max-height:min(640px,calc(100dvh - 330px));min-height:260px;overscroll-behavior:auto;-webkit-overflow-scrolling:touch}
 .tsov,.tsov span,.tsov button,.tsnav,.tsnav span{white-space:nowrap}
 @media(max-width:700px){
-  .cal-pane{height:auto!important}
-  #grid.grid{flex:none!important;height:calc(6*var(--rowh,78px))}
+  .cal-pane{height:var(--calh,auto)!important}
+  #grid.grid{flex:1 1 0!important;min-height:0;height:auto!important}
   .mlab{left:auto;right:2px;top:7px;font-size:9px;letter-spacing:-.04em}
   .tsctl{grid-template-columns:1fr;gap:8px}
   .tsov{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px}
@@ -4825,7 +4825,7 @@ function renderMonth(){
   const g=$('grid');
   const vk=view.getFullYear()*12+view.getMonth();
   const H=g.clientHeight||540;
-  const rowH=Math.max(78,Math.floor(H/6));
+  const rowH=Math.max(innerWidth<=660?58:78,Math.floor(H/6));
   let c,off=0;
   if(calStart&&vk===calKey){ // 스크롤 위치 유지 (일정 수정 등)
     const r=Math.floor(g.scrollTop/calRowH);off=g.scrollTop-r*calRowH;
@@ -4904,6 +4904,10 @@ function calShow(k){
   const i=weekIdx(fromYmd(k)),top=i*calRowH;
   if(top<g.scrollTop||top+calRowH>g.scrollTop+g.clientHeight)g.scrollTo({top:Math.max(0,top-calRowH*2),behavior:'smooth'});
 }
+(function(){const v=document.getElementById('v-cal');if(!v||!window.ResizeObserver)return;let last=0;
+  const fit=()=>{if(innerWidth>660){document.documentElement.style.removeProperty('--calh');document.documentElement.style.removeProperty('--rowh');return;}
+    const h=v.clientHeight-4;if(h>200&&Math.abs(h-last)>1){last=h;document.documentElement.style.setProperty('--calh',h+'px');document.documentElement.style.setProperty('--rowh',Math.max(52,Math.floor((h-84)/6))+'px');try{if(tab==='cal')renderMonth();}catch(e){}}};
+  new ResizeObserver(fit).observe(v);addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));setTimeout(fit,100);})();
 let calRz=null;addEventListener('resize',()=>{clearTimeout(calRz);calRz=setTimeout(()=>{if(tab==='cal')renderMonth();},150);});
 function miniMonth(y,m,mark){
   const f=new Date(y,m,1),start=new Date(f);start.setDate(start.getDate()-f.getDay());
@@ -7439,7 +7443,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v169';
+const APPVER=/*ver*/'v174';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
