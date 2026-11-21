@@ -3454,8 +3454,10 @@ function setLayout(l){layout=l;HTMLEL.setAttribute('data-layout',l);try{localSto
   $('layBar').querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on',b.dataset.l===l));
   if(typeof paintDs==='function')paintDs();
   setTimeout(()=>{try{renderMonth();}catch(e){}},60);}
-$('layBar').onclick=e=>{const b=e.target.closest('[data-l]');if(!b)return;setLayout(b.dataset.l);
-  setTimeout(()=>{try{view=new Date(today.getFullYear(),today.getMonth(),1);goto(TODAY);}catch(_){}},90);};
+$('layBar').onclick=e=>{const b=e.target.closest('[data-l]');if(!b)return;
+  view=new Date(today.getFullYear(),today.getMonth(),1);calStart=null;sel=TODAY;
+  setLayout(b.dataset.l);
+  setTimeout(()=>{try{view=new Date(today.getFullYear(),today.getMonth(),1);calStart=null;renderMonth();goto(TODAY);}catch(_){}},120);};
 $('rtTabs').onclick=e=>{const b=e.target.closest('[data-rt]');if(b)setRT(b.dataset.rt);};
 $('rcClose').onclick=()=>openRC(false);$('rcBack').onclick=()=>openRC(false);
 $('rcOpen').onclick=()=>{setRT('status');openRC(true);};
@@ -4498,7 +4500,7 @@ $('an2').addEventListener('click',e=>{
       if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
     an2Render();}});
 runQuery=function(){an2Render();};
-const APPVER=/*ver*/'v137';
+const APPVER=/*ver*/'v138';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
