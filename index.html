@@ -1989,6 +1989,19 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
   .tsgb{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;touch-action:pan-x}.tsgb::-webkit-scrollbar{display:none}.tsgb button{flex:none}
   .tstabs{min-width:0}
 }
+
+.tsw,.tsg{grid-template-columns:repeat(7,minmax(0,1fr))}
+.tsc{min-width:0;overflow:hidden;box-sizing:border-box}
+.tsc .who,.tsc .who .wl,.tsc .r1,.tsc .r2{min-width:0;max-width:100%}
+.tsc .who .wl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tscal{min-width:0;overflow:hidden}
+@media(max-width:700px){
+  .tscal{padding:6px 4px}.tsg{gap:2px}
+  .tsc{padding:4px 3px;min-height:76px;border-radius:6px}
+  .tsc .n{font-size:12px}.tsc .r1{font-size:10.5px}.tsc .r1 b{font-size:12.5px}
+  .tsc .who{font-size:9.5px}.tsc .who i{width:5px;height:5px;margin-right:2px}
+  .tsc em{font-size:9px;padding:0 3px}
+}
 </style>
 </head>
 <body>
@@ -7468,7 +7481,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v178';
+const APPVER=/*ver*/'v179';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
