@@ -1642,6 +1642,48 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .item.done .check{background:var(--red);border-color:var(--red)}
 .item.done .check::after{opacity:1;transform:translateX(12px)}
 .item.done::before{background:var(--red);opacity:.5}
+.an2ctl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.an2ctl select{height:38px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);padding:0 10px;font-size:14px;font-weight:600}
+.an2ctl .seg2{display:grid;grid-template-columns:repeat(3,1fr);height:38px}.an2ctl .seg2.full{grid-template-columns:1fr 1fr}
+.an2ctl .seg2 button{padding:0}
+.an2ctl .full{grid-column:1/-1}
+.an2ctl .pernav{display:grid;grid-template-columns:36px 1fr 36px 60px;height:38px;padding:0 4px}
+.an2ctl .pernav .lb{text-align:center}
+.an2c{margin-top:12px;padding:12px 10px}
+.an2h{font-size:13px;font-weight:650;color:var(--ink);margin:12px 2px 6px}.an2h:first-child{margin-top:0}
+.an2h em{font-style:normal;font-size:11px;font-weight:600;color:var(--ink-3);margin-left:6px}
+.an2s{font-size:13px;font-weight:650;color:var(--ink-2);margin:22px 2px 8px}
+.an2e{font-size:13px;color:var(--ink-3);padding:4px 2px}
+.fl{border-top:1px solid var(--line)}
+.fr{display:grid;grid-template-columns:6px 62px 74px 1fr auto;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.fr>i{width:6px;height:6px;border-radius:50%}
+.fr .bd{font-size:12px;font-weight:650;color:var(--ink-2)}.fr .bd.late{color:var(--red)}.fr .bd.now{color:var(--navy)}
+.fr .fd{color:var(--ink-2)}.fr .ft{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr .fn{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.pt.ghost{background:transparent;border:1px dashed var(--c);color:var(--ink-2);opacity:.9}
+.an2y{display:grid;grid-auto-flow:column;grid-auto-columns:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-top:12px}
+.an2y::-webkit-scrollbar{display:none}.an2yp{scroll-snap-align:start;padding:0 2px}
+.mgw{overflow-x:auto}.mg{display:grid;align-items:stretch}
+.mgl{position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px;font-weight:600;padding:6px 6px 6px 2px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mgl i{flex:none;width:6px;height:6px;border-radius:50%}
+.mgh{font-size:9.5px;text-align:center;color:var(--ink-2);padding:6px 0;border-bottom:1px solid var(--line)}
+.mgh.w,.mgc.w{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.mgh.t,.mgc.t{background:color-mix(in srgb,var(--navy) 12%,transparent);color:var(--navy);font-weight:700}
+.mgc{display:grid;place-items:center;border-bottom:1px solid var(--line);min-height:30px}
+.mgc u{width:10px;height:10px;transform:rotate(45deg);background:var(--c);border-radius:1px}
+.mgc u.d{opacity:.4}.mgc u.g{background:transparent;border:1.5px solid var(--c)}
+.bars{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;align-items:end;height:190px;margin-top:6px}
+.bc{display:grid;grid-template-rows:16px 1fr 18px;height:100%;text-align:center;font-size:10.5px;color:var(--ink-2)}
+.bc b{font-weight:650;color:var(--ink)}
+.bs{display:flex;flex-direction:column-reverse;justify-content:flex-start;align-self:stretch;position:relative}
+.bs i{display:block;width:100%}.bs i.fu{border:1.5px dashed var(--ink-3);background:transparent;box-sizing:border-box;order:99}
+.bs{flex-direction:column-reverse}
+.tr{display:grid;grid-template-columns:22px 1fr 90px 46px;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.tr .rk{color:var(--ink-3);font-weight:650}.tr .ft{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr .tb{height:6px;background:var(--field);border-radius:3px;overflow:hidden}.tr .tb i{display:block;height:100%}
+.tr b{text-align:right;font-weight:650}
+.ds-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ds-opts .ds-chip{width:100%;justify-content:flex-start;box-sizing:border-box}
 </style>
 </head>
 <body>
@@ -1793,24 +1835,12 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 <!-- 분석 -->
 <div class="sheet" id="anSheet">
   <div class="sheet-bar"><h2>추정 n+1</h2><button data-close="anSheet">닫기</button></div>
-  <div class="sheet-body">
-    <div class="searchbar">
-      <input id="q" placeholder="검색어 · 기간 입력" autocomplete="off" enterkeyhint="search">
-      <button id="qGo">분석</button>
-    </div>
-    <div class="anctl">
-      <div class="seg2" id="anScaleSeg">
-        <button data-sc="week">주별</button><button data-sc="month">월별</button><button data-sc="year">연별</button>
-      </div>
-      <div class="pernav">
-        <button id="anPrev">‹</button><span class="lb" id="anLabel"></span><button id="anNext">›</button>
-        <button class="tb" id="anNow">오늘</button>
-      </div>
-    </div>
-    <div class="catfilter" id="catFilter"></div>
-    <div class="chips" id="chips"></div>
-    <div id="qResult"></div>
-  </div>
+  <div class="sheet-body"><div id="an2"></div>
+  <div style="display:none">
+    <input id="q"><button id="qGo"></button>
+    <div id="anScaleSeg"></div><button id="anPrev"></button><span id="anLabel"></span><button id="anNext"></button><button id="anNow"></button>
+    <div id="catFilter"></div><div id="chips"></div><div id="qResult"></div>
+  </div></div>
 </div>
 
 <div class="pop up" id="catPop">
@@ -2698,7 +2728,7 @@ function weekBlock(wFrom,spans,byDay,dimMonth){
     hd+=`<span class="${cl.join(' ')}">${d.getDate()}</span>`;
     const lst=(byDay[k]||[]);
     cells+='<div class="daycell">'+lst.slice(0,4).map(x=>
-      `<div class="pt${x.ms?' ms':''}${x.done?' done':''}" style="--c:${x.c}" title="${esc(x.label)}">${
+      `<div class="pt${x.ms?' ms':''}${x.done?' done':''}${x.ghost?' ghost':''}" style="--c:${x.c}" title="${esc(x.label)}">${
         x.time?x.time+' ':''}${esc(x.label)}</div>`).join('')
       +(lst.length>4?`<div class="evmore" title="외 ${lst.length-4}건">`+
           lst.slice(4,10).map(x=>`<i style="background:${x.ms?'var(--red)':(x.c||'var(--ink-3)')}"></i>`).join('')+
@@ -4281,7 +4311,143 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v131';
+
+/* ── 추정 n+1 : 지난 일정으로 앞으로의 업무를 예상 ── */
+const AN2={scale:'week',mode:'cal',cat:'',anchor:TODAY};
+function an2Key(i){let t=(i.title||'').replace(/\d+\s*(차수|차|회차|회|월분|월|일|주차|주|분기|년)?/g,'');
+  store.cats.forEach(c=>{[c.name,c.name.replace(/(현장|공사|사업)$/,'')].forEach(n=>{if(n&&n.length>=2)t=t.split(n).join('');});});
+  return t.replace(/[()\[\]{}·\-_,.~:\/!★#]/g,'').replace(/\s+/g,'');}
+function an2Name(t){return (t||'').replace(/^\s*\d+\s*월(분)?\s*/,'').trim()||t;}
+function an2Items(){return store.items.filter(i=>!i.wk&&(!AN2.cat||catsOf(i).some(c=>c.id===AN2.cat)));}
+function an2Pat(){
+  const g={};an2Items().forEach(i=>{const k=an2Key(i);if(k.length<2)return;(g[k]=g[k]||{k,its:[]}).its.push(i);});
+  const out=[];
+  Object.values(g).forEach(G=>{
+    const srt=G.its.slice().sort((a,b)=>a.date.localeCompare(b.date)),last=srt[srt.length-1];
+    G.dates=[...new Set(srt.map(i=>i.date))];G.label=an2Name(last.title);G.color=catColor(last);G.n=G.its.length;
+    if(G.dates.length>=2){const iv=[];for(let j=1;j<G.dates.length;j++){const x=diffDays(G.dates[j],G.dates[j-1]);if(x>=3)iv.push(x);}
+      if(iv.length){iv.sort((a,b)=>a-b);const m=iv[Math.floor(iv.length/2)];G.iv=m;
+        G.kind=m>=26&&m<=35?'month':m>=6&&m<=8?'week':m>=12&&m<=16?'2week':'days';
+        const dd=G.dates.map(d=>fromYmd(d).getDate()).sort((a,b)=>a-b);G.dom=dd[Math.floor(dd.length/2)];
+        G.dow=fromYmd(G.dates[G.dates.length-1]).getDay();}}
+    out.push(G);});
+  return out;}
+function an2Next(G,from){
+  if(G.kind==='month'){const d=fromYmd(from),m=d.getMonth()+1,y=d.getFullYear();return ymd(new Date(y,m,Math.min(G.dom,new Date(y,m+1,0).getDate())));}
+  return addDays(from,G.kind==='week'?7:G.kind==='2week'?14:G.iv);}
+function an2Proj(G,to){
+  const res=[];if(!G.iv)return res;const L=G.dates[G.dates.length-1];
+  if(diffDays(TODAY,L)>G.iv*2.5)return res;
+  let d=L,n=0;
+  while(n++<200){d=an2Next(G,d);if(d>to)break;res.push({date:d,G,late:d<TODAY});}
+  const late=res.filter(r=>r.late);
+  return res.filter(r=>!r.late).concat(late.slice(-1));}
+function an2Every(G){return G.kind==='month'?`매월 ${G.dom}일경`:G.kind==='week'?`매주 ${WD[G.dow]}요일`:G.kind==='2week'?'격주':`약 ${G.iv}일 간격`;}
+function an2Range(){
+  const a=fromYmd(AN2.anchor);
+  if(AN2.scale==='week'){const s=startOfWeek(AN2.anchor);return{from:addDays(s,-7),to:addDays(s,13)};}
+  if(AN2.scale==='month')return{from:ymd(new Date(a.getFullYear(),a.getMonth()-1,1)),to:ymd(new Date(a.getFullYear(),a.getMonth()+2,0))};
+  return{from:`${a.getFullYear()-1}-01-01`,to:`${a.getFullYear()+1}-12-31`};}
+function an2Label(){const a=fromYmd(AN2.anchor);
+  if(AN2.scale==='week'){const s=startOfWeek(AN2.anchor);return `${md(s)} ~ ${md(addDays(s,6))}`;}
+  if(AN2.scale==='month')return `${a.getFullYear()}년 ${a.getMonth()+1}월`;
+  return `${a.getFullYear()}년`;}
+function an2Forecast(pats){
+  const hz=addDays(TODAY,60),rows=[];
+  pats.forEach(G=>an2Proj(G,hz).forEach(p=>rows.push(p)));
+  rows.sort((a,b)=>a.date.localeCompare(b.date));
+  const late=rows.filter(r=>r.late),soon=rows.filter(r=>!r.late).slice(0,14);
+  const row=(r)=>{const dd=diffDays(r.date,TODAY);
+    const b=r.late?`<b class="bd late">${-dd}일 지남</b>`:dd===0?'<b class="bd now">오늘</b>':`<b class="bd">${dd}일 후</b>`;
+    return `<div class="fr"><i style="background:${r.G.color}"></i>${b}<span class="fd">${md(r.date)}(${WD[fromYmd(r.date).getDay()]})</span><span class="ft">${esc(r.G.label)}</span><span class="fn">${an2Every(r.G)} · ${r.G.dates.length}회</span></div>`;};
+  let h='<div class="an2s">놓친 일 점검</div>';
+  h+=late.length?`<div class="fl">${late.map(row).join('')}</div>`:'<div class="an2e">날짜가 지났는데 하지 않은 반복 업무는 없습니다.</div>';
+  h+='<div class="an2s">오늘부터 60일 이내 예상 업무</div>';
+  h+=soon.length?`<div class="fl">${soon.map(row).join('')}</div>`:'<div class="an2e">반복 패턴으로 예상되는 업무가 아직 없습니다. 같은 업무가 두 번 이상 기록되면 계산합니다.</div>';
+  return h;}
+function an2Data(pats,r){
+  const its=an2Items().filter(i=>i.date>=r.from&&i.date<=r.to);
+  const {spans,points}=collect(its,[],r);
+  const ghosts=[];pats.forEach(G=>an2Proj(G,r.to).forEach(p=>{if(p.date>=r.from)ghosts.push(p);}));
+  ghosts.forEach(p=>points.push({date:p.date,label:'예상 '+p.G.label,c:p.G.color,ghost:true}));
+  const byDay={};points.forEach(p=>{if(p.date>=r.from&&p.date<=r.to)(byDay[p.date]=byDay[p.date]||[]).push(p);});
+  return{its,spans,points,ghosts,byDay};}
+const an2Wk='<div class="wkhd" style="margin-bottom:5px"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div>';
+function an2Cal(pats){
+  const r=an2Range(),D=an2Data(pats,r);
+  if(AN2.scale==='year'){
+    const y0=fromYmd(AN2.anchor).getFullYear();let h='<div class="an2y" id="an2y">';
+    for(let y=y0-1;y<=y0+1;y++){
+      const mk={};D.points.forEach(p=>{if(p.date.startsWith(y+'-'))mk[p.date]=p.ghost&&mk[p.date]!=='mk'?'mk2':'mk';});
+      h+=`<div class="an2yp"><div class="an2h">${y}년${y===y0?' <em>선택</em>':''}</div><div class="year-wrap">`;
+      for(let m=0;m<12;m++)h+=miniMonth(y,m,k=>mk[k]||null);
+      h+='</div></div>';}
+    return h+'</div><div class="mono"><span><i style="--c:var(--navy)"></i>한 일 · 잡힌 일정</span><span><i style="--c:var(--moss)"></i>예상</span><span>좌우로 밀어 전년·내년</span></div>';}
+  let h='<div class="card an2c">';
+  if(AN2.scale==='week'){
+    const s=startOfWeek(AN2.anchor);
+    [-7,0,7].forEach(o=>{const w=addDays(s,o);
+      h+=`<div class="an2h">${md(w)} ~ ${md(addDays(w,6))}${o===0?' <em>이번 주</em>':o<0?' <em>이전</em>':' <em>다음</em>'}</div>${an2Wk}${weekBlock(w,D.spans,D.byDay)}`;});}
+  else{
+    const a=fromYmd(AN2.anchor);
+    [-1,0,1].forEach(o=>{const m0=new Date(a.getFullYear(),a.getMonth()+o,1),m1=new Date(a.getFullYear(),a.getMonth()+o+1,0);
+      h+=`<div class="an2h">${m0.getFullYear()}년 ${m0.getMonth()+1}월</div>${an2Wk}`;
+      for(let k=startOfWeek(ymd(m0));k<=ymd(m1);k=addDays(k,7))h+=weekBlock(k,D.spans,D.byDay,m0.getMonth());});}
+  return h+'<div class="mono"><span>실선 = 한 일 · 점선 = 예상</span></div></div>';}
+function an2Chart(pats){
+  const r=an2Range();
+  if(AN2.scale==='year'){
+    const y=fromYmd(AN2.anchor).getFullYear(),cnt=Array.from({length:12},()=>({}));
+    an2Items().forEach(i=>{const d=fromYmd(i.date);if(d.getFullYear()!==y)return;const c=catsOf(i)[0];const id=c?c.id:'-';cnt[d.getMonth()][id]=(cnt[d.getMonth()][id]||0)+1;});
+    const fut=new Array(12).fill(0);
+    pats.forEach(G=>an2Proj(G,`${y}-12-31`).forEach(p=>{if(!p.late&&p.date.startsWith(y+'-'))fut[fromYmd(p.date).getMonth()]++;}));
+    const tot=cnt.map((o,i)=>Object.values(o).reduce((a,b)=>a+b,0)),mx=Math.max(1,...tot.map((t,i)=>t+fut[i]));
+    let bars='';
+    for(let m=0;m<12;m++){
+      const seg=Object.entries(cnt[m]).map(([id,n])=>{const c=store.cats.find(x=>x.id===id);return `<i style="height:${n/mx*100}%;background:${c?c.color:'var(--ink-3)'}" title="${esc(c?c.name:'')} ${n}건"></i>`;}).join('');
+      bars+=`<div class="bc"><b>${tot[m]+fut[m]||''}</b><div class="bs">${fut[m]?`<i class="fu" style="height:${fut[m]/mx*100}%"></i>`:''}${seg}</div><span>${m+1}월</span></div>`;}
+    const grp={};an2Items().forEach(i=>{if(fromYmd(i.date).getFullYear()!==y)return;const k=an2Key(i);if(k.length<2)return;(grp[k]=grp[k]||{t:an2Name(i.title),n:0,c:catColor(i)}).n++;});
+    const top=Object.values(grp).sort((a,b)=>b.n-a.n).slice(0,8),tm=top.length?top[0].n:1;
+    const sum=tot.reduce((a,b)=>a+b,0),fs=fut.reduce((a,b)=>a+b,0);
+    return `<div class="card an2c"><div class="an2h">${y}년 월별 건수 · 한 일 ${sum}건 · 남은 기간 예상 ${fs}건</div><div class="bars">${bars}</div>
+      <div class="mono"><span>막대 = 분류별 한 일</span><span>옅은 점선 = 예상</span></div></div>
+      <div class="an2s">가장 많이 한 일</div><div class="fl">${top.map((t,i)=>`<div class="tr"><span class="rk">${i+1}</span><span class="ft">${esc(t.t)}</span><span class="tb"><i style="width:${t.n/tm*100}%;background:${t.c}"></i></span><b>${t.n}건</b></div>`).join('')||'<div class="an2e">이 해의 기록이 없습니다.</div>'}</div>`;}
+  const days=diffDays(r.to,r.from)+1,D=an2Data(pats,r),W=AN2.scale==='week'?24:14;
+  const rows={};
+  D.its.forEach(i=>{const k=an2Key(i)||i.title;(rows[k]=rows[k]||{t:an2Name(i.title),c:catColor(i),pts:[]}).pts.push({d:i.date,done:i.done});});
+  D.ghosts.forEach(p=>{const k=p.G.k;(rows[k]=rows[k]||{t:p.G.label,c:p.G.color,pts:[]}).pts.push({d:p.date,ghost:true});});
+  const list=Object.values(rows).sort((a,b)=>a.pts.map(x=>x.d).sort()[0].localeCompare(b.pts.map(x=>x.d).sort()[0])).slice(0,40);
+  let head='<div class="mgl"></div>';
+  for(let n=0;n<days;n++){const k=addDays(r.from,n),d=fromYmd(k);head+=`<div class="mgh${d.getDay()===0||d.getDay()===6?' w':''}${k===TODAY?' t':''}">${d.getDate()}</div>`;}
+  let body='';
+  list.forEach(R=>{body+=`<div class="mgl"><i style="background:${R.c}"></i>${esc(R.t)}</div>`;
+    for(let n=0;n<days;n++){const k=addDays(r.from,n),d=fromYmd(k),p=R.pts.find(x=>x.d===k);
+      body+=`<div class="mgc${d.getDay()===0||d.getDay()===6?' w':''}${k===TODAY?' t':''}">${p?`<u class="${p.ghost?'g':p.done?'d':''}" style="--c:${R.c}"></u>`:''}</div>`;}});
+  if(!list.length)return '<div class="card an2c"><div class="an2e">이 기간에 표시할 일정이 없습니다.</div></div>';
+  return `<div class="card an2c"><div class="mgw"><div class="mg" style="grid-template-columns:150px repeat(${days},minmax(${W}px,1fr))">${head}${body}</div></div>
+    <div class="mono"><span>◆ 한 일 · 잡힌 일정</span><span>◇ 예상</span><span>세로 강조 = 오늘</span></div></div>`;}
+function an2Render(){
+  const pats=an2Pat();
+  const sc=[['week','주별'],['month','월별'],['year','연별']],md2=[['cal','달력으로 보기'],['bar','차트로 보기']];
+  let h=`<div class="an2ctl"><select id="an2Cat"><option value="">분류 전체</option>${store.cats.map(c=>`<option value="${c.id}"${AN2.cat===c.id?' selected':''}>${esc(c.name)}</option>`).join('')}</select>
+    <div class="seg2">${sc.map(x=>`<button data-sc2="${x[0]}" class="${AN2.scale===x[0]?'on':''}">${x[1]}</button>`).join('')}</div>
+    <div class="seg2 full">${md2.map(x=>`<button data-m2="${x[0]}" class="${AN2.mode===x[0]?'on':''}">${x[1]}</button>`).join('')}</div>
+    <div class="pernav full"><button data-sh="-1">‹</button><span class="lb">${an2Label()}</span><button data-sh="1">›</button><button class="tb" data-sh="0">오늘</button></div></div>`;
+  h+=AN2.mode==='cal'?an2Cal(pats):an2Chart(pats);
+  h+=an2Forecast(pats);
+  $('an2').innerHTML=h;
+  const y=$('an2y');if(y)y.scrollLeft=y.clientWidth;
+  const mw=document.querySelector('#an2 .mgw');if(mw){const r=an2Range(),W=AN2.scale==='week'?24:14,n=diffDays(TODAY,r.from);mw.scrollLeft=Math.max(0,(n-4)*W);}}
+$('an2').addEventListener('change',e=>{if(e.target.id==='an2Cat'){AN2.cat=e.target.value;an2Render();}});
+$('an2').addEventListener('click',e=>{
+  const sc=e.target.closest('[data-sc2]'),m=e.target.closest('[data-m2]'),sh=e.target.closest('[data-sh]');
+  if(sc){AN2.scale=sc.dataset.sc2;an2Render();}
+  else if(m){AN2.mode=m.dataset.m2;an2Render();}
+  else if(sh){const n=+sh.dataset.sh;if(!n)AN2.anchor=TODAY;else{const d=fromYmd(AN2.anchor);
+      if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
+    an2Render();}});
+runQuery=function(){an2Render();};
+const APPVER=/*ver*/'v132';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
