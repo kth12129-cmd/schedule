@@ -1919,6 +1919,16 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
   .om .om-pi{grid-column:2/3;grid-row:2}.om .om-s{grid-column:3;grid-row:1}.om .om-r{grid-column:3;grid-row:2}
   .omh .omh-a{flex-wrap:wrap;row-gap:6px}.omh{height:auto;min-height:42px;padding:6px 4px;align-items:start}.omh .om-ck{height:30px}.omh-a .vbtn{padding:0 10px}.om-n .om-p{width:100%}
 }
+html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane,html.lay-sw .rightcol{opacity:0}
+
+.st-row{border:0;border-bottom:1px solid var(--hair);border-radius:0;background:transparent;padding:11px 2px;margin:0;gap:11px}
+.st-row:hover{background:color-mix(in srgb,var(--c) 7%,transparent);border-color:var(--hair)}
+.st-row .t::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:8px;vertical-align:1px}
+.st-row .tm{padding:2px 7px;border-radius:10px;background:color-mix(in srgb,var(--c) 14%,var(--panel));color:var(--ink)}
+.item.oth{border-left:0;background:transparent;box-shadow:inset 0 -1px 0 var(--hair)}
+.vc-row{border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;padding:10px 2px}
+.tsb{border-left:0;border-radius:6px;background:color-mix(in srgb,var(--c) 22%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 40%,transparent)}
+.tsk{border-left:0;border-radius:11px;padding:3px 10px}
 </style>
 </head>
 <body>
@@ -6022,12 +6032,17 @@ function openRC(on){document.body.classList.toggle('rc-open',!!on);}
 function setLayout(l){layout=l;HTMLEL.setAttribute('data-layout',l);try{localStorage.setItem('layout',l);}catch(e){}
   openRC(false);
   $('layBar').querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on',b.dataset.l===l));
-  if(typeof paintDs==='function')paintDs();
-  setTimeout(()=>{try{renderMonth();}catch(e){}},60);}
-$('layBar').onclick=e=>{const b=e.target.closest('[data-l]');if(!b)return;
-  view=new Date(today.getFullYear(),today.getMonth(),1);calStart=null;sel=TODAY;
-  setLayout(b.dataset.l);
-  setTimeout(()=>{try{view=new Date(today.getFullYear(),today.getMonth(),1);calStart=null;renderMonth();goto(TODAY);}catch(_){}},120);};
+  if(typeof paintDs==='function')paintDs();}
+$('layBar').onclick=e=>{const b=e.target.closest('[data-l]');if(!b||b.dataset.l===layout)return;
+  const m=document.querySelector('.main,main,.wrap')||document.body;
+  HTMLEL.classList.add('lay-sw');
+  setTimeout(()=>{
+    view=new Date(today.getFullYear(),today.getMonth(),1);calStart=null;sel=TODAY;
+    setLayout(b.dataset.l);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      try{renderMonth();goto(TODAY);}catch(_){}
+      HTMLEL.classList.remove('lay-sw');}));
+  },140);};
 $('rtTabs').onclick=e=>{const b=e.target.closest('[data-rt]');if(b)setRT(b.dataset.rt);};
 $('rcClose').onclick=()=>openRC(false);$('rcBack').onclick=()=>openRC(false);
 $('rcOpen').onclick=()=>{setRT('day');openRC(true);};
@@ -7361,7 +7376,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v160';
+const APPVER=/*ver*/'v162';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
