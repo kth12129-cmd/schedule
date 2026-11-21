@@ -1609,6 +1609,11 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
 .om-ed{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:-2px 0 10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
 .om-ed input[type=text],.om-ed input:not([type]){flex:1;min-width:110px;padding:7px 9px;border:1px solid var(--fieldline);border-radius:8px;background:var(--field)}
 .org-add .oa-r{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}.org-add .oa-r input{flex:1;min-width:130px;padding:8px 10px;border:1px solid var(--fieldline);border-radius:8px;background:var(--field)}
+.ds-opts{display:flex;flex-wrap:wrap;gap:8px}
+.ds-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font-size:14px;line-height:1.2}
+.ds-chip:hover{border-color:var(--ink-2)}.ds-chip.on{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy);font-weight:650}
+.ds-sw{display:inline-flex}.ds-sw i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(128,128,128,.45)}.ds-sw i+i{margin-left:-5px}
+.ds-fc{flex-direction:column;align-items:flex-start;gap:2px;border-radius:12px;padding:9px 14px}.ds-fc small{font-size:12px;color:var(--ink-3);font-weight:400}
 </style>
 </head>
 <body>
@@ -1744,13 +1749,13 @@ body.dragging .st-todo-sec{box-shadow:0 0 0 1.5px dashed var(--navy)}
   <div class="sheet-bar"><h2>디자인</h2><button data-close="dsSheet">완료</button></div>
   <div class="sheet-body">
     <div class="ds-h">화면 구성</div>
-    <div class="ds-grid" id="dsLay"></div>
+    <div class="ds-opts" id="dsLay"></div>
     <div class="ds-now" id="dsNow"></div>
-    <div class="ds-h">색상 조합</div>
-    <div class="ds-grid ds-themes" id="dsTheme"></div>
+    <div class="ds-h">색상</div>
+    <div class="ds-opts" id="dsTheme"></div>
     <div class="ds-h">글자체</div>
-    <div class="ds-grid" id="dsFont"></div>
-    <div class="hint-txt" style="margin:14px 2px">색 조합은 직접 구성한 것이고, 글자체는 누구나 자유롭게 쓸 수 있는 오픈 라이선스(OFL) 글꼴입니다. 특정 회사의 로고·상표·고유 디자인은 쓰지 않았습니다. 고른 구성은 이 기기에 저장됩니다.</div>
+    <div class="ds-opts" id="dsFont"></div>
+    <div class="hint-txt" style="margin:14px 2px">글자체는 누구나 쓸 수 있는 오픈 라이선스(OFL) 글꼴입니다. 고른 구성은 이 기기에 저장됩니다.</div>
   </div>
 </div>
 <div class="sheet" id="calSheet">
@@ -3457,22 +3462,22 @@ $('stBody').addEventListener('drop',e=>{const z=stZone(e);if(!z)return;e.prevent
 
 /* 디자인 시트 */
 const SKINS=[
-  {key:'light',skin:'',mode:'light',name:'동양 화이트',ref:'회사 기본 · 흰 바탕에 짙은 남색. 가장 정돈된 업무용',sw:['#f4f5f8','#ffffff','#0a0c12','#041a72','#cdd2de']},
-  {key:'dark',skin:'',mode:'dark',name:'동양 다크',ref:'검정 바탕에 푸른 포인트. 밤·어두운 곳에서 눈이 편함',sw:['#000000','#0a0b0e','#f3f4f8','#3f72ff','#2b2e37']},
-  {key:'stripe',skin:'stripe',mode:'light',name:'슬레이트 틸',ref:'푸른 회색 바탕 + 청록. 차분하고 신뢰감 있는 느낌',sw:['#eaf1f2','#fbfefe','#10282d','#0f6f78','#c3d4d7']},
-  {key:'paper',skin:'paper',mode:'light',name:'웜 페이퍼',ref:'크림색 종이 + 테라코타. 따뜻하고 문서·보고서 같은 느낌',sw:['#f5efe3','#fffcf5','#3a2f25','#b4532a','#ddd1ba']},
-  {key:'olive',skin:'olive',mode:'light',name:'샌드 올리브',ref:'모래빛 바탕 + 올리브 녹색. 현장·자연을 닮은 안정감',sw:['#f1f1e6','#fdfdf6','#272a1a','#5b6a1c','#d3d4bc']},
-  {key:'coral',skin:'coral',mode:'light',name:'와인',ref:'연한 분홍 회색 + 짙은 와인색. 격식 있고 선명한 포인트',sw:['#f7f1f1','#fffdfd','#2a1518','#8c1f3b','#e2d0d3']},
-  {key:'mono',skin:'mono',mode:'light',name:'잉크 모노',ref:'흑백만 사용. 가장 담백하고 인쇄물 같은 느낌',sw:['#fafafa','#ffffff','#000000','#000000','#d8d8d8']},
-  {key:'green',skin:'green',mode:'dark',name:'포레스트 다크',ref:'깊은 숲색 바탕 + 연한 초록. 어둡지만 부드러운 느낌',sw:['#0d1511','#141f19','#e8efe9','#2c8a57','#2a3d32']},
-  {key:'indigo',skin:'indigo',mode:'dark',name:'미드나이트 골드',ref:'짙은 남색 바탕 + 금색. 고급스럽고 임원 보고용 느낌',sw:['#0b1220','#121b2d','#eef1f7','#a8741a','#26334d']}
+  {key:'light',skin:'',mode:'light',name:'흰색 + 남색',ref:'',sw:['#f4f5f8','#ffffff','#0a0c12','#041a72','#cdd2de']},
+  {key:'dark',skin:'',mode:'dark',name:'검정 + 파랑',ref:'',sw:['#000000','#0a0b0e','#f3f4f8','#3f72ff','#2b2e37']},
+  {key:'stripe',skin:'stripe',mode:'light',name:'청회색 + 청록',ref:'',sw:['#eaf1f2','#fbfefe','#10282d','#0f6f78','#c3d4d7']},
+  {key:'paper',skin:'paper',mode:'light',name:'크림 + 주황',ref:'',sw:['#f5efe3','#fffcf5','#3a2f25','#b4532a','#ddd1ba']},
+  {key:'olive',skin:'olive',mode:'light',name:'베이지 + 올리브',ref:'',sw:['#f1f1e6','#fdfdf6','#272a1a','#5b6a1c','#d3d4bc']},
+  {key:'coral',skin:'coral',mode:'light',name:'연분홍 + 와인',ref:'',sw:['#f7f1f1','#fffdfd','#2a1518','#8c1f3b','#e2d0d3']},
+  {key:'mono',skin:'mono',mode:'light',name:'흰색 + 검정',ref:'',sw:['#fafafa','#ffffff','#000000','#000000','#d8d8d8']},
+  {key:'green',skin:'green',mode:'dark',name:'짙은 녹색 + 초록',ref:'',sw:['#0d1511','#141f19','#e8efe9','#2c8a57','#2a3d32']},
+  {key:'indigo',skin:'indigo',mode:'dark',name:'남색 + 금색',ref:'',sw:['#0b1220','#121b2d','#eef1f7','#a8741a','#26334d']}
 ];
 const FONTS=[
-  {key:'sys',name:'기본 고딕',ref:'기기 기본 글자체. 가장 빠르고 깔끔함',css:''},
-  {key:'noto',name:'노토 산스',ref:'균형 잡힌 표준 고딕. 어떤 화면에서도 읽기 편함',css:'family=Noto+Sans+KR:wght@400;500;700'},
-  {key:'plex',name:'플렉스 산스',ref:'각이 살아 있는 정밀한 고딕. 숫자·표가 또렷함',css:'family=IBM+Plex+Sans+KR:wght@400;500;700'},
-  {key:'serif',name:'노토 세리프',ref:'명조체. 보고서·계약서처럼 격식 있는 느낌',css:'family=Noto+Serif+KR:wght@400;600;700'},
-  {key:'dodum',name:'고운 돋움',ref:'둥글고 부드러운 글자. 편안하고 친근한 느낌',css:'family=Gowun+Dodum'}
+  {key:'sys',name:'고딕 · 기본',ref:'',css:''},
+  {key:'noto',name:'고딕 · 노토',ref:'',css:'family=Noto+Sans+KR:wght@400;500;700'},
+  {key:'plex',name:'고딕 · 플렉스',ref:'',css:'family=IBM+Plex+Sans+KR:wght@400;500;700'},
+  {key:'serif',name:'명조',ref:'',css:'family=Noto+Serif+KR:wght@400;600;700'},
+  {key:'dodum',name:'둥근 고딕',ref:'',css:'family=Gowun+Dodum'}
 ];
 const LAYS=[
   {k:'focus',n:'한눈에 보기',d:'달력은 크게, 오른쪽은 현황·선택한 날·시간표·메모를 탭으로 전환',t:'<i class="a"></i><i class="b"><u></u><u></u></i>'},
@@ -3483,13 +3488,13 @@ const LAYS=[
 function curSkinKey(){try{return localStorage.getItem('skin')||HTMLEL.getAttribute('data-theme')||'light';}catch(e){return 'light';}}
 function paintDs(){
   const lc=$('dsLay'),tc=$('dsTheme');if(!lc||!tc)return;
-  lc.innerHTML=LAYS.map(l=>`<button class="ds-card${layout===l.k?' on':''}" data-lay="${l.k}"><div class="thumb lt-${l.k}">${l.t}</div><b>${l.n}</b><span>${l.d}</span></button>`).join('');
+  lc.innerHTML=LAYS.map(l=>`<button class="ds-chip${layout===l.k?' on':''}" data-lay="${l.k}" title="${l.d}">${l.n}</button>`).join('');
   const ck=curSkinKey();
-  tc.innerHTML=SKINS.map(x=>`<button class="ds-card${ck===x.key?' on':''}" data-skin="${x.key}"><div class="thumb pv" style="background:${x.sw[0]};border-color:${x.sw[4]}"><div class="pb" style="background:${x.sw[3]}"></div><div class="pr" style="background:${x.sw[1]};color:${x.sw[2]}"><em>가나다 12</em><u style="background:${x.sw[3]}"></u></div><div class="ps"><s style="background:${x.sw[1]};border-color:${x.sw[4]}"></s><s style="background:${x.sw[1]};border-color:${x.sw[4]}"></s><s style="background:${x.sw[3]};border-color:${x.sw[3]}"></s></div></div><b>${x.name}</b><span>${x.ref}</span></button>`).join('');
+  tc.innerHTML=SKINS.map(x=>`<button class="ds-chip${ck===x.key?' on':''}" data-skin="${x.key}"><span class="ds-sw"><i style="background:${x.sw[0]}"></i><i style="background:${x.sw[3]}"></i></span>${x.name}</button>`).join('');
   const fc=$('dsFont'),cf=curFont();
-  if(fc)fc.innerHTML=FONTS.map(f=>`<button class="ds-card${cf===f.key?' on':''}" data-font="${f.key}"><div class="ds-font" style="${f.key==='sys'?'':`font-family:'${({noto:'Noto Sans KR',plex:'IBM Plex Sans KR',serif:'Noto Serif KR',dodum:'Gowun Dodum'})[f.key]}'`}">일정 한눈에 2026.11.21</div><b>${f.name}</b><span>${f.ref}</span></button>`).join('');
+  if(fc)fc.innerHTML=FONTS.map(f=>`<button class="ds-chip ds-fc${cf===f.key?' on':''}" data-font="${f.key}" style="${f.key==='sys'?'':`font-family:'${({noto:'Noto Sans KR',plex:'IBM Plex Sans KR',serif:'Noto Serif KR',dodum:'Gowun Dodum'})[f.key]}',sans-serif`}">${f.name}<small>일정 2026.11.21</small></button>`).join('');
   const nw=$('dsNow'),sk=SKINS.find(x=>x.key===ck)||SKINS[0],fo=FONTS.find(x=>x.key===cf)||FONTS[0];
-  if(nw)nw.innerHTML=`현재 선택 · 색상 <b>${sk.name}</b> (${sk.ref}) · 글자체 <b>${fo.name}</b> (${fo.ref})`;
+  if(nw)nw.innerHTML=`현재 <b>${sk.name}</b> · <b>${fo.name}</b>`;
 }
 function curFont(){try{return localStorage.getItem('font')||'sys';}catch(e){return 'sys';}}
 function loadFont(k){const f=FONTS.find(x=>x.key===k);if(!f||!f.css)return;
@@ -4242,7 +4247,7 @@ paintView();
 $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').classList.add('open');};
 
 /* ── Supabase 백엔드 ── */
-const APPVER=/*ver*/'v126';
+const APPVER=/*ver*/'v127';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
