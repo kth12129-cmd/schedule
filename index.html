@@ -7116,11 +7116,11 @@ function tsRender(){
     ${g0?`<div class="tsgi"><span>구성원 ${(TS2.gmem[g0.id]||[]).length}명 · ${(TS2.gmem[g0.id]||[]).map(m=>esc(m.name||'이름 없음')).join(', ')}</span><span class="cd">초대 코드 <b>${esc(g0.code)}</b></span><button data-tsg="__send" class="sd">코드 보내기</button><button data-tsg="__leave">나가기</button></div>`:''}${g0&&TS2.send?tsSendHtml(g0):''}${(TS2.inv||[]).map(v=>`<div class="tsiv"><span><b>${esc(v.from_name||'팀원')}</b>님이 <b>${esc(v.group_name)}</b> 그룹에 초대했습니다</span><button data-tsiv="${v.id}" data-y="1">참여</button><button data-tsiv="${v.id}" data-y="0" class="no">거절</button></div>`).join('')}`;
   el.innerHTML=gbar+`<div class="tsctl"><div class="tsnav"><button data-tsn="-1">‹</button><span>${y}년 ${m+1}월</span><button data-tsn="1">›</button><button data-tsn="0" class="tb">오늘</button></div>
     <div class="tsov"><span>함께 보기</span><button data-tso="me" class="${TS2.ovMe?'on':''}">내 일정</button><button data-tso="vac" class="${TS2.ovVac?'on':''}">휴가 일정</button></div></div>
-    <div class="tstabs">${['달력','시간표','선택한 날','메모'].map((t,i)=>`<button data-tspg="${i}" class="${TS2.pg===i?'on':''}">${t}</button>`).join('')}</div>
-    ${TS2.pg>0?`<div class="tsdn"><button data-tsdn="-1">‹</button><b>${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})</b><button data-tsdn="1">›</button><button data-tspg="0" class="tb">달력</button></div>`:''}
+    <div class="tstabs">${['시간표','달력','선택한 날','메모'].map((t,i)=>`<button data-tspg="${i}" class="${TS2.pg===i?'on':''}">${t}</button>`).join('')}</div>
+    ${TS2.pg!==1?`<div class="tsdn"><button data-tsdn="-1">‹</button><b>${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})</b><button data-tsdn="1">›</button><button data-tspg="1" class="tb">달력</button></div>`:''}
     <div class="tsvp" id="tsVp"><div class="tstrack" style="transform:translateX(${-25*TS2.pg}%)">
-     <div class="tspg ${TS2.pg===0?'on':''}"><div class="tscal card">${tsCal()}<div class="mono"><span>건수 = 공개된 팀 일정</span><span>점 = 기록한 사람</span><span>날짜를 누르면 시간표로 이동합니다</span></div></div></div>
-     <div class="tspg ${TS2.pg===1?'on':''}"><div class="card an2c" id="tsTable">${tsTable(TS2.day)}</div></div>
+     <div class="tspg ${TS2.pg===0?'on':''}"><div class="card an2c" id="tsTable">${tsTable(TS2.day)}</div></div>
+     <div class="tspg ${TS2.pg===1?'on':''}"><div class="tscal card">${tsCal()}<div class="mono"><span>건수 = 공개된 팀 일정</span><span>점 = 기록한 사람</span><span>날짜를 누르면 그 날 시간표로 이동합니다</span></div></div></div>
      <div class="tspg ${TS2.pg===2?'on':''}"><div class="card an2c" id="tsDay">${tsDay(TS2.day)}</div></div>
      <div class="tspg ${TS2.pg===3?'on':''}"><div class="card an2c" id="tsMemo">${hasTeam?tsMemoHtml():'<div class="an2e">팀에 참여하면 메모를 남길 수 있습니다.</div>'}</div></div>
     </div></div>`;tsScr();}
@@ -7204,7 +7204,7 @@ $('ts').addEventListener('click',async e=>{
   if(dnb){const d=fromYmd(TS2.day);d.setDate(d.getDate()+ +dnb.dataset.tsdn);TS2.day=ymd(d);TS2.mo=new Date(d.getFullYear(),d.getMonth(),1);tsRender();tsLoadMemos();return;}
   const n=e.target.closest('[data-tsn]'),dd=e.target.closest('[data-tsd]'),o=e.target.closest('[data-tso]'),mc=e.target.closest('[data-tsmc]'),md2=e.target.closest('[data-tsmd]');
   if(n){const v=+n.dataset.tsn;TS2.mo=v?new Date(TS2.mo.getFullYear(),TS2.mo.getMonth()+v,1):new Date(today.getFullYear(),today.getMonth(),1);if(!v)TS2.day=TODAY;tsRender();tsLoadMemos();return;}
-  if(dd){TS2.day=dd.dataset.tsd;const d=fromYmd(TS2.day);if(d.getMonth()!==TS2.mo.getMonth())TS2.mo=new Date(d.getFullYear(),d.getMonth(),1);TS2.pg=1;tsRender();tsLoadMemos();return;}
+  if(dd){TS2.day=dd.dataset.tsd;const d=fromYmd(TS2.day);if(d.getMonth()!==TS2.mo.getMonth())TS2.mo=new Date(d.getFullYear(),d.getMonth(),1);TS2.pg=0;tsRender();tsLoadMemos();return;}
   if(o){if(o.dataset.tso==='me'){TS2.ovMe=!TS2.ovMe;try{localStorage.setItem('ts-me',TS2.ovMe?'1':'0');}catch(_){}}else{TS2.ovVac=!TS2.ovVac;try{localStorage.setItem('ts-vac',TS2.ovVac?'1':'0');}catch(_){}}tsRender();tsLoadMemos();return;}
   if(mc){TS2.mcat=mc.dataset.tsmc;const box=$('tsMemo');if(box)box.innerHTML=tsMemoHtml();return;}
   if(md2){try{await SB.from('team_memos').update({hidden:true}).eq('id',md2.dataset.tsmd);}catch(_){}tsLoadMemos();return;}
@@ -7214,7 +7214,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v153';
+const APPVER=/*ver*/'v154';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
