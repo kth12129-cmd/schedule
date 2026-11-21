@@ -2076,6 +2076,9 @@ body.banding,body.banding *{user-select:none!important;-webkit-user-select:none!
 #pickBar .del{min-width:72px}
 
 @media (hover:hover) and (pointer:fine){.cal-pane,.list-pane .item .meta,.list-pane .pane-hd,.list-pane .tlist{-webkit-user-select:none;user-select:none}}
+
+.an2ctl select:disabled{opacity:.45}
+.an2who{margin-top:10px;padding:8px 12px;border-radius:9px;background:color-mix(in srgb,var(--navy) 8%,var(--surface));color:var(--ink-2);font-size:12.5px}
 </style>
 </head>
 <body>
@@ -7274,7 +7277,7 @@ $('shBtn').onclick=()=>{closeFind();renderShare();loadShares();$('shSheet').clas
 /* ── Supabase 백엔드 ── */
 
 /* ── 추정 n+1 : 지난 일정으로 앞으로의 업무를 예상 ── */
-const AN2={scale:'week',mode:'cal',cat:'',anchor:TODAY};
+const AN2={scale:'week',mode:'cal',cat:'',anchor:TODAY,who:'me'};
 const AN2SYN=[[/기성금?/g,'기성'],[/전표/g,'전표'],[/자금\s*집행(\s*요청)?|집행\s*요청/g,'자금집행'],[/자금\s*계획(\s*변경)?/g,'자금계획'],[/투입\s*공사비|투입비/g,'투입비'],[/품의서?|기안서?/g,'품의'],[/정산서?/g,'정산'],[/보고서?/g,'보고'],[/회의|미팅|협의/g,'회의'],[/집계표?/g,'집계'],[/증빙서?/g,'증빙']];
 function an2Strip(t){
   let x=(t||'').replace(/^\s*\d{1,2}:\d{2}(\s*~\s*\d{1,2}:\d{2})?\s*/,'');
@@ -7295,7 +7298,12 @@ function an2Sim(a,b){
   const dice=2*n/(Math.max(1,a.length-1)+Math.max(1,b.length-1));
   const ov=n>=2?n/Math.max(1,Math.min(a.length-1,b.length-1)):0;
   return Math.max(dice,ov);}
-function an2Items(){return store.items.filter(i=>!i.wk&&(!AN2.cat||catsOf(i).some(c=>c.id===AN2.cat)));}
+function an2Others(){const m=new Map();
+  [...(otherItems||[]),...(teamItems||[])].forEach(o=>{if(!o||!o.owner||!o.date)return;const id=o.owner+':'+(o.item_id||o.id);if(!m.has(id))m.set(id,{...o,id});});
+  return [...m.values()];}
+function an2Items(){
+  if(AN2.who&&AN2.who!=='me')return an2Others().filter(o=>o.owner===AN2.who&&!o.wk);
+  return store.items.filter(i=>!i.wk&&(!AN2.cat||catsOf(i).some(c=>c.id===AN2.cat)));}
 const AN2ONCE=/접종|검진|사직|퇴사|입사|채용|면접|결혼|조문|부고|돌잔치|이사|공모전|발령|시험|수료|졸업|워크숍|야유회|예방접종|독감|건강검진|준공|착공/;
 function an2Pat(){
   let cl=[];
@@ -7438,6 +7446,7 @@ function an2DayChart(pats){
   const its=an2Items().filter(i=>i.date>=r.from&&i.date<=r.to),g={};
   its.forEach(i=>{let key,name,col;
     if(AN2.cat){key=AN2.map[i.id]||i.title;name=lab[key]||an2Short(i.title);col=null;}
+    else if(AN2.who!=='me'){key='o';name='공개 일정';col='#2f5bd0';}
     else{const c=catsOf(i)[0];key=c?c.id:'-';name=c?c.name:'기타';col=c?c.color:'#8a8f9e';}
     (g[key]=g[key]||{name,col,n:0}).n++;});
   const PAL=['#2f5bd0','#d9822b','#2f7d6b','#a23b72','#6b5bd0','#8a8f9e'];
@@ -7489,16 +7498,20 @@ function an2DayChart(pats){
 function an2Render(){
   const pats=an2Pat();
   const sc=[['week','주별'],['month','월별'],['year','연별']],md2=[['cal','달력으로 보기'],['bar','차트로 보기']];
-  let h=`<div class="an2ctl"><select id="an2Cat"><option value="">분류 전체</option>${store.cats.map(c=>`<option value="${c.id}"${AN2.cat===c.id?' selected':''}>${esc(c.name)}</option>`).join('')}</select>
+  const ow=(()=>{try{return viewOwners();}catch(_){return [];}})(),oth=an2Others();
+  if(AN2.who!=='me'&&!ow.some(o=>o.id===AN2.who))AN2.who='me';
+  const whoSel=`<select id="an2Who" class="full"><option value="me">대상: 내 일정</option>${ow.map(o=>{const n=oth.filter(x=>x.owner===o.id).length;return `<option value="${o.id}"${AN2.who===o.id?' selected':''}>대상: ${esc(o.name)}${o.title?' '+esc(o.title):''} · 공개 ${n}건</option>`;}).join('')}</select>`;
+  let h=`<div class="an2ctl">${whoSel}<select id="an2Cat"${AN2.who!=='me'?' disabled':''}><option value="">분류 전체</option>${store.cats.map(c=>`<option value="${c.id}"${AN2.cat===c.id?' selected':''}>${esc(c.name)}</option>`).join('')}</select>
     <div class="seg2">${sc.map(x=>`<button data-sc2="${x[0]}" class="${AN2.scale===x[0]?'on':''}">${x[1]}</button>`).join('')}</div>
     <div class="seg2 full">${md2.map(x=>`<button data-m2="${x[0]}" class="${AN2.mode===x[0]?'on':''}">${x[1]}</button>`).join('')}</div>
     <div class="pernav full"><button data-sh="-1">‹</button><span class="lb">${an2Label()}</span><button data-sh="1">›</button><button class="tb" data-sh="0">오늘</button></div></div>`;
+  if(AN2.who!=='me'){const o=ow.find(x=>x.id===AN2.who);h+=`<div class="an2who">${esc(o?o.name:'팀원')} 님이 공개한 일정만으로 분석합니다 · 인수인계용 (비공개 일정은 포함되지 않음)</div>`;}
   h+=AN2.mode==='cal'?an2Cal(pats):an2Chart(pats);
   h+=an2Forecast(pats);
   $('an2').innerHTML=h;
   const y=$('an2y');if(y)y.scrollLeft=0;
   const mw=document.querySelector('#an2 .mgw');if(mw){const r=an2Range(),W=AN2.scale==='week'?24:14,n=diffDays(TODAY,r.from);mw.scrollLeft=Math.max(0,(n-4)*W);}}
-$('an2').addEventListener('change',e=>{if(e.target.id==='an2Cat'){AN2.cat=e.target.value;an2Render();}});
+$('an2').addEventListener('change',e=>{if(e.target.id==='an2Cat'){AN2.cat=e.target.value;an2Render();}else if(e.target.id==='an2Who'){AN2.who=e.target.value;if(AN2.who!=='me')AN2.cat='';an2Render();}});
 $('an2').addEventListener('click',e=>{
   const sc=e.target.closest('[data-sc2]'),m=e.target.closest('[data-m2]'),sh=e.target.closest('[data-sh]');
   if(sc){AN2.scale=sc.dataset.sc2;an2Render();}
@@ -7715,7 +7728,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v189';
+const APPVER=/*ver*/'v190';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
