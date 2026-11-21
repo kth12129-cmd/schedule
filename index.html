@@ -1254,6 +1254,25 @@ html[data-layout="list"] .rightcol{flex:1}
 html[data-layout="cal"] .rightcol{position:fixed;top:0;right:0;bottom:0;width:min(480px,94vw);z-index:70;padding:14px;background:var(--page);
   border-left:1px solid var(--line);transform:translateX(104%);transition:transform .25s cubic-bezier(.2,.8,.2,1);box-shadow:-18px 0 50px rgba(0,0,0,.25)}
 html[data-layout="cal"] body.rc-open .rightcol,html[data-layout="cal"].x body.rc-open .rightcol{transform:none}
+
+/* v195 휴대폰 창: 끝까지 채우고 안에서 스크롤 · 끌어 옮기기 */
+@media(pointer:coarse){#grid,#grid *,#list .item,#list .item *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none}
+  #list .item textarea,#list .item input{-webkit-user-select:text;user-select:text}}
+.mvghost{position:fixed;z-index:9999;pointer-events:none;transform:translate(-50%,-150%);max-width:62vw;padding:9px 14px;border-radius:12px;background:var(--ink);color:var(--page);font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+body.dragmv{overscroll-behavior:none}
+@media(max-width:700px){
+  html[data-layout="cal"] .rightcol{display:flex;flex-direction:column;overflow:hidden;gap:9px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));transition:top .22s ease}
+  html[data-layout="cal"] .rightcol>.rt-tabs{flex:none}
+  html[data-layout="cal"] .rightcol>.card,html[data-layout="cal"] .rightcol>.botrow{flex:1 1 0;min-height:0;margin:0}
+  html[data-layout="cal"] .rightcol .list-pane{display:flex;flex-direction:column}
+  html[data-layout="cal"] .rightcol .list{columns:auto!important;column-count:auto!important;column-width:auto!important;overflow-y:auto;max-height:none;flex:1 1 0;min-height:0;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:24px}
+  html[data-layout="cal"] .rightcol .status-pane{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  html[data-layout="cal"] .rightcol .tl-pane,html[data-layout="cal"] .rightcol .memo-pane{height:auto;flex:1 1 0;min-height:0;margin:0;display:flex;flex-direction:column}
+  html[data-layout="cal"] .rightcol .tlwrap{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  html[data-layout="cal"] .rightcol .memo-pane textarea.memo{flex:1 1 0;min-height:0;resize:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  body.dragmv #rc{top:50dvh;padding-top:14px}
+  body.dragmv #rcX,body.dragmv #rcBack,body.dragmv #pickBar{display:none!important}
+}
 #rcX{display:none}
 html[data-layout="cal"] body.rc-open #rcX{display:grid;position:fixed;z-index:9990;top:calc(10px + env(safe-area-inset-top,0px));right:12px;width:38px;height:38px;place-items:center;border-radius:50%;background:var(--ink);color:var(--page);font-size:16px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.3)}
 .pop-title .pclose{display:none}
@@ -5155,13 +5174,58 @@ function pickDel(ids){ids=[...ids].filter(id=>store.items.some(i=>i.id===id));if
   },true);
   /* 휴대폰: 길게 누르면 선택 시작 (버튼 위에서는 설명 보기) */
   document.addEventListener('touchstart',e=>{pkFired=false;const t=e.touches[0];pkXY=[t.clientX,t.clientY];clearTimeout(pkT);
-    const tipEl=e.target.closest('[data-tip]'),li=e.target.closest('#list .item[data-id]');
+    const tipEl=e.target.closest('[data-tip]'),li=e.target.closest('#list .item[data-id],#grid .ev[data-drag]');
     if(tipEl&&(!li||tipEl!==li)&&tipEl.closest('button,a,.mtag')){pkT=setTimeout(()=>{pkFired=true;window.dtipShow&&dtipShow(tipEl,2200);},450);return;}
     if(!li||e.target.closest('textarea,input'))return;
-    pkT=setTimeout(()=>{pkFired=true;try{navigator.vibrate&&navigator.vibrate(12);}catch(_){}pickToggle(li.dataset.id);},450);},{passive:true});
+    const pid=li.dataset.id||li.dataset.drag;window._pkSrc=pid;pkT=setTimeout(()=>{pkFired=true;try{navigator.vibrate&&navigator.vibrate(12);}catch(_){}if(!pickSet.has(pid))pickToggle(pid);},380);},{passive:true});
   document.addEventListener('touchmove',e=>{if(!pkXY)return;const t=e.touches[0];if(Math.abs(t.clientX-pkXY[0])>8||Math.abs(t.clientY-pkXY[1])>8)clearTimeout(pkT);},{passive:true});
   document.addEventListener('touchend',e=>{clearTimeout(pkT);if(pkFired){e.preventDefault();setTimeout(()=>{pkFired=false;},350);}},{passive:false});
   document.addEventListener('click',e=>{if(pkFired&&e.target.closest&&e.target.closest('[data-tip]')){e.preventDefault();e.stopPropagation();pkFired=false;}},true);
+})();
+/* ── 휴대폰: 길게 눌러 선택 → 손가락을 떼지 않고 끌어서 다른 날로 옮기기 (창은 아래 절반으로 줄고, 가장자리에서 달력이 자동으로 넘어감) ── */
+(function(){
+  if(!matchMedia('(pointer:coarse)').matches)return;
+  let d=null,gh=null,raf=0,sv=0,hot=null,lx=0,ly=0;
+  const half=()=>document.body.classList.contains('rc-open');
+  function frame(){raf=0;if(!d)return;
+    if(sv){const g=$('grid');if(g)g.scrollTop+=sv;}
+    hover();raf=requestAnimationFrame(frame);}
+  function hover(){
+    const el=document.elementFromPoint(lx,ly),c=el&&el.closest?el.closest('#grid .cell[data-d]'):null;
+    if(c!==hot){if(hot)hot.classList.remove('dropo');hot=c;if(hot)hot.classList.add('dropo');}}
+  function start(){
+    const ids=[...pickSet];if(!ids.length)return false;
+    const its=ids.map(id=>store.items.find(i=>i.id===id)).filter(Boolean);if(!its.length)return false;
+    d={ids:its.map(i=>i.id)};
+    gh=document.createElement('div');gh.className='mvghost';
+    gh.textContent=its[0].title+(its.length>1?' 외 '+(its.length-1)+'건':'');document.body.appendChild(gh);
+    document.body.classList.add('dragmv');try{navigator.vibrate&&navigator.vibrate(18);}catch(_){}
+    if(!raf)raf=requestAnimationFrame(frame);return true;}
+  function place(t){lx=t.clientX;ly=t.clientY;gh.style.left=lx+'px';gh.style.top=ly+'px';
+    const g=$('grid');if(!g)return;const r=g.getBoundingClientRect(),rc=$('rc');
+    const bot=(half()&&rc)?rc.getBoundingClientRect().top:r.bottom,z=70;
+    sv=ly<r.top+z?-Math.min(16,(r.top+z-ly)/4+3):ly>bot-z?Math.min(16,(ly-(bot-z))/4+3):0;}
+  function finish(ok){
+    if(!d)return;const ids=d.ids;d=null;sv=0;cancelAnimationFrame(raf);raf=0;
+    const day=hot&&hot.dataset.d;if(hot){hot.classList.remove('dropo');hot=null;}
+    if(gh){gh.remove();gh=null;}document.body.classList.remove('dragmv');
+    if(ok&&day){let n=0;ids.forEach(id=>{const it=store.items.find(x=>x.id===id);if(it&&it.date!==day){try{moveItem(id,day);n++;}catch(_){}}});
+      pickClear();
+      if(n)setTimeout(()=>toastMsg(`일정 ${n}개를 ${md(day)}로 옮겼습니다`,'되돌리기',()=>{undoDo();}),0);}
+    }
+  document.addEventListener('touchmove',e=>{
+    const t=e.touches[0];
+    if(!d){
+      if(!pkFired||!pkXY||!window._pkSrc||!pickSet.has(window._pkSrc))return;
+      e.preventDefault();
+      if(Math.abs(t.clientX-pkXY[0])<10&&Math.abs(t.clientY-pkXY[1])<10)return;
+      if(!start())return;}
+    e.preventDefault();place(t);},{passive:false});
+  document.addEventListener('touchend',()=>{finish(true);window._pkSrc=null;},true);
+  document.addEventListener('touchcancel',()=>{finish(false);},true);
+  document.addEventListener('click',e=>{const ev=e.target.closest&&e.target.closest('#grid .ev[data-drag]');
+    if(!ev||!pickSet.size)return;if(pkFired){return;}e.preventDefault();e.stopPropagation();pickToggle(ev.dataset.drag);},true);
+  document.addEventListener('dragstart',e=>{e.preventDefault();},true);
 })();
 /* ── PC: 마우스로 끌어서 범위 선택 (목록 빈 곳·달력 칸에서 시작) ── */
 (function(){
@@ -7782,7 +7846,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v194';
+const APPVER=/*ver*/'v195';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
