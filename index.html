@@ -4397,6 +4397,7 @@ function an2Sim(a,b){
   const ov=n>=2?n/Math.max(1,Math.min(a.length-1,b.length-1)):0;
   return Math.max(dice,ov);}
 function an2Items(){return store.items.filter(i=>!i.wk&&(!AN2.cat||catsOf(i).some(c=>c.id===AN2.cat)));}
+const AN2ONCE=/접종|검진|사직|퇴사|입사|채용|면접|결혼|조문|부고|돌잔치|이사|공모전|발령|시험|수료|졸업|워크숍|야유회|예방접종|독감|건강검진|준공|착공/;
 function an2Pat(){
   let cl=[];
   an2Items().slice().sort((x,y)=>x.date.localeCompare(y.date)).forEach(i=>{
@@ -4420,6 +4421,9 @@ function an2Pat(){
       G.kind=m>=26&&m<=35?'month':m>=6&&m<=8?'week':m>=12&&m<=16?'2week':'days';
       const dd=G.dates.map(d=>fromYmd(d).getDate()).sort((a,b)=>a-b);G.dom=dd[Math.floor(dd.length/2)];
       G.dow=fromYmd(G.dates[G.dates.length-1]).getDay();}
+    if(G.its.some(i=>AN2ONCE.test(i.title||'')))G.once=true;
+    if(G.iv&&G.dates.length>=3){const iv2=[];for(let j=1;j<G.dates.length;j++)iv2.push(diffDays(G.dates[j],G.dates[j-1]));const ok=iv2.filter(x=>x>=G.iv*.6&&x<=G.iv*1.4).length;if(ok/iv2.length<.6)G.once=true;}
+    if(G.once){G.iv=null;G.kind=null;}
     out.push(G);});
   return out;}
 function an2PName(p){const G=p.G;return (G.mon&&G.kind==='month'?(((G.mon-1+p.k)%12)+1)+'월 ':'')+G.label+(G.seq?' '+(G.seq.n+p.k)+G.seq.u:'');}
@@ -4601,7 +4605,7 @@ $('an2').addEventListener('click',e=>{
       if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
     an2Render();}});
 runQuery=function(){an2Render();};
-const APPVER=/*ver*/'v143';
+const APPVER=/*ver*/'v144';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
