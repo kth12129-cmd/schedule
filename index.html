@@ -2013,6 +2013,9 @@ html .cal-pane,html .rightcol{transition:opacity .14s ease}html.lay-sw .cal-pane
 #viewMenu .mine .cb{width:10px;height:10px;border:1.5px solid var(--ink-3);border-radius:3px;margin:0;font-size:8px;line-height:1;background:transparent;color:#fff}
 #viewMenu .mine .cb.c{background:var(--navy);border-color:var(--navy)}
 #viewMenu .mine.on{background:transparent}
+
+.st-ck{width:18px!important;height:18px!important;min-width:0!important;min-height:0!important;border-width:1.5px!important;flex:0 0 18px!important;align-self:center}
+.st-ck svg{width:11px;height:11px}
 </style>
 </head>
 <body>
@@ -7517,7 +7520,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v182';
+const APPVER=/*ver*/'v183';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
