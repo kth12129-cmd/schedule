@@ -4340,7 +4340,7 @@ const AN2SYN=[[/기성금?/g,'기성'],[/전표/g,'전표'],[/자금\s*집행(\s
 function an2Strip(t){
   let x=(t||'').replace(/^\s*\d{1,2}:\d{2}(\s*~\s*\d{1,2}:\d{2})?\s*/,'');
   store.cats.forEach(c=>[c.name,c.name.replace(/(현장|공사|사업)$/,'')].forEach(n=>{if(n&&n.length>=2)x=x.split(n).join(' ');}));
-  return x.replace(/\s*(현장|입니다|해주세요|부탁|드립니다)\s*/g,' ').replace(/\s+/g,' ').trim();}
+  return x.replace(/\s*(현장|입니다|해주세요|부탁|드립니다)\s*/g,' ').replace(/청구서/g,'청구').replace(/(작성|제출|검토|확인|처리|진행|완료|발송|상신)(해|함|하기)?/g,' ').replace(/\s*및\s*/g,' ').replace(/\s+/g,' ').trim();}
 function an2Short(t,max){const x=an2Strip(t)||(t||'').trim();max=max||14;return x.length>max?x.slice(0,max-1)+'…':x;}
 function an2Name(t){return an2Short((t||'').replace(/\s*\d+\s*월(분)?\s*/g,' '),16)||an2Short(t,16);}
 function an2Norm(t){
@@ -4367,7 +4367,7 @@ function an2Pat(){
     const srt=G.its.slice().sort((a,b)=>a.date.localeCompare(b.date)),last=srt[srt.length-1];
     const all=[...new Set(srt.map(i=>i.date))];
     G.dates=[];all.forEach(d=>{if(!G.dates.length||diffDays(d,G.dates[G.dates.length-1])>3)G.dates.push(d);});
-    G.label=an2Name(last.title);G.color=catColor(last);G.n=G.its.length;
+    G.label=an2Name(last.title);{const mm=(last.title||'').match(/(\d{1,2})\s*월/);G.mon=mm?+mm[1]:0;}G.color=catColor(last);G.n=G.its.length;
     if(G.dates.length>=2){const iv=[];for(let j=1;j<G.dates.length;j++)iv.push(diffDays(G.dates[j],G.dates[j-1]));
       iv.sort((a,b)=>a-b);const m=iv[Math.floor(iv.length/2)];G.iv=m;
       G.kind=m>=26&&m<=35?'month':m>=6&&m<=8?'week':m>=12&&m<=16?'2week':'days';
@@ -4375,6 +4375,7 @@ function an2Pat(){
       G.dow=fromYmd(G.dates[G.dates.length-1]).getDay();}
     out.push(G);});
   return out;}
+function an2PName(p){const G=p.G;return (G.mon&&G.kind==='month'?(((G.mon-1+p.k)%12)+1)+'월 ':'')+G.label;}
 function an2Next(G,from){
   if(G.kind==='month'){const d=fromYmd(from),m=d.getMonth()+1,y=d.getFullYear();return ymd(new Date(y,m,Math.min(G.dom,new Date(y,m+1,0).getDate())));}
   return addDays(from,G.kind==='week'?7:G.kind==='2week'?14:G.iv);}
@@ -4382,7 +4383,7 @@ function an2Proj(G,to){
   const res=[];if(!G.iv)return res;const L=G.dates[G.dates.length-1];
   if(diffDays(TODAY,L)>G.iv*2.5)return res;
   let d=L,n=0;
-  while(n++<200){d=an2Next(G,d);if(d>to)break;res.push({date:d,G,late:d<TODAY});}
+  while(n++<200){d=an2Next(G,d);if(d>to)break;res.push({date:d,G,late:d<TODAY,k:n});}
   const late=res.filter(r=>r.late);
   return res.filter(r=>!r.late).concat(late.slice(-1));}
 function an2Every(G){return G.kind==='month'?`매월 ${G.dom}일경`:G.kind==='week'?`매주 ${WD[G.dow]}요일`:G.kind==='2week'?'격주':`약 ${G.iv}일 간격`;}
@@ -4402,7 +4403,7 @@ function an2Forecast(pats){
   const late=rows.filter(r=>r.late),soon=rows.filter(r=>!r.late).slice(0,14);
   const row=(r)=>{const dd=diffDays(r.date,TODAY);
     const b=r.late?`<b class="bd late">${-dd}일 지남</b>`:dd===0?'<b class="bd now">오늘</b>':`<b class="bd">${dd}일 후</b>`;
-    return `<div class="fr"><i style="background:${r.G.color}"></i>${b}<span class="fd">${md(r.date)}(${WD[fromYmd(r.date).getDay()]})</span><span class="ft">${esc(r.G.label)}</span><span class="fn">${an2Every(r.G)} · ${r.G.dates.length}회</span></div>`;};
+    return `<div class="fr"><i style="background:${r.G.color}"></i>${b}<span class="fd">${md(r.date)}(${WD[fromYmd(r.date).getDay()]})</span><span class="ft">${esc(an2PName(r))}</span><span class="fn">${an2Every(r.G)} · ${r.G.dates.length}회</span></div>`;};
   let h='<div class="an2s">놓친 일 점검 <em>추정 · 지난 반복 간격 기준</em></div>';
   h+=late.length?`<div class="fl">${late.map(row).join('')}</div>`:'<div class="an2e">예상 날짜가 지났는데 기록이 없는 반복 업무는 없는 것으로 보입니다.</div>';
   h+='<div class="an2s">오늘부터 60일 이내 예상 업무 <em>추정</em></div>';
@@ -4413,7 +4414,7 @@ function an2Data(pats,r){
   const {spans,points}=collect(its,[],r);
   spans.forEach(x=>x.label=an2Short(x.label));points.forEach(x=>x.label=an2Short(x.label));
   const ghosts=[];pats.forEach(G=>an2Proj(G,r.to).forEach(p=>{if(p.date>=r.from)ghosts.push(p);}));
-  ghosts.forEach(p=>points.push({date:p.date,label:'예상 '+an2Short(p.G.label,10),c:p.G.color,ghost:true}));
+  ghosts.forEach(p=>points.push({date:p.date,label:an2PName(p),c:p.G.color,ghost:true}));
   const byDay={};points.forEach(p=>{if(p.date>=r.from&&p.date<=r.to)(byDay[p.date]=byDay[p.date]||[]).push(p);});
   return{its,spans,points,ghosts,byDay};}
 const an2Wk='<div class="wkhd" style="margin-bottom:5px"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div>';
@@ -4491,7 +4492,7 @@ $('an2').addEventListener('click',e=>{
       if(AN2.scale==='week')d.setDate(d.getDate()+7*n);else if(AN2.scale==='month')d.setMonth(d.getMonth()+n,1);else d.setFullYear(d.getFullYear()+n);AN2.anchor=ymd(d);}
     an2Render();}});
 runQuery=function(){an2Render();};
-const APPVER=/*ver*/'v135';
+const APPVER=/*ver*/'v136';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
