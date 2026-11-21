@@ -5313,8 +5313,9 @@ function renderTL(){
   $('tl').innerHTML=h+`<div class="tlbody">${body}</div>`;
   $('tlwrap').scrollTop=0;
 }
+const tmrItems=k=>ordAll(k).filter(i=>!i.done&&!i.hid&&!(hidePri&&(i.pri||i.tn)));
 function renderBanner(){
-  const k=addDays(TODAY,1),its=ordAll(k).filter(i=>!i.done),dls=deadlinesOn(k),n=its.length+dls.length;
+  const k=addDays(TODAY,1),its=tmrItems(k),dls=deadlinesOn(k),n=its.length+dls.length;
   if(!n){$('banner').innerHTML='';return;}
   const perm=('Notification'in window)?Notification.permission:'x';
   const line=[...dls.map(x=>`${x.label} · ${x.stage} 기한`),
@@ -5328,7 +5329,7 @@ function renderBanner(){
 function tomorrowRows(){
   const k=addDays(TODAY,1);
   return[...deadlinesOn(k).map(x=>`${x.label} · ${x.stage} 기한`),
-    ...ordAll(k).filter(i=>!i.done).map(i=>(i.pri?'★ ':'')+(i.time?i.time+' ':'')+i.title)];
+    ...tmrItems(k).map(i=>(i.pri?'★ ':'')+(i.time?i.time+' ':'')+i.title)];
 }
 function fire(title,body){
   try{if(navigator.vibrate)navigator.vibrate([220,110,220]);}catch(e){}
@@ -7298,7 +7299,7 @@ function paintView(){
   b.dataset.tip=viewWho==='me'?'내 일정만 표시 중 · 눌러서 팀 일정 보기':viewWho==='all'?'팀 전체 일정 표시 중':'선택한 팀원 일정 표시 중';
 }
 function paintPriHide(){const b=$('priHide');if(!b)return;b.classList.toggle('act',hidePri);b.setAttribute('aria-pressed',hidePri);b.textContent=hidePri?'중요 보이기':'중요 숨기기';}
-$('priHide').onclick=()=>{hidePri=!hidePri;try{localStorage.setItem('hidePri',hidePri?'1':'0');}catch(_){}paintPriHide();redrawAll();toastMsg(hidePri?'중요 일정을 숨겼어요':'중요 일정을 다시 표시합니다');};
+$('priHide').onclick=()=>{hidePri=!hidePri;try{localStorage.setItem('hidePri',hidePri?'1':'0');}catch(_){}paintPriHide();redrawAll();try{renderBanner();}catch(_){}toastMsg(hidePri?'중요 일정을 숨겼어요':'중요 일정을 다시 표시합니다');};
 paintPriHide();
 (function(){const L=$('list');let t=null;
   L.addEventListener('click',e=>{const b=e.target.closest('[data-hidtoggle]');if(!b)return;e.stopPropagation();showHid=!showHid;redrawAll();},true);
@@ -7781,7 +7782,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v193';
+const APPVER=/*ver*/'v194';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
