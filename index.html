@@ -7311,7 +7311,7 @@ function mergeRemote(r){
   (r.items||[]).forEach(ri=>{const li=byId[ri.id];
     if(!li||(ri.mt||0)>(li.mt||0)){byId[ri.id]=ri;changed=true;}});
   const tomb=maxMap(store.tomb,r.tomb);
-  let items=Object.values(byId).filter(i=>!(tomb[i.id]&&tomb[i.id]>(i.mt||0)));
+  let items=Object.values(byId).filter(i=>!i.seed&&!(tomb[i.id]&&tomb[i.id]>(i.mt||0)));
   if(items.length!==store.items.length)changed=true;
   store.items=items;store.tomb=tomb;
   const memoMt=maxMap(store.memoMt,r.memoMt);
@@ -7977,7 +7977,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v200';
+const APPVER=/*ver*/'v201';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
