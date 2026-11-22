@@ -4984,6 +4984,16 @@ const remTxt=n=>n>=60&&n%60===0?(n/60)+'시간 전':n+'분 전';
 const remVal=i=>i.rem!==undefined&&i.rem!==null?(+i.rem||0):(i.pri?(store.settings.impRem===undefined?30:(+store.settings.impRem||0)):0);
 const remOn=i=>!!i.time&&!i.done&&remVal(i)>0;
 const remTip=i=>i.rem===undefined?(i.pri?'중요 일정 기본: '+(remVal(i)?remTxt(remVal(i))+' 알림':'알림 없음')+' · 누르면 변경':'알림 없음 · 누르면 설정'):(i.rem?remTxt(i.rem)+' 알림 · 누르면 변경':'알림 끔 · 누르면 변경');
+/* 분류를 고르지 않았을 때(전체) 내용으로 첫 분류 추정: 개인 일정 낱말 → 개인, 그 외 → 업무 분류 */
+const PERSONAL_RE=/결혼|청첩|돌잔치|생일|기념일|병원|치과|한의원|검진|접종|독감|약국|운동|헬스|필라테스|요가|러닝|마라톤|등산|골프|여행|휴가|연차|반차|휴무|가족|부모님|어머니|아버지|엄마|아빠|부모|동생|누나|언니|조카|친구|동창|모임|약속|데이트|이사|미용실|염색|머리|네일|독서|토익|영어\s*회화|기술사|자격증|학원|공부|은행|장보기|마트|택배|세차|보험|조문|부고|장례|제사|명절|개인|집안|청소|빨래/;
+const isPersonalCat=c=>/개인|가족|취미|사생활|personal/i.test(c.name);
+function guessCat(text){
+  try{if(!allMode())return null;}catch(_){return null;}
+  const t=String(text||'');
+  if(PERSONAL_RE.test(t)){const pc=store.cats.find(isPersonalCat);return pc?pc.id:null;}
+  const first=store.cats[0];
+  if(first&&isPersonalCat(first)){const w=store.cats.find(c=>!isPersonalCat(c));return w?w.id:null;}
+  return null;}
 function parseInput(raw,baseYmd){
   let s=' '+raw.trim()+' ',d=fromYmd(baseYmd),hit=false,time=null,endTime=null,endDate=null,pri=false;
   if(/!|중요/.test(s)){pri=true;s=s.replace(/!/g,' ').replace(/중요/g,' ');}
@@ -5046,6 +5056,7 @@ function parseInput(raw,baseYmd){
     const tm=s.match(/(오전|오후|아침|저녁|밤|새벽)?\s*(\d{1,2})\s*(?::|시)\s*(\d{1,2})?\s*분?/);
     if(tm){const t=to24(tm[1],tm[2],tm[3]);
       if(t){time=t;s=s.replace(tm[0],' ');}}}
+  if(!cat)cat=guessCat(s);
   return{date:ymd(d),endDate,time,endTime,pri,cat,wk,rem,tn,title:s.replace(/\s+/g,' ').trim()||raw.trim()};
 }
 
@@ -7990,7 +8001,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v203';
+const APPVER=/*ver*/'v204';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
