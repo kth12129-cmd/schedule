@@ -2216,6 +2216,16 @@ html.authwait #grid .ev,html.authwait #list,html.authwait #banner,html.authwait 
 .mtag.pri,.mtag.pri.rmt{color:#d93025!important}
 .othdot{grid-column:1;align-self:start;margin-top:1px;width:18px;height:18px;display:grid;place-items:center}
 .othdot i{width:8px;height:8px;border-radius:50%;background:var(--c,#8a8f9e)}
+
+.om-t{font-size:11.5px;color:var(--ink-3);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.om-e{margin-top:2px;font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.om-e .dim{color:var(--ink-3)}
+.om-b .om-n b{color:var(--ink);font-weight:700}
+.om-ok{font-style:normal;font-size:10.5px;font-weight:650;color:#1f6feb;border:1px solid color-mix(in srgb,#1f6feb 40%,transparent);border-radius:4px;padding:0 5px;line-height:16px}
+.om-cf{height:24px!important;font-size:11.5px!important;padding:0 8px!important}
+.om-ed input:disabled{opacity:.55}
+.hint-txt.sm{font-size:12px;margin:-2px 0 6px}
+@media(max-width:700px){.om .om-t{display:block}.om .om-e{display:block}}
 </style>
 </head>
 <body>
@@ -6157,12 +6167,12 @@ function orgMembersHTML(){
     const m=p.user_id?tmMembers.find(x=>x.user_id===p.user_id):null,abs=m&&tmAbsent(m,TODAY);
     const path=orgPath(p.unit_id).slice(-3).map(u=>u.name).join(' › ');
     return `<div class="om"><label class="om-ck"><input type="checkbox" data-ophs="${p.id}"${orgPh.has(p.id)?' checked':''}></label>
-      <div class="om-b"><div class="om-n"><span class="om-av">${esc(p.name.charAt(0))}</span><i class="om-d${p.user_id?' on':''}" title="${p.user_id?'앱 사용 중':'미가입'}"></i><b>${esc(p.name)}</b><span>${esc(p.title||'')}</span>
-        ${p.is_leader?'<em class="tmb lead">팀장</em>':''}${p.user_id===me?'<em class="tmb">나</em>':''}${abs?`<em class="tmb st-${m.status}">${esc(tmLabel(m))}</em>`:''}</div>
-        <div class="om-p">${esc(path)}</div></div>
+      <div class="om-b"><div class="om-t">${esc(path)}</div><div class="om-n"><span class="om-av">${esc(p.name.charAt(0))}</span><i class="om-d${p.user_id?' on':''}" title="${p.user_id?'앱 사용 중':'미가입'}"></i><b>${esc(p.name)}</b><span>${esc(p.title||'')}</span>
+        ${p.is_leader?'<em class="tmb lead">팀장</em>':''}${p.user_id===me?'<em class="tmb">나</em>':''}${abs?`<em class="tmb st-${m.status}">${esc(tmLabel(m))}</em>`:''}${p.name_ok?'<em class="om-ok" title="본인이 이름을 확인함 · 다른 사람은 바꿀 수 없음">이름 확인됨</em>':(p.user_id&&p.user_id===me?'<button class="vbtn sm om-cf" data-onc="1" title="이름이 맞으면 눌러 고정하세요">이름 확인</button>':'')}</div>
+        <div class="om-e">${p.email?esc(p.email):'<span class="dim">가입 전</span>'}</div></div>
       <input class="om-pi" type="tel" inputmode="numeric" data-phid="${p.id}" value="${esc(p.phone?fmtPh(p.phone):'')}" placeholder="연락처 입력" maxlength="13" autocomplete="off">
       <span class="om-s${p.user_id?'':' dim'}">${p.user_id?'가입':'미가입'}</span>
-      <div class="om-r">${q?'':`<button class="vbtn alt sm" data-oe="${p.id}" aria-label="수정" title="이름·직급 수정">수정</button><button class="vbtn alt sm" data-od="${p.id}" aria-label="목록에서 빼기" title="구성원에서 빼기">빼기</button>`}</div></div>${orgEd===p.id?`<div class="om-ed"><input id="oeN" value="${esc(p.name)}" placeholder="이름" maxlength="30"><input id="oeT" value="${esc(p.title||'')}" placeholder="직급" maxlength="20"><label><input type="checkbox" id="oeL"${p.is_leader?' checked':''}> 팀장</label><button class="vbtn sm" data-oes="${p.id}">저장</button><button class="vbtn alt sm" data-oec="1">취소</button></div>`:''}`;}).join('');
+      <div class="om-r">${q?'':`<button class="vbtn alt sm" data-oe="${p.id}" aria-label="수정" title="이름·직급 수정">수정</button><button class="vbtn alt sm" data-od="${p.id}" aria-label="목록에서 빼기" title="구성원에서 빼기">빼기</button>`}</div></div>${orgEd===p.id?`<div class="om-ed"><input id="oeN" value="${esc(p.name)}" placeholder="이름" maxlength="30"${p.name_ok&&p.user_id!==me?' disabled title="본인이 확인한 이름이라 바꿀 수 없습니다"':''}><input id="oeT" value="${esc(p.title||'')}" placeholder="직급" maxlength="20"><label><input type="checkbox" id="oeL"${p.is_leader?' checked':''}> 팀장</label><button class="vbtn sm" data-oes="${p.id}">저장</button><button class="vbtn alt sm" data-oec="1">취소</button></div>`:''}`;}).join('');
 }
 let orgSoftT=0;
 async function orgSoft(force){
@@ -6226,9 +6236,10 @@ $('tmBody').addEventListener('click',async e=>{
     await tsOpen();TS2.gid=r.data.id;await tsLoadGItems();tsRender();tsLoadMemos();return;}
   if(b0=t0.closest('[data-oe]')){orgEd=+b0.dataset.oe;return orgRender();}
   if(t0.closest('[data-oec]')){orgEd=null;return orgRender();}
+  if(t0.closest('[data-onc]')){const r=await SB.rpc('org_name_confirm');if(r.error){toastMsg('확인하지 못했습니다: '+r.error.message);return;}toastMsg('이름을 확인했습니다. 이제 다른 사람이 바꿀 수 없습니다.');await orgLoad();orgRender();return;}
   if(b0=t0.closest('[data-oes]')){const r=await SB.rpc('org_member_edit',{p_pid:+b0.dataset.oes,p_name:$('oeN').value,p_title:$('oeT').value,p_leader:$('oeL').checked});
     if(r.error){toastMsg('저장하지 못했습니다');return;}
-     orgEd=null;toastMsg('저장했습니다');return re();}
+     orgEd=null;toastMsg(r.data&&r.data.locked?'본인이 확인한 이름이라 이름은 그대로 두고 직급만 저장했습니다':'저장했습니다');return re();}
   if(b0=t0.closest('[data-od]')){if(!confirm('이 사람을 팀 구성원 목록에서 뺄까요?\n(이미 가입한 사람의 일정은 그대로 남습니다)'))return;
     const r=await SB.rpc('org_member_del',{p_pid:+b0.dataset.od});if(r.error){toastMsg('빼지 못했습니다');return;}toastMsg('구성원에서 뺐습니다');return re();}
   if(t0.id==='orgAddBtn'){const n=$('oaN').value.trim();if(!n){orgAddMsg='이름을 적어 주세요.';return orgRender();}
@@ -8023,7 +8034,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v205';
+const APPVER=/*ver*/'v206';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -8162,7 +8173,9 @@ function renderAuth(){
   if(!session){
     box.innerHTML=`<div class="hint-txt"><b style="color:var(--navy)">아직 로그인하지 않았습니다 — 그래서 다른 기기와 연동되지 않습니다.</b><br>
       <b>회사 이메일(@tongyanginc.co.kr)</b>로만 가입할 수 있습니다. 처음이면 이메일·비밀번호를 적고 <b>가입</b>을 먼저 누르세요. 그 다음 다른 기기에서 <b>같은 계정으로 로그인</b>하면 맞춰집니다.</div>
-      <div class="frow"><input id="aEmail" type="email" placeholder="아이디: 이름 초성 영어@tongyanginc.co.kr (예: kth)" autocomplete="username"></div>
+      <div class="frow"><input id="aName" placeholder="이름 (처음 가입할 때만 · 예: 홍길동)" autocomplete="name" maxlength="20"></div>
+      <div class="frow"><input id="aEmail" type="email" placeholder="회사 메일 (예: gildong.hong@tongyanginc.co.kr)" autocomplete="username"></div>
+      <div class="hint-txt sm">실제로 쓰는 <b>회사 메일</b>을 적어 주세요. 가입 확인·비밀번호 찾기·알림 메일이 이 주소로 갑니다. 이름은 조직도와 맞춰 본인 확인에 씁니다.</div>
       <div class="frow"><input id="aPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"></div>
       <div class="frow btns"><button class="go2" id="aIn">로그인</button>
         <button class="go2 alt" id="aUp">가입</button></div>
@@ -8210,13 +8223,15 @@ function renderAuth(){
       if(error){msg(/rate|seconds|too many/i.test(error.message)?'잠시 후(1분 뒤) 다시 시도하세요. 메일은 짧은 시간에 여러 번 보낼 수 없습니다.':'메일을 보내지 못했습니다: '+error.message);return;}
       msg('재설정 메일을 보냈습니다. 메일함(스팸함 포함)을 확인하고, 링크를 누르면 새 비밀번호를 정할 수 있습니다. 1~2분 걸릴 수 있어요.');};
     $('aUp').onclick=async()=>{
-      if(!/^[^@\s]+@tongyanginc\.co\.kr$/i.test(creds().email)){msg('회사 이메일(@tongyanginc.co.kr)만 가입할 수 있습니다.');return;}
+      const nm=$('aName').value.trim();
+      if(!nm){msg('이름을 적어 주세요. 조직도의 이름과 맞춰 본인을 확인합니다.');$('aName').focus();return;}
+      if(!/^[^@\s]+@tongyanginc\.co\.kr$/i.test(creds().email)){msg('회사 메일(@tongyanginc.co.kr)만 가입할 수 있습니다.\n→ 실제로 쓰는 회사 메일 주소를 적어 주세요.');return;}
       msg('확인 중…');
-      try{const ok=await SB.rpc('org_email_ok',{p_email:creds().email});
-        if(ok.data===false){msg('등록된 직원 아이디가 아닙니다.\n→ 아이디는 이름의 초성을 영어로 쓴 것입니다. 예) 김태현 → kth@tongyanginc.co.kr\n→ 이름이 같은 초성이면 뒤에 숫자가 붙습니다(kms2). 맞는데도 안 되면 관리자에게 알려 주세요.');return;}}catch(_){}
+      try{const ok=await SB.rpc('org_name_ok',{p_name:nm});
+        if(ok.data===false){msg('조직도에서 "'+nm+'" 이름을 찾지 못했거나 이미 가입된 이름입니다.\n→ 이름에 오타가 없는지 확인하세요. 조직도 이름이 틀렸다면 팀원에게 고쳐 달라고 하세요.');return;}}catch(_){}
       msg('가입 중…');
-      const {error}=await SB.auth.signUp(creds());
-      if(error){msg('가입 실패: '+(/database error|P0001|tongyanginc|등록된 직원/i.test(error.message)?'등록된 직원 아이디(이름 초성 영어 + @tongyanginc.co.kr)만 가입할 수 있습니다.':error.message)
+      const {error}=await SB.auth.signUp({...creds(),options:{data:{name:nm}}});
+      if(error){msg('가입 실패: '+(/database error|P0001|tongyanginc|조직도|이름/i.test(error.message)?'회사 메일(@tongyanginc.co.kr)과 조직도에 있는 이름으로만 가입할 수 있습니다.':error.message)
         +(/already/i.test(error.message)?'\n→ 이미 만든 계정입니다. [로그인]을 누르세요.':''));return;}
       msg('가입되었습니다. 바로 로그인되지 않으면 [로그인]을 누르세요. 확인 메일이 왔다면 링크를 먼저 누르세요.');};
     $('aPw').onkeydown=e=>{if(e.key==='Enter')$('aIn').click();};
