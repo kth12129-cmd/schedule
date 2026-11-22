@@ -5340,6 +5340,11 @@ function pickDel(ids){ids=[...ids].filter(id=>store.items.some(i=>i.id===id));if
     st=null;on=false;band.style.display='none';document.body.classList.remove('banding');});
   document.addEventListener('click',e=>{if(eat){e.preventDefault();e.stopPropagation();eat=false;}},true);
 })();
+/* 캡처 안내는 캡처 창이 닫히거나 Esc·바깥 클릭이면 바로 사라짐 */
+(function(){const sh=document.getElementById('capSheet');if(!sh)return;
+  new MutationObserver(()=>{if(!sh.classList.contains('open')&&snipWait)snipStop();}).observe(sh,{attributes:true,attributeFilter:['class']});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&snipWait)snipStop();});
+  document.addEventListener('mousedown',e=>{if(snipWait&&!e.target.closest('#capWait,#capRegion'))snipStop();},true);})();
 let calRz=null;addEventListener('resize',()=>{clearTimeout(calRz);calRz=setTimeout(()=>{if(tab==='cal')renderMonth();},150);});
 function miniMonth(y,m,mark){
   const f=new Date(y,m,1),start=new Date(f);start.setDate(start.getDate()-f.getDay());
@@ -7977,7 +7982,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v201';
+const APPVER=/*ver*/'v202';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -8936,7 +8941,8 @@ async function clipImage(){
       if(t){const b=await it.getType(t);return new File([b],'snip-'+Date.now()+'.png',{type:t});}}}catch(e){}
   return null;}
 const clipSig=f=>f?f.size+':'+f.type:null;
-function snipStop(){snipWait=false;clearInterval(snipT);$('capWait').style.display='none';}
+let snipTO=null;
+function snipStop(){snipWait=false;clearInterval(snipT);clearTimeout(snipTO);$('capWait').style.display='none';}
 async function startSnip(){
   const f0=await clipImage();snipBase=clipSig(f0);snipWait=true;
   const key=isWinOS?'Win + Shift + S':isMacOS?'⌘ + Control + Shift + 4':'';
@@ -8945,7 +8951,7 @@ async function startSnip(){
     :'기기의 캡처 기능으로 필요한 부분을 찍으세요.')
     +'<br>영역을 고르면 이 앱이 자동으로 읽어 일정 목록을 만들어요. (안 되면 이 화면에서 Ctrl+V)';
   $('capWait').style.display='block';
-  clearInterval(snipT);snipT=setInterval(snipCheck,1200);
+  clearInterval(snipT);snipT=setInterval(snipCheck,1200);clearTimeout(snipTO);snipTO=setTimeout(snipStop,30000);
   if(isWinOS){try{const a=document.createElement('a');a.href='ms-screenclip:';a.style.display='none';document.body.appendChild(a);a.click();a.remove();}catch(e){}}
 }
 async function snipCheck(){
