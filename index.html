@@ -2187,6 +2187,12 @@ textarea.memo{margin:0!important}
  .rc-dnav{display:none!important}
  .rc-grab{padding:10px 0 8px}
 }
+
+@media(min-width:661px){
+  .hsec-cal{flex-wrap:wrap;align-content:center;row-gap:2px}
+  .hsec-cal::after{content:"";flex-basis:100%;height:0;order:1}
+  .hsec-cal #priHide{order:2;margin-left:2px;height:24px;font-size:11.5px;padding:0 9px}
+}
 </style>
 </head>
 <body>
@@ -7971,7 +7977,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v199';
+const APPVER=/*ver*/'v200';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
