@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v221">
+<meta name="app-ver" content="v222">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -1390,6 +1390,12 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .calx .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .calx .btns a,.calx .btns button{height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--fieldline);background:var(--page);color:var(--ink);font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;cursor:pointer}
 .calx .btns .pri{background:var(--navy);color:#fff;border-color:var(--navy)}
+.calx .btns.g5{display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
+.calx .btns.g5>*{grid-column:span 2;justify-content:center;white-space:nowrap;padding:0 6px}
+.calx .btns.g5>:nth-child(n+4){grid-column:span 3}
+@media(max-width:520px){.calx .btns.g5{grid-template-columns:repeat(2,minmax(0,1fr))}.calx .btns.g5>*,.calx .btns.g5>:nth-child(n+4){grid-column:span 1}.calx .btns.g5>:last-child{grid-column:span 2}}
+.calx .clr{display:block;width:100%;height:36px;margin:10px 0;border:1px solid var(--red);background:none;color:var(--red);font-weight:700;font-size:13px;border-radius:8px;cursor:pointer}
+.calx .clr:disabled{opacity:.4;cursor:default}
 .calx .chint{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;text-align:left!important;display:block!important;-webkit-line-clamp:unset!important;font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 2px}
 .calx .frow2{display:flex;gap:8px;margin-top:8px}.calx .frow2 input{flex:1;min-width:0;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--fieldline);background:var(--page);color:var(--ink);font-size:13px}
 .calx .feed{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--fieldline)}.calx .feed:last-child{border:0}
@@ -7923,7 +7929,7 @@ async function openCal(rotate){
   <h3>① 이 앱 → 내 캘린더 (일정 보내기)</h3>
   <div class="box">아래 주소를 캘린더 앱에 <b>구독</b>하면, 여기서 입력한 일정이 그 캘린더에 자동으로 나타납니다. 이후 일정을 바꾸면 캘린더 앱이 주기적으로(보통 수 분~수 시간) 따라옵니다.
     <input class="url" id="calUrl" readonly value="${esc(url)}" onclick="this.select()">
-    <div class="btns">
+    <div class="btns g5">
       <a class="pri" href="https://calendar.google.com/calendar/r?cid=${enc(web)}" target="_blank" rel="noopener">구글 캘린더에 추가</a>
       <a href="${esc(web)}">애플 캘린더에 추가</a>
       <a href="https://outlook.office.com/calendar/0/addfromweb?url=${enc(url)}&name=TY-Scheduler" target="_blank" rel="noopener">Microsoft(회사)</a>
@@ -7932,8 +7938,8 @@ async function openCal(rotate){
   <div class="chint"><b>삼성 캘린더</b>는 자체 구독 주소가 없고 구글·Microsoft 계정을 동기화합니다. 위에서 구글(또는 Microsoft)에 추가하면 삼성 캘린더에도 같이 보입니다 (삼성 캘린더 → 설정 → 해당 계정 동기화 켜기).<br>
   이 주소는 <b>내 일정 전체가 담긴 비밀 주소</b>입니다. 다른 사람에게 알려주지 마세요. 유출이 걱정되면 <button id="calRot" style="border:0;background:none;color:var(--navy);font-weight:700;cursor:pointer;padding:0">주소 다시 만들기</button> (기존 구독은 끊깁니다).</div>
   <h3>② 내 캘린더 → 이 앱 (일정 가져오기)</h3>
-  <div class="box">${feeds.length?feeds.map(f=>`<div class="feed"><i style="width:10px;height:10px;border-radius:3px;background:${f.color}"></i><b>${esc(f.name)}<br><small>${f.err?esc(f.err):(f.file?'파일':'연결됨')}</small></b>
-      <input type="checkbox" data-fon="${f.id}" ${f.on===false?'':'checked'} style="width:20px;height:20px;accent-color:var(--navy)"><button data-fdel="${f.id}" style="border:0;background:none;color:var(--red);cursor:pointer;font-weight:600">삭제</button></div>`).join('')+'<div class="feed" style="justify-content:flex-end;border-top:1px solid var(--line);margin-top:4px;padding-top:8px"><button id="exClear" style="border:1px solid var(--red);background:none;color:var(--red);cursor:pointer;font-weight:700;border-radius:8px;padding:7px 12px">연동 자료 전체 삭제 (다시 등록)</button></div>':'<small style="color:var(--ink-2)">아직 연결한 캘린더가 없어요.</small>'}
+  <div class="box">${(feeds.length?feeds.map(f=>`<div class="feed"><i style="width:10px;height:10px;border-radius:3px;background:${f.color}"></i><b>${esc(f.name)}<br><small>${f.err?esc(f.err):(f.file?'파일':'연결됨')}</small></b>
+      <input type="checkbox" data-fon="${f.id}" ${f.on===false?'':'checked'} style="width:20px;height:20px;accent-color:var(--navy)"><button data-fdel="${f.id}" style="border:0;background:none;color:var(--red);cursor:pointer;font-weight:600">삭제</button></div>`).join(''):'<small style="color:var(--ink-2)">아직 연결한 캘린더가 없어요.</small>')+'<button id="exClear" class="clr"'+(feeds.length?'':' disabled')+'>연동 자료 전체 삭제 (다시 등록)</button>'}
     <div class="icsdrop" id="icsDrop" tabindex="0"><b>.ics 파일을 여기에 끌어다 놓으세요</b><span>또는</span><button class="pri" id="icsPick" type="button">파일 선택</button><input type="file" id="icsFile" accept=".ics,.ical,text/calendar" multiple hidden></div>
     <details class="icsurl"><summary>주소(URL)로 연결하기 — 구글·애플처럼 구독 주소가 있을 때</summary>
     <div class="frow2"><input id="exName" placeholder="이름 (예: 내 구글)" maxlength="20"><input id="exUrl" placeholder="캘린더 ICS 주소 (https:// 또는 webcal://)"></div>
@@ -7976,7 +7982,7 @@ async function openCal(rotate){
   ['dragleave','drop'].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.remove('on');}));
   dz.addEventListener('drop',e=>icsImport(e.dataTransfer.files));
   B.ondragover=e=>e.preventDefault();B.ondrop=e=>{if(!e.target.closest('#icsDrop'))e.preventDefault();};
-  const xc=$('exClear');if(xc)xc.onclick=()=>{
+  const xc=$('exClear');if(xc)xc.onclick=()=>{if(!extList().length)return;
     if(!confirm('연동한 캘린더 '+extList().length+'개와 가져온 일정을 모두 삭제합니다.\n(내가 직접 적은 일정은 그대로입니다. 폰·PC 모두에서 지워집니다.)\n삭제 후 파일을 다시 올려 등록할 수 있어요. 계속할까요?'))return;
     extList().forEach(f=>{try{localStorage.removeItem('extEv_'+f.id);}catch(x){}});
     store.extData={};extSave([]);extRebuild();toastMsg('연동 자료를 모두 삭제했어요 · 다시 등록하세요');openCal();};
@@ -9036,7 +9042,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v221';
+const APPVER=/*ver*/'v222';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
