@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v228">
+<meta name="app-ver" content="v229">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -5945,6 +5945,12 @@ function guessCat(text){
   const first=store.cats[0];
   if(first&&isPersonalCat(first)){const w=store.cats.find(c=>!isPersonalCat(c));return w?w.id:null;}
   return null;}
+function catKeys(c){const full=c.name.replace(/\s/g,''),k=new Set([full,full.replace(/(현장|공사|사업)$/,'')]);
+  if(/현장$/.test(c.name)){const f=c.name.trim().split(/\s+/)[0];k.add(f);if(/^산포/.test(f))k.add('산포처리');}
+  return[...k].filter(x=>x.length>=2);}
+function ensureSites(text){
+  if(/산포/.test(text)&&!store.cats.some(c=>/^산포/.test(c.name))){
+    store.cats.push({id:'c'+Date.now().toString(36),name:'산포 현장',color:'#c2573e'});store.catsMt=NOW();}}
 function parseInput(raw,baseYmd){
   let s=' '+raw.trim()+' ',d=fromYmd(baseYmd),hit=false,time=null,endTime=null,endDate=null,pri=false;
   if(/!|중요/.test(s)){pri=true;s=s.replace(/!/g,' ').replace(/중요/g,' ');}
@@ -5956,12 +5962,15 @@ function parseInput(raw,baseYmd){
   const tag=s.match(/#(\S+)/);
   if(tag){const f=store.cats.find(c=>c.name.replace(/\s/g,'').startsWith(tag[1].replace(/\s/g,'')));
     if(f){cat=f.id;s=s.replace(tag[0],' ');}}
-  /* 태그가 없으면 제목에 적힌 분류 이름(예: '가마지천 현장')으로 자동 분류 — 가장 긴 이름 우선 */
-  if(!cat){const flat=s.replace(/\s/g,'');let best=null,bl=0;
-    store.cats.forEach(c=>{const full=c.name.replace(/\s/g,'');
-      [full,full.replace(/(현장|공사|사업)$/,'')].forEach(k=>{
-        if(k.length>=2&&k.length>bl&&flat.includes(k)){best=c;bl=k.length;}});});
-    if(best)cat=best.id;}
+  /* 제목에 적힌 분류 이름을 모두 찾아 글에 나온 순서대로 분류 — 긴 이름 우선, 겹치는 짧은 이름은 제외 */
+  let cats=cat?[cat]:[];
+  {const flat=s.replace(/\s/g,'');const ms=[];
+    store.cats.forEach(c=>{if(cats.includes(c.id))return;catKeys(c).forEach(k=>{
+      let from=0,i;while((i=flat.indexOf(k,from))>=0){ms.push({c,st:i,en:i+k.length});from=i+1;}});});
+    ms.sort((a,b)=>(b.en-b.st)-(a.en-a.st)||a.st-b.st);
+    const ok=[];ms.forEach(m=>{if(ok.some(o=>o.c===m.c))return;if(ok.some(o=>m.st<o.en&&o.st<m.en))return;ok.push(m);});
+    ok.sort((a,b)=>a.st-b.st).forEach(m=>cats.push(m.c.id));
+    if(!cat&&cats.length)cat=cats[0];}
   let wk=false;
   {const wm=s.match(WKRE);
     if(wm){const a=wkTokOff(wm[1]),b=wm[2]?wkTokOff(wm[2]):a;
@@ -6008,7 +6017,7 @@ function parseInput(raw,baseYmd){
     if(tm){const t=to24(tm[1],tm[2],tm[3]);
       if(t){time=t;s=s.replace(tm[0],' ');}}}
   if(!cat)cat=guessCat(s);
-  return{date:ymd(d),endDate,time,endTime,pri,cat,wk,rem,tn,title:s.replace(/\s+/g,' ').trim()||raw.trim()};
+  return{date:ymd(d),endDate,time,endTime,pri,cat,cats,wk,rem,tn,title:s.replace(/\s+/g,' ').trim()||raw.trim()};
 }
 
 /* ── 달력 ── */
@@ -8239,11 +8248,11 @@ function saveEdit(id,val){
   const it=store.items.find(x=>x.id===id);if(!it){editItem=null;return;}
   const v=(val||'').trim();
   if(!v){editItem=null;renderDay();return;}
-  const p=parseInput(v,it.date);
+  ensureSites(v);const p=parseInput(v,it.date);
   it.title=p.title;it.time=p.time;it.endTime=p.endTime;it.date=p.date;it.endDate=p.endDate;
   it.wk=(p.wk||(it.wk&&p.endDate&&fromYmd(p.date).getDay()===1&&fromYmd(p.endDate).getDay()===5))?1:0;
   if(p.pri)it.pri=true;
-  if(p.cat){it.cats=[p.cat];it.cat=p.cat;}
+  if(p.cats&&p.cats.length){it.cats=p.cats;it.cat=p.cats[0];}
   if(p.rem!=null)it.rem=p.rem;if(p.tn)it.tn=1;
   touch(it);editItem=null;save();
   sel=it.date;const d=fromYmd(sel);
@@ -8270,7 +8279,8 @@ $('input').oninput=()=>{const v=$('input').value.trim();$('send').disabled=!v;
   const tt=p.time?' '+p.time+(p.endTime?'~'+p.endTime:''):'';
   if(!p.wk&&wkSel){p.wk=true;p.date=wkMon(wkSel.s);p.endDate=wkFri(wkSel.e);}
   const dd=p.wk?wkLabel(p):p.endDate?`${d.getMonth()+1}/${d.getDate()}~${md(p.endDate)}`:`${d.getMonth()+1}/${d.getDate()} ${WD[d.getDay()]}`;
-  $('hint').textContent=`${(p.pri||priOn)?'★ ':''}${dd}${tt} · ${p.title}`;};
+  const cn=(p.cats||[]).map(id=>{const c=store.cats.find(x=>x.id===id);return c?c.name:'';}).filter(Boolean);
+  $('hint').textContent=`${(p.pri||priOn)?'★ ':''}${dd}${tt} · ${p.title}${cn.length?' · '+cn.join(' · '):(/산포/.test(v)?' · 산포 현장(새 분류)':'')}`;};
 let priOn=false;
 function paintPri(){const b=$('priBtn');if(!b)return;
   b.classList.toggle('on',priOn);
@@ -8319,11 +8329,11 @@ function shareCmd(v){
   toastMsg(`'${best.name}' ${best.share?'팀원에게 공개':'나만 보기'}로 바꿨어요 (일정 ${n}건)`);return true;}
 function add(){const v=$('input').value.trim();if(!v)return;
   if(shareCmd(v)){$('input').value='';$('send').disabled=true;return;}
-  const p=parseInput(v,sel);
+  ensureSites(v);const p=parseInput(v,sel);
   if(!p.wk&&wkSel){p.wk=true;p.date=wkMon(wkSel.s);p.endDate=wkFri(wkSel.e);}
   store.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
     date:p.date,endDate:p.endDate,wk:p.wk?1:0,time:p.time,endTime:p.endTime,title:p.title,pri:p.pri||priOn,
-    cats:p.cat?[p.cat]:addCats(),cat:p.cat||addCats()[0],...(p.rem!=null?{rem:p.rem}:{}),...(p.tn?{tn:1}:{}),
+    cats:p.cats&&p.cats.length?p.cats:addCats(),cat:(p.cats&&p.cats[0])||addCats()[0],...(p.rem!=null?{rem:p.rem}:{}),...(p.tn?{tn:1}:{}),
     note:'',done:false,doneAt:null,mt:NOW()});
   save();$('input').value='';$('send').disabled=true;
   priOn=false;paintPri();wkSel=null;paintWk();
@@ -9089,7 +9099,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v228';
+const APPVER=/*ver*/'v229';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
