@@ -3073,6 +3073,11 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
 .ins-addr input{flex:1;min-width:0;height:40px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:16px;color:var(--ink)}
 .ins-addr button{flex:none;height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-weight:600;color:var(--navy)}
 .ins-qr{display:block;width:150px;height:150px;margin:14px auto 0}
+.icsdrop{display:flex;flex-direction:column;align-items:center;gap:8px;padding:26px 14px;border:2px dashed var(--fieldline);border-radius:12px;background:var(--surface);text-align:center;color:var(--ink-2);font-size:13.5px;transition:background .15s,border-color .15s}
+.icsdrop b{font-size:15px;color:var(--ink)}
+.icsdrop.on{background:color-mix(in srgb,var(--navy) 8%,var(--surface));border-color:var(--navy)}
+.icsdrop button{height:38px;padding:0 18px;border-radius:8px;background:var(--navy);color:#fff;border:0;font-weight:700}
+.icsurl{margin-top:12px;font-size:13px}.icsurl summary{cursor:pointer;color:var(--ink-2);padding:6px 0}
 </style>
 </head>
 <body>
@@ -6275,7 +6280,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='설정에서 PC·휴대폰(안드로이드/아이폰) 설치 안내를 따로 볼 수 있어요. 상단 오른쪽에 로그인(이름) 버튼이 항상 표시되고, 팀 일정 표시와 VOC 알림이 개선되었습니다.';
+const RELNOTE='캘린더 연동에서 .ics 파일을 끌어다 놓아 가져올 수 있어요. 설정에서 PC·휴대폰(안드로이드/아이폰) 설치 안내를 따로 볼 수 있어요. 상단 오른쪽에 로그인(이름) 버튼이 항상 표시되고, 팀 일정 표시와 VOC 알림이 개선되었습니다.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -7847,6 +7852,7 @@ function extRebuild(){
 }
 async function extFetch(f,force){
   let c=null;try{c=JSON.parse(localStorage.getItem('extEv_'+f.id)||'null');}catch(e){}
+  if(f.file){if(c)return c;throw new Error('이 기기에서 파일을 다시 올려 주세요');}
   if(!force&&c&&Date.now()-c.at<20*60e3)return c;
   if(backend!=='sb'||!SB||!session)throw new Error('로그인 후 사용할 수 있어요');
   const r=await SB.functions.invoke('ics-fetch',{body:{url:f.url}});
@@ -7886,16 +7892,19 @@ async function openCal(rotate){
   <div class="chint"><b>삼성 캘린더</b>는 자체 구독 주소가 없고 구글·Microsoft 계정을 동기화합니다. 위에서 구글(또는 Microsoft)에 추가하면 삼성 캘린더에도 같이 보입니다 (삼성 캘린더 → 설정 → 해당 계정 동기화 켜기).<br>
   이 주소는 <b>내 일정 전체가 담긴 비밀 주소</b>입니다. 다른 사람에게 알려주지 마세요. 유출이 걱정되면 <button id="calRot" style="border:0;background:none;color:var(--navy);font-weight:700;cursor:pointer;padding:0">주소 다시 만들기</button> (기존 구독은 끊깁니다).</div>
   <h3>② 내 캘린더 → 이 앱 (일정 가져오기)</h3>
-  <div class="box">${feeds.length?feeds.map(f=>`<div class="feed"><i style="width:10px;height:10px;border-radius:3px;background:${f.color}"></i><b>${esc(f.name)}<br><small>${f.err?esc(f.err):'연결됨'}</small></b>
+  <div class="box">${feeds.length?feeds.map(f=>`<div class="feed"><i style="width:10px;height:10px;border-radius:3px;background:${f.color}"></i><b>${esc(f.name)}<br><small>${f.err?esc(f.err):(f.file?'파일':'연결됨')}</small></b>
       <input type="checkbox" data-fon="${f.id}" ${f.on===false?'':'checked'} style="width:20px;height:20px;accent-color:var(--navy)"><button data-fdel="${f.id}" style="border:0;background:none;color:var(--red);cursor:pointer;font-weight:600">삭제</button></div>`).join(''):'<small style="color:var(--ink-2)">아직 연결한 캘린더가 없어요.</small>'}
+    <div class="icsdrop" id="icsDrop" tabindex="0"><b>.ics 파일을 여기에 끌어다 놓으세요</b><span>또는</span><button class="pri" id="icsPick" type="button">파일 선택</button><input type="file" id="icsFile" accept=".ics,.ical,text/calendar" multiple hidden></div>
+    <details class="icsurl"><summary>주소(URL)로 연결하기 — 구글·애플처럼 구독 주소가 있을 때</summary>
     <div class="frow2"><input id="exName" placeholder="이름 (예: 내 구글)" maxlength="20"><input id="exUrl" placeholder="캘린더 ICS 주소 (https:// 또는 webcal://)"></div>
-    <div class="btns"><button class="pri" id="exAdd">연결</button><button id="exNow">지금 새로고침</button></div></div>
-  <div class="chint"><b>ICS 주소 찾는 곳</b><br>
+    <div class="btns"><button class="pri" id="exAdd">연결</button><button id="exNow">지금 새로고침</button></div></details></div></div>
+  <div class="chint"><b>파일로 가져오기</b>: 네이버·구글·아웃룩 등에서 내보낸 .ics 파일을 끌어다 놓으면 바로 달력에 겹쳐 보입니다. 파일은 올린 시점의 일정이며, 이 기기에만 저장돼요. 바뀌면 같은 이름으로 다시 올리면 교체됩니다.<br><br>
+  <b>ICS 주소 찾는 곳</b><br>
   · 구글: 캘린더 설정 → 내 캘린더 → 「iCal 형식의 비공개 주소」<br>
   · Microsoft(Outlook): 설정 → 캘린더 → 공유 캘린더 → 캘린더 게시 → ICS 링크<br>
   · 애플(iCloud): 캘린더 → 공유 → 공개 캘린더 링크(webcal)<br>
   · 삼성: 구글/Microsoft 계정에 동기화된 캘린더의 주소를 위 방법으로 복사<br>
-  가져온 일정은 <b>읽기 전용(점선)</b>으로 달력에 겹쳐 보이며, 제공사 주기(보통 수 시간)에 따라 반영됩니다. 실시간 양방향 편집은 아닙니다.</div>`;
+  가져온 일정은 <b>읽기 전용</b>으로 달력에 겹쳐 보이며, 제공사 주기(보통 수 시간)에 따라 반영됩니다. 실시간 양방향 편집은 아닙니다.</div>`;
   $('calCopy').onclick=()=>{try{navigator.clipboard.writeText(url);toastMsg('주소를 복사했어요');}catch(e){$('calUrl').select();}};
   $('calRot').onclick=()=>{if(confirm('주소를 다시 만들면 기존에 구독한 캘린더는 끊깁니다. 계속할까요?'))openCal(true);};
   $('exAdd').onclick=async()=>{
@@ -7906,6 +7915,27 @@ async function openCal(rotate){
     try{await extFetch(f,true);extSave([...extList(),f]);extRebuild();toastMsg('연결했어요');openCal();}
     catch(e){$('exAdd').textContent='연결';toastMsg(e.message||'연결하지 못했어요');}};
   $('exNow').onclick=async()=>{toastMsg('새로고침 중…');await extRefreshAll(true);toastMsg('완료');openCal();};
+  const icsImport=async files=>{
+    let tot=0;const list=[...files].filter(f=>/\.(ics|ical)$/i.test(f.name)||/calendar/i.test(f.type));
+    if(!list.length){toastMsg('.ics 파일만 가져올 수 있어요');return;}
+    let cur=extList();
+    for(const fl of list){
+      let ev=[];try{ev=icsParse(await fl.text());}catch(e){}
+      if(!ev.length){toastMsg(fl.name+' : 가져올 일정이 없어요');continue;}
+      const nm=fl.name.replace(/\.(ics|ical)$/i,'').slice(0,20),old=cur.find(x=>x.file&&x.name===nm);
+      const f=old||{id:'x'+Date.now().toString(36)+Math.floor(Math.random()*99),name:nm,file:true,color:EXT_COL[cur.length%EXT_COL.length],on:true};
+      try{localStorage.setItem('extEv_'+f.id,JSON.stringify({at:Date.now(),ev}));}catch(e){toastMsg('저장 공간이 부족해요');continue;}
+      if(!old)cur=[...cur,f];tot+=ev.length;
+    }
+    if(tot){extSave(cur);extRebuild();toastMsg(tot+'건을 가져왔어요');openCal();}
+  };
+  const dz=$('icsDrop');
+  $('icsPick').onclick=()=>$('icsFile').click();
+  $('icsFile').onchange=e=>icsImport(e.target.files);
+  ['dragenter','dragover'].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.add('on');}));
+  ['dragleave','drop'].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.remove('on');}));
+  dz.addEventListener('drop',e=>icsImport(e.dataTransfer.files));
+  B.ondragover=e=>e.preventDefault();B.ondrop=e=>{if(!e.target.closest('#icsDrop'))e.preventDefault();};
   B.onclick=e=>{const d=e.target.closest('[data-fdel]');if(!d)return;
     if(!confirm('이 연동을 삭제할까요?'))return;
     extSave(extList().filter(f=>f.id!==d.dataset.fdel));try{localStorage.removeItem('extEv_'+d.dataset.fdel);}catch(x){}extRebuild();openCal();};
@@ -7920,7 +7950,7 @@ renderDay=function(){_rd89.apply(this,arguments);
   try{const L=$('list');if(!L)return;L.querySelectorAll('.xrow').forEach(x=>x.remove());
     const xs=[...vacOn(sel),...extOn(sel)];
     xs.forEach(e=>{const li=document.createElement('li');li.className='xrow';
-      li.style.cssText='list-style:none;margin:6px 0;padding:8px 11px;border:1px dashed var(--fieldline);border-left:3px solid '+e.c+';border-radius:8px;font-size:13px;color:var(--ink-2)';
+      li.style.cssText='list-style:none;margin:6px 0;padding:8px 11px;border:1px solid var(--line);border-left:3px solid '+e.c+';border-radius:8px;font-size:13px;color:var(--ink-2)';
       li.textContent=e.d||e.t;L.appendChild(li);});}catch(x){}
 };
 paintLegend();
@@ -8958,7 +8988,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v217';
+const APPVER=/*ver*/'v218';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
