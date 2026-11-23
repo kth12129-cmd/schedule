@@ -652,7 +652,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .vcm{padding:11px 0;border-bottom:1px solid var(--hair);font-size:14.5px;line-height:1.6}.vcm .who{font-size:12.5px;color:var(--ink-2);margin-bottom:2px;display:flex;justify-content:space-between}
 .vcm .who button{background:none;border:0;color:var(--ink-2);font-size:12.5px}
 .vact{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
-.vadm{margin-top:18px;padding:12px;border:1px dashed var(--fieldline);border-radius:12px}
+.vadm{margin-top:18px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .tmc{margin:0 0 12px;padding:14px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
 .tmh{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.tmh b{font-size:16.5px}.tmh .sp{flex:1}
 .tmb{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:700;background:var(--field);color:var(--ink-2)}
@@ -6255,7 +6255,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='상단 오른쪽에 로그인(이름) 버튼이 항상 표시되고, 팀 일정 표시와 VOC 알림이 개선되었습니다.';
+const RELNOTE='VOC: 조치 전 배지를 눌러 바로 조치 완료로 바꿀 수 있어요. 상단 오른쪽에 로그인(이름) 버튼이 항상 표시되고, 팀 일정 표시와 VOC 알림이 개선되었습니다.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -7287,7 +7287,7 @@ function vocRender(){
   const rows=list.map(x=>`<button class="vrow" data-id="${x.id}"><div class="vmain"><div class="vt">${vEsc(x.title)}</div>
     <div class="vm"><span class="vtag k-${x.kind}">${VK[x.kind]}</span>
     <span>${vEsc(x.author||'익명')}</span><span>${vDate(x.created_at)}</span><span>♥ ${(vocVt[x.id]||[]).length}</span><span>댓글 ${vocCm[x.id]||0}</span></div></div>
-    <span class="vst st-${x.status}">${VSS[x.status]}</span></button>`).join('');
+    <span class="vst st-${x.status}"${vocMe.admin?' title="누르면 조치 완료로 바뀝니다" style="cursor:pointer"':''}>${VSS[x.status]}</span></button>`).join('');
   b.innerHTML=`<div class="vhead"><div class="vmo"><button data-vm="-1" aria-label="이전 달">‹</button><b>${yy}년 ${+mm}월</b><button data-vm="1" aria-label="다음 달">›</button><button data-vm="0" class="tb">이번 달</button></div>
     <span class="vsp"></span><button class="vbtn alt sm" id="vSort">${vocSort==='new'?'최신순':'공감순'}</button><button class="vbtn sm" id="vWrite">글쓰기</button></div>
     <div class="vline" id="vSt">${sch}<span class="vpct">조치율 <b>${pct}%</b></span></div>
@@ -7296,7 +7296,7 @@ function vocRender(){
     ${vocMe.admin?`<div class="vadmbar"><button class="vbtn alt sm" id="vAllCopy">조치 전 ${vocPosts.filter(x=>x.status==='new').length}건 Claude용 복사</button><button class="vbtn alt sm" id="vExpMd">전체 .md 저장</button><button class="vbtn alt sm" id="vExpJson">전체 .json 저장</button></div><details class="vkd"><summary>분류별 조치 현황 (${yy}년 ${+mm}월)</summary>${kinds}</details>`:''}`;
 }
 function vocWrite(){
-  $('vocBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="vBack">← 목록</button><span class="grow"></span></div>
+  $('vocBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="vBack">← 목록</button></div>
   <div class="vguide"><b>이렇게 적어 주시면 바로 반영할 수 있어요</b>
     <ol><li><b>어디서</b> 화면과 버튼 이름 (예: 일정 목록 › 체크 원)</li><li><b>지금 상황</b> 눌렀더니 어떻게 되는지</li><li><b>원하는 모습</b> 어떻게 되면 좋은지</li></ol>
     <div class="ex">제목  일정 목록에서 완료 체크가 한 번에 안 돼요
@@ -7317,7 +7317,7 @@ function vocWrite(){
 function vocDetail(){
   const x=vocPosts.find(q=>q.id===vocCur);if(!x){vocV='list';return vocRender();}
   const mine=vocMe.id===x.user_id,votes=vocVt[x.id]||[],voted=votes.includes(vocMe.id);
-  $('vocBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="vBack">← 목록</button><span class="grow"></span></div>
+  $('vocBody').innerHTML=`<div class="voc-top"><button class="vbtn alt sm" id="vBack">← 목록</button></div>
   <div class="vd"><div class="meta"><span class="vtag k-${x.kind}">${VK[x.kind]}</span><span class="vst st-${x.status}">${VS[x.status]}</span></div>
     <h3>${vEsc(x.title)}</h3><div class="meta"><span>${vEsc(x.author||'익명')}</span><span>${vDate(x.created_at)}</span></div>
     ${x.area?`<div class="blk"><h5>어디서</h5><p>${vEsc(x.area)}</p></div>`:''}
@@ -7325,14 +7325,14 @@ function vocDetail(){
     ${x.expect?`<div class="blk"><h5>원하는 모습</h5><p>${vEsc(x.expect)}</p></div>`:''}
     ${x.env?`<div class="blk"><h5>환경</h5><p>${vEsc(x.env)}</p></div>`:''}
     ${x.reply?`<div class="vreply"><h5 style="margin:0 0 4px;font-size:12.5px;color:var(--navy)">운영자 답변</h5><p style="margin:0;font-size:15px;line-height:1.65;white-space:pre-wrap">${vEsc(x.reply)}</p></div>`:''}
-    <div class="vact"><button class="vbtn ${voted?'':'alt'}" id="vVote">♥ 공감 ${votes.length}</button>
-      <button class="vbtn alt" id="vCopyOne">Claude용으로 복사</button>${vocMe.admin?'<button class="vbtn alt" id="vDlMd">.md 저장</button><button class="vbtn alt" id="vDlJson">.json 저장</button>':''}
-      ${(mine||vocMe.admin)?'<button class="vbtn red" id="vDel">삭제</button>':''}</div>
     ${vocMe.admin?`<div class="vadm vf"><label style="margin-top:0">처리 상태</label><select id="vaSt">${Object.entries(VS).map(([k,n])=>`<option value="${k}"${x.status===k?' selected':''}>${n}</option>`).join('')}</select>
-      <label>운영자 답변</label><textarea id="vaRe" maxlength="2000">${vEsc(x.reply)}</textarea><div class="vact"><button class="vbtn sm" id="vaSave">저장</button></div></div>`:''}
+      <label>운영자 답변</label><textarea id="vaRe" maxlength="2000">${vEsc(x.reply)}</textarea><div class="vact"><button class="vbtn sm" id="vaDone">조치 완료로 저장</button><button class="vbtn alt sm" id="vaSave">저장</button></div></div>`:''}
     <div class="blk"><h5>댓글</h5><div id="vcList"><div class="vcm" style="color:var(--ink-2)">불러오는 중…</div></div>
       <div class="vf"><textarea id="vcIn" maxlength="1000" style="min-height:64px" placeholder="댓글을 남겨 보세요"></textarea>
-      <div class="vact"><button class="vbtn sm" id="vcSend">댓글 등록</button></div></div></div></div>`;
+      <div class="vact"><button class="vbtn sm" id="vcSend">댓글 등록</button></div></div></div>
+    <div class="vact"><button class="vbtn ${voted?'':'alt'}" id="vVote">♥ 공감 ${votes.length}</button>
+      <button class="vbtn alt" id="vCopyOne">Claude용으로 복사</button>${vocMe.admin?'<button class="vbtn alt" id="vDlMd">.md 저장</button><button class="vbtn alt" id="vDlJson">.json 저장</button>':''}
+      ${(mine||vocMe.admin)?'<button class="vbtn red" id="vDel">삭제</button>':''}</div></div>`;
   vocComments();
 }
 async function vocComments(){
@@ -7356,6 +7356,14 @@ $('vocBody').addEventListener('click',async e=>{
   if(vm){const v=+vm.dataset.vm;if(!v){const d=new Date();vocMo=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}else{const [y,m]=vocMo.split('-').map(Number),d=new Date(y,m-1+v,1);vocMo=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}return vocRender();}
   const sb=t.closest('#vSt [data-st]');if(sb){vocSt=sb.dataset.st;return vocRender();}
   if(t.closest('#vChips')&&t.dataset.k){vocKind=t.dataset.k;return vocRender();}
+  const qb=t.closest('.vrow .vst');
+  if(qb&&vocMe&&vocMe.admin){const rw=qb.closest('.vrow'),x=vocPosts.find(q=>q.id===rw.dataset.id);
+    if(x){const prev=x.status,nx=prev==='done'?'new':'done';
+      const r=await SB.from('voc_posts').update({status:nx}).eq('id',x.id);
+      if(r.error){alert('바꾸지 못했어요: '+r.error.message);return;}
+      x.status=nx;vocRender();
+      toastMsg(nx==='done'?'조치 완료로 바꿨어요 · 작성자에게 알림이 갑니다':'조치 전으로 되돌렸어요','되돌리기',async()=>{await SB.from('voc_posts').update({status:prev}).eq('id',x.id);x.status=prev;vocRender();});}
+    return;}
   const row=t.closest('.vrow');if(row){vocCur=row.dataset.id;vocV='detail';return vocRender();}
   const cd=t.closest('[data-cd]');
   if(cd){if(!confirm('댓글을 삭제할까요?'))return;await SB.from('voc_comments').delete().eq('id',cd.dataset.cd);
@@ -7384,7 +7392,8 @@ $('vocBody').addEventListener('click',async e=>{
   if(id==='vDel'){if(!confirm('이 글을 삭제할까요? 댓글도 함께 지워져요.'))return;
     const r=await SB.from('voc_posts').delete().eq('id',vocCur);if(r.error){alert('삭제하지 못했어요.');return;}
     vocV='list';toastMsg('삭제했어요');return vRefresh();}
-  if(id==='vaSave'){
+  if(id==='vaSave'||id==='vaDone'){
+    if(id==='vaDone')$('vaSt').value='done';
     const st=$('vaSt').value,re=$('vaRe').value.trim();
     const r=await SB.from('voc_posts').update({status:st,reply:re}).eq('id',vocCur);
     if(r.error){alert('저장하지 못했어요: '+r.error.message);return;}
@@ -8929,7 +8938,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v215';
+const APPVER=/*ver*/'v216';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
