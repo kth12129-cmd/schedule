@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v229">
+<meta name="app-ver" content="v230">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -3160,7 +3160,7 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
       <button class="hbtn" id="tmBtn" data-tip="팀 업무 현황">👥</button>
       <button class="hbtn" id="calBtn" data-tip="외부 캘린더 연동 (구글·애플·삼성·마이크로소프트)">연동</button>
       <a class="hbtn" id="vacBtn" href="https://tongyang-dashboard.vercel.app/" target="_blank" rel="noopener noreferrer" data-tip="휴가ㆍ외근 · 건설사업본부 주간 근무계획 관리 시스템">휴가ㆍ외근</a>
-      <button class="hbtn txt" id="vocBtn" data-tip="VOC · 의견 게시판">VOC</button>
+      <button class="hbtn txt" id="vocBtn" data-tip="의견 게시판">의견</button>
       <button class="hbtn" id="findBtn" data-tip="날짜 찾기">⌕</button>
       <button class="hbtn txt" id="capTop" data-tip="화면을 캡처해서 일정 등록">캡처</button>
       <button class="hbtn" id="miniBtn" data-tip="항상 위 미니 창">⧉</button>
@@ -3353,7 +3353,7 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
   <div class="mt-nav"><button id="mtPrev">‹</button><button id="mtToday">오늘</button><button id="mtNext">›</button><button id="mtClose">닫기</button></div></div>
   <div class="mt-grid" id="mtGrid"></div></div>
 <div class="sheet" id="vocSheet">
-  <div class="sheet-bar"><h2>VOC · 의견 게시판</h2><button data-close="vocSheet">닫기</button></div>
+  <div class="sheet-bar"><h2>의견 게시판</h2><button data-close="vocSheet">닫기</button></div>
   <div class="sheet-body" id="vocBody"></div>
 </div>
 <div class="sheet" id="briefSheet">
@@ -3394,7 +3394,7 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
   <div class="setrow"><label>일정 공유</label><button id="shBtn">열기</button></div>
   <div class="setrow"><label>캘린더 연동</label><button id="calOpen2">열기</button></div>
   <div class="setrow"><label>휴가ㆍ외근</label><a id="vacOpen2" href="https://tongyang-dashboard.vercel.app/" target="_blank" rel="noopener noreferrer" style="margin-left:auto;font-weight:600;color:var(--navy)">열기</a></div>
-  <div class="setrow"><label>VOC 게시판</label><button id="vocOpen2">열기</button></div>
+  <div class="setrow"><label>의견 게시판</label><button id="vocOpen2">열기</button></div>
   </div></div>
   <div class="sg"><div class="sg-h">계정 · 데이터</div><div class="sg-b">
   <div class="setrow"><label>계정 · 기기 연동</label><button id="acctBtn">열기</button></div>
@@ -3408,7 +3408,7 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
   <div class="setrow"><label>PC에 설치</label><button id="instBtn">방법 보기</button></div>
   <div class="setrow"><label>휴대폰에 설치 (안드로이드 · 아이폰)</label><button id="instPhone">안내 보기</button></div>
   </div></div>
-  <div class="setrow phonly"><label>VOC 게시판</label><button id="setVoc">열기</button></div>
+  <div class="setrow phonly"><label>의견 게시판</label><button id="setVoc">열기</button></div>
   <div class="setrow phonly"><label>추정 n+1</label><button id="setAn">열기</button></div>
   <div class="note-s" id="setNote"></div>
 </div>
@@ -6364,10 +6364,10 @@ async function vocNotice(){
   if(!mine)return;
   const done=mine.filter(p=>p.status==='done');
   const open=()=>{try{vocOpen();}catch(_){}};
-  if(seen!==null){done.filter(p=>!seen.includes(p.id)).forEach(p=>ntcShow('요청사항이 반영되었습니다',(p.author||'')+'님 말씀하신 요청사항이 반영되었습니다. 소중한 의견 감사합니다!\n「'+p.title+'」',open,'VOC 보기'));}
+  if(seen!==null){done.filter(p=>!seen.includes(p.id)).forEach(p=>ntcShow('요청사항이 반영되었습니다',(p.author||'')+'님 말씀하신 요청사항이 반영되었습니다. 소중한 의견 감사합니다!\n「'+p.title+'」',open,'의견 보기'));}
   if(cmTs&&mine.length){
     const {data:cm}=await SB.from('voc_comments').select('post_id,author,user_id,created_at').in('post_id',mine.map(p=>p.id)).neq('user_id',me).gt('created_at',cmTs);
-    (cm||[]).forEach(c=>{const p=mine.find(q=>q.id===c.post_id);ntcShow('VOC 댓글',(c.author||'')+'님이 댓글을 달았습니다.\n「'+(p?p.title:'')+'」',open,'VOC 보기');});
+    (cm||[]).forEach(c=>{const p=mine.find(q=>q.id===c.post_id);ntcShow('의견 댓글',(c.author||'')+'님이 댓글을 달았습니다.\n「'+(p?p.title:'')+'」',open,'의견 보기');});
   }
   try{localStorage.setItem('vocSeen_'+me,JSON.stringify(done.map(p=>p.id)));localStorage.setItem('vocCmTs_'+me,nowIso);}catch(_){}
 }
@@ -7551,7 +7551,7 @@ $('yearWrap').addEventListener('mouseleave',()=>{zMonth=null;});
   IC.vocBtn=S('<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>');
   IC.capTop=S('<path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.4"/>');
   IC.analyBtn=S('<path d="M4 19V9M10 19V5M16 19v-7M3 19.5h18"/><path d="m4 7 5-3 4 3 7-4"/>');
-  const LB={calBtn:'연동',vacBtn:'휴가ㆍ외근',viewBtn:'보기',tmBtn:'팀',dsBtn:'디자인',vocBtn:'VOC',findBtn:'검색',capTop:'캡처',miniBtn:'미니창',analyBtn:'추정 n+1',setBtn:'설정'};
+  const LB={calBtn:'연동',vacBtn:'휴가ㆍ외근',viewBtn:'보기',tmBtn:'팀',dsBtn:'디자인',vocBtn:'의견',findBtn:'검색',capTop:'캡처',miniBtn:'미니창',analyBtn:'추정 n+1',setBtn:'설정'};
   Object.keys(LB).forEach(id=>{const b=document.getElementById(id);if(!b)return;
     b.classList.remove('txt');b.classList.add('seg');b.innerHTML=(IC[id]||'')+'<span>'+LB[id]+'</span>';});
   const cur=()=>document.documentElement.getAttribute('data-theme')||'light';
@@ -9099,7 +9099,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v229';
+const APPVER=/*ver*/'v230';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10512,7 +10512,7 @@ $('testBtn').onclick=()=>{
     if(!SB||!session)return;
     let r=await SB.functions.invoke('brief-push',{body:{test:true}});let d=r.data;
     if(!d||!d.ok){toastMsg('서버 알림 연결이 끊겨 있어 다시 연결합니다…');await pushEnable(true);r=await SB.functions.invoke('brief-push',{body:{test:true}});d=r.data;}
-    toastMsg(d&&d.ok?'서버 알림도 정상입니다 (VOC 알림 수신 가능)':'서버 알림을 보내지 못했어요. 잠시 뒤 다시 눌러 주세요');
+    toastMsg(d&&d.ok?'서버 알림도 정상입니다 (의견 알림 수신 가능)':'서버 알림을 보내지 못했어요. 잠시 뒤 다시 눌러 주세요');
   }catch(e){toastMsg('서버 알림 점검 실패: '+(e.message||e));}})();};
 
 /* ── 날짜 미리보기 ── */
