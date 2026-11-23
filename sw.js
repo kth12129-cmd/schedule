@@ -12,7 +12,7 @@ self.addEventListener('notificationclick',e=>{
   e.notification.close();
   e.waitUntil((async()=>{
     const all=await clients.matchAll({type:'window',includeUncontrolled:true});
-    for(const c of all){if('focus'in c){await c.focus();c.postMessage({brief:1});return;}}
+    for(const c of all){if('focus'in c){await c.focus();c.postMessage({brief:1,url:(e.notification.data&&e.notification.data.url)||''});return;}}
     await clients.openWindow((e.notification.data&&e.notification.data.url)||'./?brief=1');
   })());
 });

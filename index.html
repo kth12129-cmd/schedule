@@ -407,7 +407,9 @@ body.dragging .cell{transition:background .1s}
 .mtag.ownr{color:var(--c);font-weight:700}
 .item.oth{border-left:3px solid var(--c);background:color-mix(in srgb,var(--c) 5%,transparent)}
 .item.oth .title{cursor:default}
-.ev.oth{opacity:.85;border-style:dashed}
+.ev.oth{opacity:1;background:var(--surface);border:1px solid color-mix(in srgb,var(--c) 60%,transparent);border-radius:4px;padding:0 4px 0 3px}
+.ev.oth .evt{color:var(--ink-2)}
+.ev.oth .evn{opacity:.9}
 .acts .shbtn.on{color:var(--indigo)}
 #shBody .card{margin-top:12px}
 #shBody h3{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--navy)}
@@ -3046,6 +3048,14 @@ html.authwait #grid .ev,html.authwait #list,html.authwait #banner,html.authwait 
 html.noauth .logintop{display:inline-block}
 .logintop:hover{filter:brightness(1.15)}
 @media(max-width:700px){.logintop{margin-left:8px;height:28px;line-height:28px;padding:0 11px;font-size:12px}}
+.ntc{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:9990;width:min(340px,calc(100vw - 32px));display:none;flex-direction:column;gap:8px}
+.ntc.on{display:flex}
+.ntc .nt{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:3px solid var(--navy);border-radius:8px;padding:10px 12px;box-shadow:0 6px 22px rgba(0,0,0,.16);font-size:13px;line-height:1.5}
+.ntc .nt b{display:block;font-size:13px;margin-bottom:2px}
+.ntc .nt .nr{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.ntc .nt button{height:26px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font:600 12px inherit;font-family:inherit;color:var(--navy);cursor:pointer}
+.ntc .nt button.pr{background:var(--navy);border-color:var(--navy);color:#fff}
+@media(max-width:700px){.ntc{right:16px;left:16px;width:auto;bottom:calc(86px + env(safe-area-inset-bottom,0px))}}
 </style>
 </head>
 <body>
@@ -6230,6 +6240,39 @@ function mailPick(to,subj,body){
       try{await navigator.clipboard.writeText(txt);toastMsg('복사했습니다. 회사 메일 쓰기 화면에 붙여 넣으세요 (Ctrl+V)');}catch(_){prompt('아래 내용을 복사하세요',txt);}
       d.classList.remove('on');return;}
     d.classList.remove('on');};}
+/* ── 앱 안 알림 카드 (업데이트 완료 · VOC 반영 · 댓글) ── */
+function ntcShow(title,msg,act,actLabel){
+  let box=document.getElementById('ntcBox');
+  if(!box){box=document.createElement('div');box.id='ntcBox';box.className='ntc';document.body.appendChild(box);}
+  const d=document.createElement('div');d.className='nt';
+  const b=document.createElement('b');b.textContent=title;const p=document.createElement('div');p.textContent=msg;
+  const r=document.createElement('div');r.className='nr';
+  const close=()=>{d.remove();if(!box.children.length)box.classList.remove('on');};
+  if(act){const g=document.createElement('button');g.className='pr';g.textContent=actLabel||'보기';g.onclick=()=>{close();try{act();}catch(_){}};r.appendChild(g);}
+  const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
+  d.append(b,p,r);box.appendChild(d);box.classList.add('on');
+}
+const RELNOTE='상단 [로그인 · 가입] 버튼, VOC 알림(접수·완료·댓글·미조치 요약)이 추가되었습니다.';
+function verNotice(){
+  let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
+  if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
+}
+async function vocNotice(){
+  if(!SB||!session)return;
+  const me=session.user.id;let seen=null,cmTs=null;
+  try{seen=JSON.parse(localStorage.getItem('vocSeen_'+me)||'null');cmTs=localStorage.getItem('vocCmTs_'+me);}catch(_){}
+  const nowIso=new Date().toISOString();
+  const {data:mine}=await SB.from('voc_posts').select('id,author,title,status').eq('user_id',me);
+  if(!mine)return;
+  const done=mine.filter(p=>p.status==='done');
+  const open=()=>{try{vocOpen();}catch(_){}};
+  if(seen!==null){done.filter(p=>!seen.includes(p.id)).forEach(p=>ntcShow('요청사항이 반영되었습니다',(p.author||'')+'님 말씀하신 요청사항이 반영되었습니다. 소중한 의견 감사합니다!\n「'+p.title+'」',open,'VOC 보기'));}
+  if(cmTs&&mine.length){
+    const {data:cm}=await SB.from('voc_comments').select('post_id,author,user_id,created_at').in('post_id',mine.map(p=>p.id)).neq('user_id',me).gt('created_at',cmTs);
+    (cm||[]).forEach(c=>{const p=mine.find(q=>q.id===c.post_id);ntcShow('VOC 댓글',(c.author||'')+'님이 댓글을 달았습니다.\n「'+(p?p.title:'')+'」',open,'VOC 보기');});
+  }
+  try{localStorage.setItem('vocSeen_'+me,JSON.stringify(done.map(p=>p.id)));localStorage.setItem('vocCmTs_'+me,nowIso);}catch(_){}
+}
 let calRz=null;addEventListener('resize',()=>{clearTimeout(calRz);calRz=setTimeout(()=>{if(tab==='cal')renderMonth();},150);});
 function miniMonth(y,m,mark){
   const f=new Date(y,m,1),start=new Date(f);start.setDate(start.getDate()-f.getDay());
@@ -8883,7 +8926,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v210';
+const APPVER=/*ver*/'v211';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -8907,6 +8950,7 @@ async function checkUpdate(){
   }catch(e){}
 }
 setTimeout(checkUpdate,2500);
+setTimeout(verNotice,1500);
 setInterval(checkUpdate,1800000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate();});
 
@@ -8954,6 +8998,7 @@ async function onAuth(){
   else{
     if(data&&data.data&&mergeRemote(data.data)){save(false);redrawAll();}
     setSync('on','동기화됨 · '+(session.user.email||''));
+    try{vocNotice();}catch(_){}
     dirty=true;doPush();
     loadShares();startShareWatch();loadTeam();
   }
@@ -10071,7 +10116,8 @@ $('pushTest').onclick=async()=>{const m=$('pushMsg');
   catch(e){m.textContent='보내지 못했어요: '+(e.message||e);}};
 $('briefOn').addEventListener('change',renderBP);$('briefTime').addEventListener('change',renderBP);
 if(/[?&]brief=1/.test(location.search)){setTimeout(()=>{openBrief();try{history.replaceState(null,'',location.pathname);}catch(e){}},1500);}
-if('serviceWorker'in navigator){navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.brief)openBrief();});}
+if(/[?&]voc=1/.test(location.search)){setTimeout(()=>{try{vocOpen();history.replaceState(null,'',location.pathname);}catch(e){}},1800);}
+if('serviceWorker'in navigator){navigator.serviceWorker.addEventListener('message',e=>{const d=e.data||{};if(d.url&&/voc=1/.test(d.url))vocOpen();else if(d.brief&&(!d.url||/brief=1/.test(d.url)))openBrief();});}
 $('impRem').onchange=()=>{store.settings.impRem=+$('impRem').value;store.settingsMt=NOW();save();};
 $('impTeam').onchange=()=>{store.settings.impTeam=$('impTeam').checked;store.settingsMt=NOW();save();};
 $('alertH').onchange=()=>{store.settings.alertH=+$('alertH').value;store.settingsMt=NOW();save();};
