@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v219">
+<meta name="app-ver" content="v220">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -749,6 +749,28 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .capcard .raw{font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .capbar{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;
  padding:12px 0 4px;background:linear-gradient(transparent,var(--page) 22%)}
+
+.calp{margin-top:12px}
+.calp .ph{width:100%;max-height:30vh;object-fit:contain;background:var(--field);border:1px solid var(--line);border-radius:10px;display:block;cursor:zoom-in}
+.calp .ph.big{max-height:none;cursor:zoom-out}
+.calp .capbar{position:static;margin-top:12px;padding:0;background:none}
+.calp .hd{display:flex;align-items:center;gap:8px;margin:10px 2px 6px;flex-wrap:wrap}
+.calp .hd input[type=month]{font-size:16px;padding:5px 8px;border:1px solid var(--fieldline);border-radius:8px;background:var(--field);color:var(--ink);min-width:0}
+.calp .hd span{font-size:12px;color:var(--ink-3);flex:1;min-width:150px;line-height:1.45}
+.calp .hd button{font-size:12.5px;font-weight:700;padding:6px 12px;border:1px solid var(--line);border-radius:16px;color:var(--ink)}
+.calg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.calg .w{background:var(--surface);text-align:center;font-size:11px;padding:4px 0;color:var(--ink-3)}
+.calg .d{background:var(--surface);min-height:54px;padding:3px;font-size:11px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;gap:1px;min-width:0}
+.calg .d b{font-size:11px;font-weight:600}
+.calg .d span{font-size:9.5px;line-height:1.2;color:var(--navy);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all}
+.calg .d.has{background:color-mix(in srgb,var(--navy) 9%,var(--surface))}
+.calg .d.sel{outline:2px solid var(--navy);outline-offset:-2px}
+.calg .d.emp{background:var(--field);cursor:default}
+.cale{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.cale .t{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:14px}
+.cale .t i{font-style:normal;font-size:11.5px;color:var(--ink-3)}
+.cale textarea{width:100%;box-sizing:border-box;font-size:16px;line-height:1.5;padding:8px 10px;border:1px solid var(--fieldline);border-radius:8px;background:var(--field);color:var(--ink);resize:vertical;min-height:66px;font-family:inherit}
+.cale .h{font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.45}
 .capnone{padding:22px 16px;text-align:center;color:var(--ink-2);font-size:13.5px;line-height:1.7}
 .updbar{position:fixed;left:50%;transform:translateX(-50%);z-index:70;display:none;
  bottom:calc(78px + env(safe-area-inset-bottom,0px));align-items:center;gap:11px;
@@ -3199,6 +3221,7 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
       <div class="capbusy" id="capBusy" style="display:none"><i></i><span id="capMsg"></span></div>
     </div>
     <div class="card capwait" id="capWait" style="display:none"><b>영역 선택 대기 중</b><p id="capWaitTxt"></p><button id="capWaitX">취소</button></div>
+    <div id="calPhoto" style="display:none"></div>
     <div id="capList"></div>
     <div class="capbar" id="capBar" style="display:none">
       <button class="go2 alt" id="capAll">전체 선택</button>
@@ -5845,7 +5868,7 @@ let viewWho=(()=>{try{if(!localStorage.getItem('vw191')){localStorage.setItem('v
 const showOwner=o=>lgTeam?true:viewWho==='me'?false:viewWho==='all'?!viewOff.has(o.owner):o.owner===viewWho;
 const othersFor=day=>otherItems.filter(o=>showOwner(o)&&(o.date===day||(o.endDate&&o.date<=day&&day<=o.endDate)))
   .sort((a,b)=>((a.time||'99:99')<(b.time||'99:99')?-1:1));
-const hasAny=day=>othersFor(day).length>0||ordItems(day).length>0||deadlinesOn(day).length>0||!!(store.memos[day]||'').trim();
+const hasAny=day=>othersFor(day).length>0||(typeof extOn==='function'&&extOn(day).length>0)||ordItems(day).length>0||deadlinesOn(day).length>0||!!(store.memos[day]||'').trim();
 
 /* ── 주 단위 일정 ── */
 const monOf=k=>addDays(k,-((fromYmd(k).getDay()+6)%7));
@@ -6384,7 +6407,8 @@ function renderTL(){
   $('tlall').innerHTML=
     dls.map(x=>`<span class="tlchip dl">${esc(x.stage)} · ${esc(x.label)} 기한</span>`).join('')+
     plain.map(i=>`<span class="tlchip${i.done?' done':''}" style="--c:${i._o?i.color:catColor(i)}">${
-      i.pri?'★ ':''}${i._o?esc(i._n)+' · ':''}${esc(i.title)}</span>`).join('');
+      i.pri?'★ ':''}${i._o?esc(i._n)+' · ':''}${esc(i.title)}</span>`).join('')+
+    [...(typeof vacOn==='function'?vacOn(sel):[]),...(typeof extOn==='function'?extOn(sel):[])].map(x=>`<span class="tlchip" style="--c:${x.c}">${esc(x.d||x.t)}</span>`).join('');
   const nowM=sel===TODAY?(new Date().getHours()*60+new Date().getMinutes()):null;
   const evs=timed.map(i=>{
     const a=toMin(i.time);
@@ -7776,7 +7800,9 @@ function vacOn(k){
 }
 function extOn(k){
   if(!lgExt||!extEv.length)return[];
-  return extEv.filter(e=>e.d<=k&&k<=e.e).slice(0,8).map(e=>({t:(e.t?e.t+' ':'')+e.n,c:e.c,oth:true,x:'ext'}));
+  return extEv.filter(e=>e.d<=k&&k<=e.e).slice(0,8).map(e=>{const r=e.e>e.d;
+    return{t:(r?'▸ ':'')+(e.t?e.t+' ':'')+e.n,c:e.c,oth:true,x:'ext',
+      d:(e.t?e.t+' ':'')+e.n+(r?'  ('+md(e.d)+' ~ '+md(e.e)+')':'')};});
 }
 function paintLegend(){
   $('lgTeam').setAttribute('aria-pressed',lgTeam);$('lgVac').setAttribute('aria-pressed',lgVac);$('lgExt').setAttribute('aria-pressed',lgExt);
@@ -7818,8 +7844,9 @@ function icsParse(txt){
   }
   const lo=ymd(dayAdd(new Date(),-150)),hi=ymd(dayAdd(new Date(),420)),res=[];
   out.forEach(ev=>{
-    const s=ev.s;let ed=ev.e?ev.e.d:s.d;
+    let s=ev.s;let ed=ev.e?ev.e.d:s.d;
     if(s.all&&ev.e){ed=ymd(dayAdd(fromYmd(ed),-1));}
+    else if(!s.all&&ev.e&&ev.e.t==='00:00'&&ev.e.d>s.d){ed=ymd(dayAdd(fromYmd(ev.e.d),-1));if(s.t==='00:00')s={d:s.d,all:true};}
     if(ed<s.d)ed=s.d;
     const dur=Math.round((fromYmd(ed)-fromYmd(s.d))/864e5);
     const push=d=>{if(ev.ex.includes(d))return;const e=ymd(dayAdd(fromYmd(d),dur));
@@ -7845,15 +7872,27 @@ function icsParse(txt){
 const EXT_COL=['#2f7d6b','#8a5cc2','#c2573e','#2f6fb5','#a8892a'];
 const extList=()=>((store.settings&&store.settings.extCals)||[]);
 function extSave(l){store.settings=store.settings||{};store.settings.extCals=l;store.settingsMt=Date.now();save();}
+function extGet(f){
+  const c=store.extData&&store.extData[f.id];if(c&&c.ev)return c;
+  let l=null;try{l=JSON.parse(localStorage.getItem('extEv_'+f.id)||'null');}catch(e){}return l;}
+function extPut(f,n){
+  try{localStorage.setItem('extEv_'+f.id,JSON.stringify(n));}catch(e){}
+  if(f.file){store.extData=store.extData||{};store.extData[f.id]={at:n.at,ev:n.ev.slice(0,2000)};}}
+function extPrune(){if(!store.extData)return;const ids=new Set(extList().filter(f=>f.file).map(f=>f.id));
+  Object.keys(store.extData).forEach(k=>{if(!ids.has(k))delete store.extData[k];});}
 function extRebuild(){
-  const all=[];
-  extList().forEach(f=>{if(f.on===false)return;let c=null;try{c=JSON.parse(localStorage.getItem('extEv_'+f.id)||'null');}catch(e){}
+  const all=[];let mig=false;
+  extList().forEach(f=>{if(f.on===false)return;
+    if(f.file&&!(store.extData&&store.extData[f.id])){let l=null;try{l=JSON.parse(localStorage.getItem('extEv_'+f.id)||'null');}catch(e){}
+      if(l&&l.ev&&l.ev.length){extPut(f,l);mig=true;}}
+    const c=extGet(f);
     if(c&&c.ev)c.ev.forEach(e=>all.push({d:e.d,e:e.e,t:e.t,n:e.s,c:f.color}));});
+  if(mig)save();
   extEv=all;paintLegend();try{renderMonth();renderDay();}catch(e){}
 }
 async function extFetch(f,force){
-  let c=null;try{c=JSON.parse(localStorage.getItem('extEv_'+f.id)||'null');}catch(e){}
-  if(f.file){if(c)return c;throw new Error('이 기기에서 파일을 다시 올려 주세요');}
+  let c=extGet(f);
+  if(f.file){if(c)return c;throw new Error('파일을 다시 올려 주세요');}
   if(!force&&c&&Date.now()-c.at<20*60e3)return c;
   if(backend!=='sb'||!SB||!session)throw new Error('로그인 후 사용할 수 있어요');
   const r=await SB.functions.invoke('ics-fetch',{body:{url:f.url}});
@@ -7925,7 +7964,7 @@ async function openCal(rotate){
       if(!ev.length){toastMsg(fl.name+' : 가져올 일정이 없어요');continue;}
       const nm=fl.name.replace(/\.(ics|ical)$/i,'').slice(0,20),old=cur.find(x=>x.file&&x.name===nm);
       const f=old||{id:'x'+Date.now().toString(36)+Math.floor(Math.random()*99),name:nm,file:true,color:EXT_COL[cur.length%EXT_COL.length],on:true};
-      try{localStorage.setItem('extEv_'+f.id,JSON.stringify({at:Date.now(),ev}));}catch(e){toastMsg('저장 공간이 부족해요');continue;}
+      extPut(f,{at:Date.now(),ev});
       if(!old)cur=[...cur,f];tot+=ev.length;
     }
     if(tot){extSave(cur);extRebuild();toastMsg(tot+'건을 가져왔어요');openCal();}
@@ -7939,7 +7978,7 @@ async function openCal(rotate){
   B.ondragover=e=>e.preventDefault();B.ondrop=e=>{if(!e.target.closest('#icsDrop'))e.preventDefault();};
   B.onclick=e=>{const d=e.target.closest('[data-fdel]');if(!d)return;
     if(!confirm('이 연동을 삭제할까요?'))return;
-    extSave(extList().filter(f=>f.id!==d.dataset.fdel));try{localStorage.removeItem('extEv_'+d.dataset.fdel);}catch(x){}extRebuild();openCal();};
+    extSave(extList().filter(f=>f.id!==d.dataset.fdel));try{localStorage.removeItem('extEv_'+d.dataset.fdel);}catch(x){}extPrune();extRebuild();openCal();};
   B.onchange=e=>{const c=e.target.closest('[data-fon]');if(!c)return;
     extSave(extList().map(f=>f.id===c.dataset.fon?{...f,on:c.checked}:f));extRebuild();};
 }
@@ -8345,12 +8384,16 @@ function mergeRemote(r){
     store.cats=r.cats;store.catsMt=r.catsMt;changed=true;}
   if((r.settingsMt||0)>(store.settingsMt||0)&&r.settings){
     store.settings=r.settings;store.settingsMt=r.settingsMt;changed=true;}
+  if(r.extData){store.extData=store.extData||{};let xc=false;
+    Object.keys(r.extData).forEach(id=>{const a=store.extData[id],b=r.extData[id];
+      if(b&&b.ev&&(!a||(b.at||0)>(a.at||0))){store.extData[id]=b;xc=true;}});
+    if(xc){changed=true;setTimeout(()=>{try{extPrune();extRebuild();}catch(e){}},50);}}
   return changed;
 }
 function payload(){return{items:store.items,tomb:store.tomb,memos:store.memos,memoMt:store.memoMt,memoMeta:store.memoMeta,
   cases:store.cases,casesMt:store.casesMt,caseTomb:store.caseTomb,
   stages:store.stages,stagesMt:store.stagesMt,cats:store.cats,catsMt:store.catsMt,
-  settings:store.settings,settingsMt:store.settingsMt,
+  settings:store.settings,settingsMt:store.settingsMt,extData:store.extData||{},
   at:new Date().toISOString()};}
 function schedulePush(){
   if(backend!=='sb'&&!docRef)return;   /* Supabase 모드에는 docRef 가 없다 */
@@ -8989,7 +9032,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v219';
+const APPVER=/*ver*/'v220';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9766,10 +9809,10 @@ function renderCaps(){
   $('capCard').style.display=capCands.length||capLast?'none':'';
   if(!capCands.length){
     box.innerHTML='<div class="card capnone">날짜나 시간이 적힌 일정을 찾지 못했습니다.<br>일정이 있는 부분만 골라 다시 캡처하면 더 잘 읽어요.'
-      +'<div class="caphead2"><button id="capAgain">다시 캡처</button>'+(capSkipped?'<button id="capUndated" class="alt">날짜 없는 줄 '+capSkipped+'개 보기</button>':'')+'</div></div>';
+      +'<div class="caphead2"><button id="capAgain">다시 캡처</button>'+(capSkipped?'<button id="capUndated" class="alt">날짜 없는 줄 '+capSkipped+'개 보기</button>':'')+(capShown?'<button id="capCalBtn" class="alt">달력 사진으로 입력</button>':'')+'</div></div>';
     $('capBar').style.display='none';return;}
   const opts=c=>store.cats.map(x=>`<option value="${x.id}"${x.id===c?' selected':''}>${esc(x.name)}</option>`).join('');
-  box.innerHTML='<div class="caphead"><b>일정 '+capCands.length+'건을 찾았어요</b><button id="capAgain">다시 캡처</button></div>'+capCands.map((c,i)=>`<div class="capcard${c.on?' on':''}" data-i="${i}">
+  box.innerHTML='<div class="caphead"><b>일정 '+capCands.length+'건을 찾았어요</b><span>'+(capShown?'<button id="capCalBtn">달력 사진으로 입력</button> ':'')+'<button id="capAgain">다시 캡처</button></span></div>'+capCands.map((c,i)=>`<div class="capcard${c.on?' on':''}" data-i="${i}">
     <input type="checkbox" class="cc" data-f="on"${c.on?' checked':''}>
     <div class="cb">
       <input type="text" data-f="title" value="${esc(c.title)}">
@@ -9786,11 +9829,12 @@ function renderCaps(){
   $('capSave').disabled=!n;
   $('capAll').textContent=n===capCands.length?'전체 해제':'전체 선택';
 }
-function capReset(){try{snipStop();}catch(_){}capCands=[];capLast=null;capSkipped=0;$('capList').innerHTML='';$('capBar').style.display='none';
+function capReset(){calSt=null;const cp=$('calPhoto');if(cp){cp.style.display='none';cp.innerHTML='';}try{snipStop();}catch(_){}capCands=[];capLast=null;capSkipped=0;$('capList').innerHTML='';$('capBar').style.display='none';
   $('capCard').style.display='';capSay('');}
 $('capList').addEventListener('click',e=>{
   if(e.target.id==='capAgain')capReset();
-  else if(e.target.id==='capUndated')buildCaps(capLast,true);});
+  else if(e.target.id==='capUndated')buildCaps(capLast,true);
+  else if(e.target.id==='capCalBtn')calOpen(capShown,capLast);});
 $('capList').addEventListener('input',e=>{
   const card=e.target.closest('[data-i]');if(!card)return;
   const c=capCands[+card.dataset.i],f=e.target.dataset.f;if(!c||!f)return;
@@ -9834,8 +9878,9 @@ async function capRun(file){
       try{await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});}catch(_){}
       const res=await worker.recognize(forOcr);
       await worker.terminate();
-      capSay('');
-      buildCaps(res&&res.data?res.data:null,false);
+      capSay('');capShown=shown;
+      const rd=res&&res.data?res.data:null;
+      if(calGuess(rd).grid)calOpen(shown,rd);else buildCaps(rd,false);
     }catch(err){capSay('');alert('글자를 읽지 못했습니다.\n'+(err&&err.message||''));}
     capBusy=false;
   });
@@ -9872,6 +9917,119 @@ document.addEventListener('paste',e=>{
     }
   }
 });
+
+
+/* ── 달력 사진 → 날짜별 확인·직접 입력 ── */
+let calSt=null,capShown=null;
+const MONS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+const CAL_SKIP=/^(입춘|우수|경칩|춘분|청명|곡우|입하|소만|망종|하지|소서|대서|입추|처서|백로|추분|한로|상강|입동|소설|대설|동지|소한|대한|초복|중복|말복|음|순국선열의|날|삼일절|어린이날|석가탄신일|현충일|광복절|개천절|한글날|성탄절|추석|설날|공휴일|휴일)$/;
+function calWords(d){
+  let w=d&&d.words;
+  if(!w||!w.length){w=[];((d&&d.lines)||[]).forEach(l=>(l.words||[]).forEach(x=>w.push(x)));}
+  if(!w.length&&d&&d.blocks){d.blocks.forEach(b=>(b.paragraphs||[]).forEach(p=>(p.lines||[]).forEach(l=>(l.words||[]).forEach(x=>w.push(x)))));}
+  return w.filter(x=>x&&x.bbox&&x.text).map(x=>({t:String(x.text).trim(),c:x.confidence==null?100:x.confidence,
+    x0:x.bbox.x0,y0:x.bbox.y0,x1:x.bbox.x1,y1:x.bbox.y1})).filter(x=>x.t);
+}
+const med=a=>{if(!a.length)return 0;const b=[...a].sort((x,y)=>x-y);return b[b.length>>1];};
+function calGuess(d){
+  const out={ym:null,ev:{},grid:false};if(!d)return out;
+  const txt=String(d.text||'').toUpperCase();
+  const mi=MONS.findIndex(m=>txt.includes(m));
+  const yy=(txt.match(/\b(20\d\d)\b/)||[])[1];
+  if(mi>=0)out.ym=(yy||new Date().getFullYear())+'-'+pad(mi+1);
+  const W=calWords(d);if(!W.length)return out;
+  W.forEach(w=>{w.h=w.y1-w.y0;w.cx=(w.x0+w.x1)/2;w.cy=(w.y0+w.y1)/2;});
+  let nums=W.filter(w=>/^\d{1,2}$/.test(w.t)&&+w.t>=1&&+w.t<=31);
+  if(!nums.length)return out;
+  const ref=med(nums.map(w=>w.h).sort((a,b)=>b-a).slice(0,20));
+  nums=nums.filter(w=>w.h>=ref*.6);
+  const by={};nums.forEach(w=>{const v=+w.t;if(!by[v]||w.h>by[v].h)by[v]=w;});
+  const days=Object.keys(by).map(Number);
+  out.grid=days.length>=12;if(!out.grid)return out;
+  const dx=[],dy=[];
+  days.forEach(v=>{const a=by[v],b=by[v+1],c=by[v+7];
+    if(b&&Math.abs(b.cy-a.cy)<a.h&&b.x0>a.x0)dx.push(b.x0-a.x0);
+    if(c&&c.y0>a.y0)dy.push(c.y0-a.y0);});
+  const cw=med(dx)||ref*8,ch=med(dy)||cw*.9;
+  const own={};
+  W.forEach(w=>{
+    if(!/[가-힣]{2,}/.test(w.t)||w.c<40||CAL_SKIP.test(w.t))return;
+    let best=null,bs=1e9;
+    days.forEach(v=>{const n=by[v];
+      const ddx=w.cx-n.x0,ddy=w.cy-n.cy;
+      if(ddx<-cw*.3||ddx>cw*1.05||ddy<-n.h*.6||ddy>ch*.95)return;
+      const sc=Math.abs(ddx)*.5+ddy+(ddy<0?n.h:0);if(sc<bs){bs=sc;best=v;}});
+    if(best!=null)(own[best]=own[best]||[]).push(w);});
+  Object.keys(own).forEach(v=>{
+    const ws=own[v].sort((a,b)=>a.y0-b.y0||a.x0-b.x0),ln=[];let last=null;
+    ws.forEach(w=>{if(last&&Math.abs(w.cy-last.cy)<w.h*.7)ln[ln.length-1]+=' '+w.t;else ln.push(w.t);last=w;});
+    out.ev[v]=ln.join('\n');});
+  return out;
+}
+function calDim(){const [y,m]=calSt.ym.split('-').map(Number);return {y,m,n:new Date(y,m,0).getDate(),w0:new Date(y,m-1,1).getDay()};}
+function calCnt(){const {n}=calDim();let k=0;Object.keys(calSt.ev).forEach(d=>{if(+d<=n)k+=calSt.ev[d].split('\n').filter(x=>x.trim()).length;});return k;}
+function calBar(){const k=calCnt(),b=$('calSave');if(!b)return;b.textContent=k?`${k}건 등록`:'등록';b.disabled=!k;}
+function calCell(d){const c=document.querySelector('#calPhoto .d[data-d="'+d+'"]');if(!c)return;
+  const t=(calSt.ev[d]||'').split('\n').filter(x=>x.trim()).join(' · ');
+  c.classList.toggle('has',!!t);const sp=c.querySelector('span');
+  if(t){if(sp)sp.textContent=t;else{const e=document.createElement('span');e.textContent=t;c.appendChild(e);}}else if(sp)sp.remove();}
+function calEdit(){
+  const box=$('calEd');if(!box)return;const {y,m}=calDim(),d=calSt.sel;
+  if(!d){box.innerHTML='<div class="h">달력에서 날짜를 눌러 그 날의 일정을 입력하세요. 한 줄에 일정 하나씩, 시간은 앞에 "14:00 회의"처럼 쓰면 됩니다.</div>';return;}
+  const wd='일월화수목금토'[new Date(y,m-1,d).getDay()];
+  box.innerHTML=`<div class="t"><b>${m}월 ${d}일 (${wd})</b><i>${calSt.guessed.has(String(d))?'사진에서 추정한 내용 · 틀리면 고치세요':''}</i></div>
+    <textarea id="calTx" placeholder="일정 입력 (한 줄에 하나)">${esc(calSt.ev[d]||'')}</textarea>`;
+  const tx=$('calTx');tx.oninput=()=>{calSt.ev[d]=tx.value;calSt.guessed.delete(String(d));calCell(d);calBar();};
+}
+function calRender(){
+  const {y,m,n,w0}=calDim();
+  let cells='';for(let i=0;i<w0;i++)cells+='<div class="d emp"></div>';
+  for(let d=1;d<=n;d++){const t=(calSt.ev[d]||'').split('\n').filter(x=>x.trim()).join(' · ');
+    cells+=`<div class="d${t?' has':''}${calSt.sel===d?' sel':''}" data-d="${d}"><b>${d}</b>${t?'<span>'+esc(t)+'</span>':''}</div>`;}
+  $('calPhoto').innerHTML=`<div class="calp">
+    <img class="ph" id="calImg" src="${calSt.img}" alt="">
+    <div class="hd"><input type="month" id="calMo" value="${calSt.ym}"><span>사진을 보면서 날짜를 눌러 입력·수정하세요. 사진 글씨 인식이 부족하면 직접 적으면 됩니다.</span><button id="calAgain">다시 캡처</button></div>
+    <div class="calg">${'일월화수목금토'.split('').map(x=>'<div class="w">'+x+'</div>').join('')}${cells}</div>
+    <div class="cale" id="calEd"></div>
+    <div class="capbar"><button class="go2 alt" id="calCancel">취소</button><button class="go2" id="calSave">등록</button></div></div>`;
+  calEdit();calBar();
+}
+function calOpen(img,data){
+  const g=calGuess(data),n=new Date();
+  calSt={img,ym:g.ym||(n.getFullYear()+'-'+pad(n.getMonth()+1)),ev:g.ev,sel:null,guessed:new Set(Object.keys(g.ev))};
+  $('capCard').style.display='none';$('capList').innerHTML='';$('capBar').style.display='none';
+  $('calPhoto').style.display='';calRender();
+}
+$('calPhoto').addEventListener('click',e=>{
+  const t=e.target;if(!calSt)return;
+  if(t.id==='calImg'){t.classList.toggle('big');return;}
+  if(t.id==='calAgain'){capReset();return;}
+  if(t.id==='calCancel'){capReset();return;}
+  const c=t.closest('.d[data-d]');
+  if(c){const d=+c.dataset.d;
+    document.querySelectorAll('#calPhoto .d.sel').forEach(x=>x.classList.remove('sel'));
+    calSt.sel=d;c.classList.add('sel');calEdit();const tx=$('calTx');if(tx&&!capTouch)tx.focus();return;}
+  if(t.id==='calSave')calSave();
+});
+$('calPhoto').addEventListener('change',e=>{
+  if(e.target.id==='calMo'&&calSt&&/^\d{4}-\d{2}$/.test(e.target.value)){calSt.ym=e.target.value;calSt.sel=null;calRender();}});
+function calSave(){
+  const {y,m,n}=calDim(),made=[];let dup=0;
+  for(let d=1;d<=n;d++){
+    const ds=y+'-'+pad(m)+'-'+pad(d);
+    (calSt.ev[d]||'').split('\n').map(x=>x.trim()).filter(Boolean).forEach(line=>{
+      const p=parseInput(line,ds);const title=(p.title||line).trim();
+      if(store.items.some(i=>i.date===ds&&i.title===title)){dup++;return;}
+      made.push({id:(Date.now()+made.length).toString(36)+Math.random().toString(36).slice(2,6),
+        date:ds,endDate:null,time:p.time||null,endTime:p.endTime||null,title,pri:!!p.pri,
+        cats:[p.cat||addCats()[0]||store.cats[0].id],cat:p.cat||addCats()[0]||store.cats[0].id,
+        note:'',done:false,doneAt:null,mt:NOW()});});}
+  if(!made.length){toastMsg(dup?'이미 등록된 일정이에요':'입력된 일정이 없어요');return;}
+  store.items.push(...made);save();
+  $('capSheet').classList.remove('open');capReset();
+  goto(made[0].date);renderBanner();
+  toastMsg(made.length+'건 등록했어요'+(dup?' · 중복 '+dup+'건 제외':''));
+}
 
 /* ── 화면 캡처 · 자르기 ── */
 const canGrab=!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
