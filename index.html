@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v226">
+<meta name="app-ver" content="v227">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -3119,13 +3119,14 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
 #moreBtn{display:none}
 @media (max-width:660px){
   .hsec-memo{flex-wrap:wrap!important;overflow:visible!important;row-gap:6px;touch-action:auto!important;height:auto!important}
-  .hsec-memo.open .hbtn.seg{height:34px!important}
   #moreBtn{display:inline-flex!important;align-items:center;justify-content:center;order:1}
   #setBtn{order:2}
   .hsec-memo .hbtn.seg:not(#moreBtn):not(#setBtn){order:3;display:none!important}
-  .hsec-memo.open{height:auto!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-  .hsec-memo.open .hbtn.seg{width:100%!important;min-width:0;padding:0 4px!important;justify-content:center;white-space:nowrap}
-  .hsec-memo.open .hbtn.seg:not(#moreBtn):not(#setBtn){display:inline-flex!important}
+  .hsec-memo.open{flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;touch-action:pan-x!important;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:6px}
+  .hsec-memo.open::-webkit-scrollbar{display:none}
+  .hsec-memo.open .hbtn.seg{flex:0 0 auto!important;white-space:nowrap}
+  .hsec-memo.open .hbtn.seg:not(#moreBtn):not(#setBtn){display:inline-flex!important;animation:memoIn .28s ease-out both;animation-delay:calc(var(--i,0)*30ms)}
+  @keyframes memoIn{from{opacity:0;transform:translateX(46px)}to{opacity:1;transform:none}}
   .hsec-memo.open #moreBtn{background:var(--navy)!important;color:#fff!important;border-color:var(--navy)!important}
 }
 </style>
@@ -7551,7 +7552,7 @@ $('yearWrap').addEventListener('mouseleave',()=>{zMonth=null;});
 
 /* 폰: 기능 목록 접기/펼치기 */
 (function(){const mb=document.getElementById('moreBtn'),box=mb&&mb.parentNode;if(!mb)return;
-  const set=o=>{box.classList.toggle('open',o);mb.setAttribute('aria-expanded',o);mb.firstChild.textContent=o?'기능 ▴':'기능 ▾';};
+  const set=o=>{box.classList.toggle('open',o);if(o){box.scrollLeft=0;let i=0;box.querySelectorAll('.hbtn.seg').forEach(b=>{if(b!==mb&&b.id!=='setBtn')b.style.setProperty('--i',i++);});}mb.setAttribute('aria-expanded',o);mb.firstChild.textContent=o?'기능 ▴':'기능 ▾';};
   mb.addEventListener('click',e=>{e.stopPropagation();set(!box.classList.contains('open'));});
   box.addEventListener('click',e=>{const b=e.target.closest('.hbtn');if(b&&b!==mb&&b.id!=='setBtn')set(false);});
   document.addEventListener('click',e=>{if(box.classList.contains('open')&&!box.contains(e.target))set(false);});
@@ -9073,7 +9074,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v226';
+const APPVER=/*ver*/'v227';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10106,7 +10107,7 @@ function txtOpen(file,url){
   $('capCard').style.display='none';$('capList').innerHTML='';$('capBar').style.display='none';
   const box=$('calPhoto');calSt=null;box.style.display='';
   box.innerHTML=`<div class="ctx calp"><img class="ph" src="${src}" alt="">
-    <div class="stp">${isIOS?'<b>① 사진 속 글자를 길게 누르고</b> 「전체 선택」 → 「복사」<br>(번역이 필요하면 「번역」)<br><b>② 아래 「붙여넣기」</b>를 누른 뒤 <b>③ 「일정 찾기」</b>':'<b>① 사진 속 글자를 길게 눌러</b> 복사(또는 Google 렌즈)<br><b>② 아래 「붙여넣기」</b>를 누른 뒤 <b>③ 「일정 찾기」</b>'}</div>
+    <div class="stp">${isIOS?'<b>① 사진 속 글자를 길게 누르고</b> 「전체 선택」 → 「복사」<br><b>② 아래 「붙여넣기」</b>를 누른 뒤 <b>③ 「일정 찾기」</b>':'<b>① 사진 속 글자를 길게 눌러</b> 복사(또는 Google 렌즈)<br><b>② 아래 「붙여넣기」</b>를 누른 뒤 <b>③ 「일정 찾기」</b>'}</div>
     <textarea id="txtIn" placeholder="복사한 글자가 여기에 들어갑니다. 직접 고쳐도 돼요."></textarea>
     <div class="bt"><button id="txtPaste">붙여넣기</button><button class="go" id="txtFind">일정 찾기</button>
     ${txtFile?'<button class="wide" id="txtAuto">앱이 자동으로 읽기 (느리고 덜 정확해요)</button>':''}<button class="wide" id="txtCal">달력 사진이면 날짜별로 직접 입력</button><button class="wide" id="txtAgain">다시 캡처</button></div></div>`;
