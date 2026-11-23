@@ -6245,8 +6245,13 @@ $('tmBody').addEventListener('click',async e=>{
   if(t0.id==='osmAll'){const v=orgVisible(),all=v.every(p=>orgPh.has(p.id));v.forEach(p=>all?orgPh.delete(p.id):orgPh.add(p.id));return orgRender();}
   if(t0.id==='osmClr'){orgPh.clear();return orgRender();}
   if(t0.id==='osmMail'){const L=orgD.people.filter(p=>orgPh.has(p.id)&&p.email);if(!L.length)return;
-    const body=orgSmsText()+`\nQR 이미지: ${orgSite().replace(/\/?$/,'/')}qr.png`;
-    location.href='mailto:'+L.map(p=>p.email).join(',')+'?subject='+encodeURIComponent('[TY-Scheduler] 일정 앱 안내 및 참여 코드')+'&body='+encodeURIComponent(body);return;}
+    const who=(typeof myName==='function'&&myName())||'';
+    const body=(who?`${who}님이 TY-Scheduler 일정 앱에 초대합니다.\n\n`:'')+orgSmsText()+`\nQR 이미지: ${orgSite().replace(/\/?$/,'/')}qr.png`;
+    const sep=/Windows/i.test(navigator.userAgent)?';':',';
+    location.href='mailto:'+L.map(p=>p.email).join(sep)+'?subject='+encodeURIComponent('[TY-Scheduler] 일정 앱 안내 및 참여 코드'+(who?` (${who})`:''))+'&body='+encodeURIComponent(body);
+    if(/Windows/i.test(navigator.userAgent)){let seen=false;try{seen=localStorage.getItem('mailHint')==='1';localStorage.setItem('mailHint','1');}catch(_){}
+      setTimeout(()=>toastMsg(seen?'아웃룩 새 메일 창에서 [보내기]를 누르세요':'아웃룩이 안 열리면: 윈도우 설정 → 앱 → 기본 앱 → "MAILTO"를 Outlook으로 지정하세요'),400);}
+    return;}
   if(t0.id==='osmSend'){const L=orgD.people.filter(p=>orgPh.has(p.id)&&p.phone);if(!L.length)return;
     const ios=/iPhone|iPad|Mac/.test(navigator.userAgent)&&'ontouchend' in document;
     location.href=`sms:${L.map(p=>p.phone).join(',')}${ios?'&':'?'}body=${encodeURIComponent(orgSmsText())}`;return;}
@@ -8068,7 +8073,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v207';
+const APPVER=/*ver*/'v208';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
