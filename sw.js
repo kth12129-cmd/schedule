@@ -1,6 +1,8 @@
 /* 푸시 알림 전용 서비스 워커 (파일 캐시 없음) */
 self.addEventListener('install',()=>self.skipWaiting());
 self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+/* 설치 가능 조건용 (캐시·가로채기 없음) */
+self.addEventListener('fetch',()=>{});
 self.addEventListener('push',e=>{
   let d={};try{d=e.data.json();}catch(_){}
   e.waitUntil(self.registration.showNotification(d.title||'TY-Scheduler',{

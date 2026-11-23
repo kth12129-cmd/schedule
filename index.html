@@ -3058,6 +3058,21 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
 .ntc .nt button{height:26px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font:600 12px inherit;font-family:inherit;color:var(--navy);cursor:pointer}
 .ntc .nt button.pr{background:var(--navy);border-color:var(--navy);color:#fff}
 @media(max-width:700px){.ntc{right:16px;left:16px;width:auto;bottom:calc(86px + env(safe-area-inset-bottom,0px))}}
+.ins-tabs{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:14px 0 12px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.ins-tabs button{height:44px;font-size:15px;font-weight:600;color:var(--ink-2);background:transparent;border:0}
+.ins-tabs button.on{background:var(--navy);color:#fff}
+.ins-warn{margin:0 0 12px;padding:10px 12px;border:1px solid #f0d391;background:#fff4dc;color:#7a4a00;border-radius:8px;font-size:13.5px;line-height:1.55}
+.ins-go{display:block;width:100%;height:48px;margin:0 0 12px;border:0;border-radius:10px;background:var(--navy);color:#fff;font-size:16px;font-weight:700}
+.ins-step{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;padding:13px 2px;border-bottom:1px solid var(--hair)}
+.ins-step:last-of-type{border-bottom:0}
+.ins-step i{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font:700 13px/26px inherit;font-family:inherit;text-align:center;font-style:normal}
+.ins-step b{display:block;font-size:15px;color:var(--ink)}
+.ins-step span{display:block;margin-top:3px;font-size:13.5px;line-height:1.55;color:var(--ink-2)}
+.ins-tip{margin-top:12px;padding:12px;border-radius:10px;background:var(--field);font-size:13px;line-height:1.6;color:var(--ink-2)}
+.ins-addr{display:flex;gap:8px;align-items:center;margin-top:12px}
+.ins-addr input{flex:1;min-width:0;height:40px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:16px;color:var(--ink)}
+.ins-addr button{flex:none;height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-weight:600;color:var(--navy)}
+.ins-qr{display:block;width:150px;height:150px;margin:14px auto 0}
 </style>
 </head>
 <body>
@@ -3260,6 +3275,10 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
   <div class="yrlist" id="yrList"></div>
 </div>
 <div class="ctip" id="ctip"></div>
+<div class="sheet" id="instSheet">
+  <div class="sheet-bar"><h2>휴대폰에 설치</h2><button data-close="instSheet">닫기</button></div>
+  <div class="sheet-body" id="instBody"></div>
+</div>
 <div class="sheet" id="authSheet">
   <div class="sheet-bar"><h2>계정 · 동기화</h2><button data-close="authSheet">닫기</button></div>
   <div class="sheet-body"><div class="card" style="margin-top:12px" id="authBody"></div></div>
@@ -3324,7 +3343,8 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
   <div class="sg"><div class="sg-h">앱</div><div class="sg-b">
   <div class="setrow"><label>버전</label><span id="verTxt" style="font-size:13px;color:var(--ink-2);margin-left:auto"></span>
     <button id="freshBtn">최신으로 받기</button></div>
-  <div class="setrow"><label>앱으로 설치</label><button id="instBtn">방법 보기</button></div>
+  <div class="setrow"><label>PC에 설치</label><button id="instBtn">방법 보기</button></div>
+  <div class="setrow"><label>휴대폰에 설치 (안드로이드 · 아이폰)</label><button id="instPhone">안내 보기</button></div>
   </div></div>
   <div class="setrow phonly"><label>VOC 게시판</label><button id="setVoc">열기</button></div>
   <div class="setrow phonly"><label>추정 n+1</label><button id="setAn">열기</button></div>
@@ -6255,7 +6275,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='VOC: 조치 전 배지를 눌러 바로 조치 완료로 바꿀 수 있어요. 상단 오른쪽에 로그인(이름) 버튼이 항상 표시되고, 팀 일정 표시와 VOC 알림이 개선되었습니다.';
+const RELNOTE='설정에서 PC·휴대폰(안드로이드/아이폰) 설치 안내를 따로 볼 수 있어요. 상단 오른쪽에 로그인(이름) 버튼이 항상 표시되고, 팀 일정 표시와 VOC 알림이 개선되었습니다.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -8938,7 +8958,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v216';
+const APPVER=/*ver*/'v217';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -8962,6 +8982,7 @@ async function checkUpdate(){
   }catch(e){}
 }
 setTimeout(checkUpdate,2500);
+try{if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}
 setTimeout(verNotice,1500);
 setInterval(checkUpdate,1800000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate();});
@@ -9012,6 +9033,7 @@ async function onAuth(){
     if(data&&data.data&&mergeRemote(data.data)){save(false);redrawAll();}
     setSync('on','동기화됨 · '+(session.user.email||''));
     try{vocNotice();}catch(_){}
+    try{if(pushHere()&&'Notification'in window&&Notification.permission==='granted')pushEnable(false).catch(()=>{});}catch(_){}
     dirty=true;doPush();
     loadShares();startShareWatch();loadTeam();
   }
@@ -10070,12 +10092,46 @@ $('freshBtn').onclick=()=>{
   /* 브라우저가 붙들고 있는 예전 파일을 버리고 새로 받아온다 */
   try{if('caches'in window)caches.keys().then(ks=>ks.forEach(k=>caches.delete(k)));}catch(e){}
   try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistrations)
-    navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister()));}catch(e){}
+    navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.update()));}catch(e){}
   setTimeout(()=>location.replace(location.pathname+'?v='+Date.now()),250);
 };
 $('setBtn').onclick=openSet;
 $('loginTop').onclick=()=>{try{closeFind();}catch(_){}renderAuth();$('authSheet').classList.add('open');};
 $('acctBtn').onclick=()=>{closeFind();renderAuth();$('authSheet').classList.add('open');};
+/* ── 휴대폰 설치 안내 (안드로이드 / 아이폰) ── */
+const SITE_URL='https://kth12129-cmd.github.io/';
+function inAppBrowser(){const u=navigator.userAgent;return /KAKAOTALK|NAVER\(inapp|NAVER|Line\/|Instagram|FBAN|FBAV|DaumApps|; wv\)/i.test(u);}
+function instRender(os){
+  const ua=navigator.userAgent,ios=os==='ios',inapp=inAppBrowser();
+  const steps=ios?[
+    ['Safari로 이 주소 열기','크롬·카카오톡 안에서는 설치가 안 돼요. 꼭 Safari(나침반 아이콘)로 여세요.'],
+    ['아래 가운데 공유 버튼 누르기','네모 위로 화살표(↑)가 있는 버튼입니다. 안 보이면 화면을 살짝 올려 주세요.'],
+    ['"홈 화면에 추가" 선택','목록을 아래로 내리면 있어요. 오른쪽 위 [추가]를 누르면 끝!'],
+    ['홈 화면의 TY 아이콘으로 열기','알림을 받으려면 꼭 이 아이콘으로 열고, 설정 → 알림 권한을 눌러 허용하세요.']
+  ]:[
+    ['Chrome으로 이 주소 열기','카카오톡·네이버 안에서 열었다면 오른쪽 위 ⋮ → "다른 브라우저로 열기"에서 Chrome을 고르세요.'],
+    ['오른쪽 위 ⋮ 메뉴 누르기','Chrome 주소창 오른쪽 끝의 점 세 개입니다.'],
+    ['"앱 설치" · "홈 화면에 추가" · "설치 및 바로가기 만들기" 누르기','Chrome 버전에 따라 이름이 달라요. 보이는 것을 누르고 뜨는 창에서 [설치] 또는 [추가]를 누르세요.'],
+    ['홈 화면의 TY 아이콘으로 열기','처음 한 번 로그인하면 됩니다. 알림은 설정 → 알림 권한에서 허용하세요.']
+  ];
+  const go=(!ios&&deferredPrompt)?'<button class="ins-go" id="instGo">지금 설치하기</button>':'';
+  const warn=inapp?'<div class="ins-warn"><b>지금은 앱 안의 브라우저로 열려 있어요.</b><br>이 상태에서는 설치 버튼이 나오지 않습니다. '+(ios?'오른쪽 아래 ⋯ → "Safari로 열기"':'오른쪽 위 ⋮ → "다른 브라우저로 열기"')+'를 누른 뒤 아래 순서대로 하세요.</div>':'';
+  const tip=ios?'':'<div class="ins-tip"><b>설치 항목이 회색이라 눌러지지 않는다면</b><br>① 휴대폰 앱 목록에 <b>TY-Scheduler</b>가 이미 있는지 확인하세요. 있으면 이미 설치된 것이라 그 아이콘으로 여세요.<br>② 시크릿 탭이 아닌지, Chrome이 최신인지 확인하세요.<br>③ 회사에서 관리하는 휴대폰은 설치가 막혀 있을 수 있어요. 이때는 <b>삼성 인터넷</b>(≡ 메뉴 → "현재 페이지 추가" → "홈 화면")으로 열거나, 아래 주소를 복사해 두고 Chrome 주소창에서 바로 쓰세요.</div>';
+  $('instBody').innerHTML=`<div class="ins-tabs"><button data-os="android" class="${ios?'':'on'}">안드로이드</button><button data-os="ios" class="${ios?'on':''}">아이폰</button></div>
+    ${warn}${go}
+    ${steps.map((x,i)=>`<div class="ins-step"><i>${i+1}</i><div><b>${x[0]}</b><span>${x[1]}</span></div></div>`).join('')}
+    ${tip}
+    <div class="ins-addr"><input id="instUrl" readonly value="${SITE_URL}"><button id="instCopy">주소 복사</button></div>
+    <img class="ins-qr" src="qr.png" alt="접속 QR">
+    <div style="text-align:center;font-size:12.5px;color:var(--ink-3);margin-top:6px">PC 화면에서 보고 있다면 휴대폰 카메라로 QR을 비추세요</div>`;
+}
+$('instBody').addEventListener('click',async e=>{
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.os)return instRender(t.dataset.os);
+  if(t.id==='instCopy'){try{await navigator.clipboard.writeText(SITE_URL);t.textContent='복사됨';}catch(_){$('instUrl').select();document.execCommand('copy');t.textContent='복사됨';}return;}
+  if(t.id==='instGo'&&deferredPrompt){const d=deferredPrompt;deferredPrompt=null;d.prompt();try{await d.userChoice;}catch(_){}instRender('android');}
+});
+$('instPhone').onclick=()=>{try{closeFind();}catch(_){}instRender(/iPhone|iPad|iPod/.test(navigator.userAgent)?'ios':'android');$('instSheet').classList.add('open');};
 $('instBtn').onclick=async()=>{
   if(deferredPrompt){
     const d=deferredPrompt;deferredPrompt=null;
