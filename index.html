@@ -3045,8 +3045,10 @@ html.authwait #grid .ev,html.authwait #list,html.authwait #banner,html.authwait 
 .mdo:hover{border-color:var(--navy);background:var(--field)}
 .mdo b{display:block;font-size:14px}.mdo span{display:block;font-size:12px;color:var(--ink-2);margin-top:2px}
 .logintop{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 6px);right:12px;z-index:9000;box-shadow:0 2px 8px rgba(0,0,0,.18);margin:0;height:30px;padding:0 14px;border:0;border-radius:6px;background:var(--navy);color:#fff;font:700 13px/30px inherit;font-family:inherit;white-space:nowrap;cursor:pointer;flex:none}
-html.noauth .logintop{display:inline-block}
+html.noauth .logintop,html.authin .logintop{display:inline-block}
+.logintop.in{background:var(--surface);color:var(--navy);border:1px solid var(--line);font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis}
 html.noauth .brandbar .bs{margin-right:128px}
+html.authin .brandbar .bs{margin-right:168px}
 .logintop:hover{filter:brightness(1.15)}
 html.noauth:has(#authSheet.open) .logintop{display:none}
 @media(max-width:700px){.logintop{top:calc(env(safe-area-inset-top,0px) + 7px);right:10px;height:28px;line-height:28px;padding:0 11px;font-size:12px}}
@@ -5695,7 +5697,7 @@ const DEFAULT_CATS=[
 if(!store.cats||!store.cats.length)store.cats=JSON.parse(JSON.stringify(DEFAULT_CATS));
 store.catsMt=store.catsMt||0;
 /* 계정별 분리: 로그인 확인 전에는 일정 숨김, 다른 계정·로그아웃이면 이 기기 사본 비움 */
-try{if(!Object.keys(localStorage).some(k=>/^sb-.*-auth-token$/.test(k)))document.documentElement.classList.add('noauth');}catch(e){}
+try{if(!Object.keys(localStorage).some(k=>/^sb-.*-auth-token$/.test(k)))document.documentElement.classList.add('noauth');else document.documentElement.classList.add('authin');}catch(e){}
 try{if(localStorage.getItem('sb-config')||/github\.io/.test(location.host))document.documentElement.classList.add('authwait');setTimeout(()=>document.documentElement.classList.remove('authwait'),8000);}catch(e){}
 function wipeLocal(){
   store.items=[];store.memos={};store.memoMeta={};store.memoMt={};store.tomb={};store.cases=[];store.casesMt={};store.caseTomb={};
@@ -6255,7 +6257,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='로그인 버튼이 화면 위에 항상 고정되고, 팀 일정 표시와 VOC 알림이 개선되었습니다.';
+const RELNOTE='오른쪽 위에 로그인·계정 버튼이 항상 고정되고, 팀 일정 표시와 VOC 알림이 개선되었습니다.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -8929,7 +8931,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v212';
+const APPVER=/*ver*/'v213';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -8989,7 +8991,8 @@ function sbInit(){
 }
 async function onAuth(){
   renderAuth();
-  document.documentElement.classList.toggle('noauth',!session);
+  document.documentElement.classList.toggle('noauth',!session);document.documentElement.classList.toggle('authin',!!session);
+  try{const b=$('loginTop');if(b){if(session){const vn=(typeof vName==='function'?vName():'');const nm=(vn&&vn!=='익명')?vn:(session.user.email||'').split('@')[0];b.textContent=nm;b.classList.add('in');b.title='계정 · 로그아웃';}else{b.textContent='로그인 · 가입';b.classList.remove('in');b.title='';}}}catch(_){}
   if(!session&&!window.__authAsked){window.__authAsked=1;try{$('authSheet').classList.add('open');}catch(_){}}
   document.documentElement.classList.remove('authwait');
   if(!session){if(store.items.length||store.owner!==undefined){wipeLocal();try{redrawAll();}catch(_){}}setSync('','로그인 필요 · 기기끼리 연동 안 됨');return;}
