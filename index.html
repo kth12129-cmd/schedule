@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v222">
+<meta name="app-ver" content="v223">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -3241,7 +3241,8 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
     <div class="cr-rect" id="crRect"><i data-h="nw"></i><i data-h="n"></i><i data-h="ne"></i><i data-h="e"></i><i data-h="se"></i><i data-h="s"></i><i data-h="sw"></i><i data-h="w"></i></div></div></div>
   <div class="cr-bot"><button class="alt3" id="crSave">이미지로 저장</button><button id="crOk">이 부분으로 일정 만들기</button></div>
 </div>
-<input type="file" id="capFile" accept="image/*" style="display:none">
+<input type="file" id="capFile" accept=".jpg,.jpeg,.png,.heic,.heif,.webp" style="display:none">
+<input type="file" id="capCam" accept="image/*" capture="environment" style="display:none">
 
 <div class="sheet" id="dsSheet">
   <div class="sheet-bar"><h2>디자인</h2><button data-close="dsSheet">완료</button></div>
@@ -9042,7 +9043,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v222';
+const APPVER=/*ver*/'v223';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9768,17 +9769,30 @@ function loadTess(){
 }
 function capSay(t){const b=$('capBusy');if(!b)return;
   b.style.display=t?'flex':'none';if(t)$('capMsg').textContent=t;}
-function prepOCR(file,cb){
+function prepOCR(file,cb,photo){
   const r=new FileReader();
-  r.onload=()=>{const im=new Image();
+  r.onload=()=>{const im=new Image();const r0=r.result;
     im.onload=()=>{
       let w=im.width,h=im.height;
-      const k=Math.min(3,Math.max(1,1500/Math.max(1,w)));
+      const k=photo?Math.min(3,2000/Math.max(1,w)):Math.min(3,Math.max(1,1500/Math.max(1,w)));
       w=Math.round(w*k);h=Math.round(h*k);
       if(w>2600){const k2=2600/w;w=2600;h=Math.round(h*k2);}
       const c=document.createElement('canvas');c.width=w;c.height=h;
       const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);
       x.imageSmoothingQuality='high';x.drawImage(im,0,0,w,h);
+      if(photo){try{
+        const d=x.getImageData(0,0,w,h),p=d.data,n=w*h,g=new Uint8Array(n);
+        for(let i=0,j=0;i<p.length;i+=4,j++)g[j]=(0.299*p[i]+0.587*p[i+1]+0.114*p[i+2])|0;
+        const W1=w+1,I=new Uint32Array(W1*(h+1));
+        for(let y=0;y<h;y++){let row=0;for(let xx=0;xx<w;xx++){row+=g[y*w+xx];I[(y+1)*W1+xx+1]=I[y*W1+xx+1]+row;}}
+        const r=Math.max(12,Math.round(w/45));
+        for(let y=0;y<h;y++){const y0=Math.max(0,y-r),y1=Math.min(h,y+r+1);
+          for(let xx=0;xx<w;xx++){const x0=Math.max(0,xx-r),x1=Math.min(w,xx+r+1);
+            const m=(I[y1*W1+x1]-I[y0*W1+x1]-I[y1*W1+x0]+I[y0*W1+x0])/((y1-y0)*(x1-x0));
+            const v=g[y*w+xx]<m*0.88?0:255,q=(y*w+xx)*4;p[q]=p[q+1]=p[q+2]=v;p[q+3]=255;}}
+        x.putImageData(d,0,0);
+        cb(c.toDataURL('image/png'),r0);return;
+      }catch(e){}}
       try{const d=x.getImageData(0,0,w,h),p=d.data;
         for(let i=0;i<p.length;i+=4){
           let g=0.299*p[i]+0.587*p[i+1]+0.114*p[i+2];
@@ -9873,8 +9887,10 @@ $('capSave').onclick=()=>{
   capReset();
   goto(first);renderBanner();
 };
+let capPhoto=false;
 async function capRun(file){
   if(capBusy||!file||!/^image\//.test(file.type||''))return;
+  const photo=capPhoto;capPhoto=false;
   capBusy=true;capReset();
   capSay('이미지를 준비하는 중…');
   prepOCR(file,async(forOcr,shown)=>{
@@ -9886,21 +9902,28 @@ async function capRun(file){
         else if(/traineddata|loading language/i.test(m.status||''))capSay('한국어 인식 자료 받는 중… (처음 한 번만, 1~2분)');
       }});
       try{await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});}catch(_){}
-      const res=await worker.recognize(forOcr);
-      await worker.terminate();
-      capSay('');capShown=shown;
-      const rd=res&&res.data?res.data:null;
-      if(calGuess(rd).grid)calOpen(shown,rd);else buildCaps(rd,false);
+      let res=await worker.recognize(forOcr);
+      let rd=res&&res.data?res.data:null;
+      capShown=shown;
+      if(calGuess(rd).grid){await worker.terminate();capSay('');calOpen(shown,rd);}
+      else{
+        buildCaps(rd,false);
+        if(!capCands.length){
+          capSay('다른 방식으로 한 번 더 읽는 중…');
+          try{await worker.setParameters({tessedit_pageseg_mode:'4'});res=await worker.recognize(forOcr);rd=res&&res.data?res.data:rd;buildCaps(rd,false);}catch(_){}
+        }
+        await worker.terminate();capSay('');}
     }catch(err){capSay('');alert('글자를 읽지 못했습니다.\n'+(err&&err.message||''));}
     capBusy=false;
-  });
+  },photo);
 }
 function openCap(){
   capReset();
   closeFind();capUI();$('capSheet').classList.add('open');
 }
-$('capDrop').onclick=()=>{capPend='crop';$('capFile').removeAttribute('capture');$('capFile').click();};
-$('capFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f){if(capPend==='full')capRun(f);else openCrop(f);}capPend='crop';e.target.value='';};
+$('capDrop').onclick=()=>{$('capFile').click();};
+$('capFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f){capPhoto=f.type!=='image/png';openCrop(f);}e.target.value='';};
+$('capCam').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f){capPhoto=true;openCrop(f);}e.target.value='';};
 ['dragenter','dragover'].forEach(ev=>$('capDrop').addEventListener(ev,e=>{
   e.preventDefault();$('capDrop').classList.add('over');}));
 ['dragleave','drop'].forEach(ev=>$('capDrop').addEventListener(ev,e=>{
@@ -10051,11 +10074,11 @@ function capUI(){
   const t=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
   if(capTouch){
     const g=$('capGrab'),r=$('capRegion'),d=$('capDrop');
-    if(g){g.querySelector('i').textContent='1';g.querySelector('b').textContent='스크린샷 선택 (카톡창·바탕화면 등)';}
-    t('capGrabD','카톡·바탕화면 등을 스크린샷으로 찍은 뒤, 사진 목록에서 그 화면을 골라요');
+    if(g){g.querySelector('i').textContent='1';g.querySelector('b').textContent='카메라로 촬영';}
+    t('capGrabD','일정표·달력·메모를 바로 찍어요. 글씨가 있는 부분만 맞춰 자르면 더 잘 읽어요');
     if(r)r.style.display='none';
     if(d){d.querySelector('i').textContent='2';d.querySelector('b').textContent='사진·파일 불러오기';
-      const sp=d.querySelector('span');if(sp)sp.textContent='저장된 사진이나 파일을 선택해요';}}
+      const sp=d.querySelector('span');if(sp)sp.textContent='저장된 사진·스크린샷을 앨범에서 골라요';}}
 }
 $('capShots').onclick=e=>{const im=e.target.closest('img');if(im&&capShots[+im.dataset.k])openCrop(capShots[+im.dataset.k].file);};
 async function shootOne(){
@@ -10118,7 +10141,7 @@ async function startTimed(){
   tick();
 }
 let capPend='crop';
-$('capGrab').onclick=()=>{if(capTouch){capPend='full';$('capFile').setAttribute('capture','environment');$('capFile').click();}else startGrab('full');};
+$('capGrab').onclick=()=>{if(capTouch)$('capCam').click();else startGrab('full');};
 
 /* 화면 일부 캡처: OS 기본 캡처 도구(영역 드래그) → 클립보드 → 앱이 자동으로 불러옴 */
 let snipWait=false,snipBase=null,snipT=null;
@@ -10151,7 +10174,7 @@ async function snipCheck(){
 addEventListener('focus',()=>setTimeout(snipCheck,300));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(snipCheck,300);});
 $('capWaitX').onclick=snipStop;
-$('capRegion').onclick=()=>{if(capTouch){capPend='crop';$('capFile').removeAttribute('capture');$('capFile').click();}else startSnip();};
+$('capRegion').onclick=()=>{if(capTouch)$('capFile').click();else startSnip();};
 capUI();
 
 /* 자르기 창 */
