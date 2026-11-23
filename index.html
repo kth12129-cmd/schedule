@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v224">
+<meta name="app-ver" content="v225">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -9064,7 +9064,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v224';
+const APPVER=/*ver*/'v225';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10353,13 +10353,12 @@ function instRender(os){
     ['홈 화면의 TY 아이콘으로 열기','알림을 받으려면 꼭 이 아이콘으로 열고, 설정 → 알림 권한을 눌러 허용하세요.']
   ]:[
     ['Chrome으로 이 주소 열기','카카오톡·네이버 안에서 열었다면 오른쪽 위 ⋮ → "다른 브라우저로 열기"에서 Chrome을 고르세요.'],
-    ['오른쪽 위 ⋮ 메뉴 누르기','Chrome 주소창 오른쪽 끝의 점 세 개입니다.'],
-    ['"앱 설치" · "홈 화면에 추가" · "설치 및 바로가기 만들기" 누르기','Chrome 버전에 따라 이름이 달라요. 보이는 것을 누르고 뜨는 창에서 [설치] 또는 [추가]를 누르세요.'],
+    ['오른쪽 위 ⋮ 메뉴 → "앱 설치" 누르기','Chrome 주소창 오른쪽 끝의 점 세 개입니다. 뜨는 창에서 [설치]를 누르면 끝이에요. 위의 [지금 설치하기] 버튼이 보이면 그걸 눌러도 같습니다.'],
     ['홈 화면의 TY 아이콘으로 열기','처음 한 번 로그인하면 됩니다. 알림은 설정 → 알림 권한에서 허용하세요.']
   ];
   const go=(!ios&&deferredPrompt)?'<button class="ins-go" id="instGo">지금 설치하기</button>':'';
   const warn=inapp?'<div class="ins-warn"><b>지금은 앱 안의 브라우저로 열려 있어요.</b><br>이 상태에서는 설치 버튼이 나오지 않습니다. '+(ios?'오른쪽 아래 ⋯ → "Safari로 열기"':'오른쪽 위 ⋮ → "다른 브라우저로 열기"')+'를 누른 뒤 아래 순서대로 하세요.</div>':'';
-  const tip=ios?'':'<div class="ins-tip"><b>설치 항목이 회색이라 눌러지지 않는다면</b><br>① 휴대폰 앱 목록에 <b>TY-Scheduler</b>가 이미 있는지 확인하세요. 있으면 이미 설치된 것이라 그 아이콘으로 여세요.<br>② 시크릿 탭이 아닌지, Chrome이 최신인지 확인하세요.<br>③ 회사에서 관리하는 휴대폰은 설치가 막혀 있을 수 있어요. 이때는 <b>삼성 인터넷</b>(≡ 메뉴 → "현재 페이지 추가" → "홈 화면")으로 열거나, 아래 주소를 복사해 두고 Chrome 주소창에서 바로 쓰세요.</div>';
+  const tip=ios?'':'<div class="ins-warn" style="margin-top:12px"><b>메뉴에 비슷한 항목이 2개 보이면 "앱 설치"만 누르세요.</b><br>"홈 화면에 추가"는 바로가기만 만들어져 알림이 오지 않을 수 있어요. "앱 설치"가 없고 "설치 및 바로가기 만들기"만 있으면 그것을 누르세요.</div><div class="ins-tip"><b>설치 항목이 회색이라 눌러지지 않는다면</b><br>① 휴대폰 앱 목록에 <b>TY-Scheduler</b>가 이미 있는지 확인하세요. 있으면 이미 설치된 것이라 그 아이콘으로 여세요.<br>② 시크릿 탭이 아닌지, Chrome이 최신인지 확인하세요.<br>③ 회사에서 관리하는 휴대폰은 설치가 막혀 있을 수 있어요. 이때는 <b>삼성 인터넷</b>(≡ 메뉴 → "현재 페이지 추가" → "홈 화면")으로 열거나, 아래 주소를 복사해 두고 Chrome 주소창에서 바로 쓰세요.</div>';
   $('instBody').innerHTML=`<div class="ins-tabs"><button data-os="android" class="${ios?'':'on'}">안드로이드</button><button data-os="ios" class="${ios?'on':''}">아이폰</button></div>
     ${warn}${go}
     ${steps.map((x,i)=>`<div class="ins-step"><i>${i+1}</i><div><b>${x[0]}</b><span>${x[1]}</span></div></div>`).join('')}
