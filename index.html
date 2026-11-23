@@ -1436,7 +1436,7 @@ a.hbtn{text-decoration:none;display:inline-flex;align-items:center;justify-conte
 .sg-b .setrow button,.sg-b .setrow a{font-size:13px!important;font-weight:500!important;color:var(--ink-3)!important;padding:0;background:none;display:inline-flex;align-items:center;gap:5px;text-decoration:none;margin-left:auto}
 .sg-b .setrow button::before,.sg-b .setrow a::before{content:'';position:absolute;inset:0}
 .sg-b .setrow button::after,.sg-b .setrow a::after{content:'›';font-size:18px;line-height:1;color:var(--ink-3);font-weight:400}
-.sg-b .setrow select{background:transparent;border:0;color:var(--ink-3);font-size:13px;text-align:right;padding:0 2px}
+.sg-b .setrow select{background:transparent;border:0;color:var(--ink-3);font-size:16px!important;text-align:right;padding:0 2px;transform:scale(.8125);transform-origin:right center;font-weight:500}
 .sg-b .setrow #verTxt{margin-left:0!important}
 .setrow.phonly{display:none!important}
 .acc-card{display:flex;align-items:center;gap:14px;padding:18px 16px;margin:14px 0 12px;border:1px solid var(--hair);border-radius:14px;background:var(--surface)}
@@ -2220,7 +2220,7 @@ textarea.memo{margin:0!important}
 .sg-b .setrow button,.sg-b .setrow a{font-size:13px!important;font-weight:500!important;color:var(--ink-3)!important;padding:0;background:none;display:inline-flex;align-items:center;gap:5px;text-decoration:none;margin-left:auto}
 .sg-b .setrow button::before,.sg-b .setrow a::before{content:'';position:absolute;inset:0}
 .sg-b .setrow button::after,.sg-b .setrow a::after{content:'›';font-size:18px;line-height:1;color:var(--ink-3);font-weight:400}
-.sg-b .setrow select{background:transparent;border:0;color:var(--ink-3);font-size:13px;text-align:right;padding:0 2px}
+.sg-b .setrow select{background:transparent;border:0;color:var(--ink-3);font-size:16px!important;text-align:right;padding:0 2px;transform:scale(.8125);transform-origin:right center;font-weight:500}
 .sg-b .setrow #verTxt{margin-left:0!important}
 .setrow.phonly{display:none!important}
 .acc-card{display:flex;align-items:center;gap:14px;padding:18px 16px;margin:14px 0 12px;border:1px solid var(--hair);border-radius:14px;background:var(--surface)}
@@ -8929,7 +8929,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v214';
+const APPVER=/*ver*/'v215';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9219,7 +9219,7 @@ function openSet(){
   $('briefOn').checked=!!store.settings.briefOn;$('briefTime').value=store.settings.briefTime||'07:30';
   const perm=('Notification'in window)?Notification.permission:'unsupported';
   $('permBtn2').textContent=perm==='granted'?'허용됨':perm==='denied'?'차단됨':perm==='unsupported'?'지원 안 함':'허용하기';
-  $('permBtn2').disabled=perm!=='default';
+  $('permBtn2').disabled=false;
   const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
   const standalone=window.navigator.standalone||matchMedia('(display-mode: standalone)').matches;
   $('setNote').innerHTML=ios&&!standalone
@@ -10094,7 +10094,7 @@ function renderBP(){
 }
 const pushHere=()=>{try{return localStorage.getItem('push-on')==='1';}catch(e){return false;}};
 const b64u=x=>{const p='='.repeat((4-x.length%4)%4),r=(x+p).replace(/-/g,'+').replace(/_/g,'/'),a=atob(r);return Uint8Array.from(Array.from(a,c=>c.charCodeAt(0)));};
-async function pushEnable(){
+async function pushEnable(force){
   if(!SB)throw new Error('먼저 로그인해 주세요.');
   if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))
     throw new Error('이 화면에서는 알림을 받을 수 없어요. 아이폰은 사파리에서 공유 → 홈 화면에 추가 후, 홈 화면의 앱으로 열어 주세요.');
@@ -10103,10 +10103,12 @@ async function pushEnable(){
   const reg=await navigator.serviceWorker.register('sw.js');await navigator.serviceWorker.ready;
   const c=sbCfg(),pub=(await (await fetch(c.url+'/functions/v1/brief-push',{headers:{apikey:c.key}})).json()).pub;
   let sub=await reg.pushManager.getSubscription();
+  if(sub&&force){try{await sub.unsubscribe();}catch(_){}sub=null;}
   if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(pub)});
   const j=sub.toJSON(),u=(await SB.auth.getUser()).data.user;
   const r=await SB.from('push_subs').upsert({endpoint:j.endpoint,user_id:u.id,p256dh:j.keys.p256dh,auth:j.keys.auth});
   if(r.error)throw r.error;
+  if(force){try{await SB.from('push_subs').delete().eq('user_id',u.id).neq('endpoint',j.endpoint);}catch(_){}}
   try{localStorage.setItem('push-on','1');}catch(e){}
 }
 $('pushBtn').onclick=async()=>{const m=$('pushMsg');m.textContent='연결 중…';
@@ -10125,14 +10127,26 @@ if('serviceWorker'in navigator){navigator.serviceWorker.addEventListener('messag
 $('impRem').onchange=()=>{store.settings.impRem=+$('impRem').value;store.settingsMt=NOW();save();};
 $('impTeam').onchange=()=>{store.settings.impTeam=$('impTeam').checked;store.settingsMt=NOW();save();};
 $('alertH').onchange=()=>{store.settings.alertH=+$('alertH').value;store.settingsMt=NOW();save();};
-$('permBtn2').onclick=()=>{if(!('Notification'in window))return;
+$('permBtn2').onclick=async()=>{
+  if(!('Notification'in window)){toastMsg('이 화면에서는 알림을 지원하지 않아요');return;}
+  if(Notification.permission==='denied'){alert('알림이 차단되어 있어요.\n기기 설정 → 알림 → TY-Scheduler 에서 켜 주세요.');return;}
+  if(Notification.permission==='granted'){
+    toastMsg('서버 알림 연결을 새로 하는 중…');
+    try{await pushEnable(true);toastMsg('알림 연결을 새로 했어요');}catch(e){toastMsg(e.message||'연결하지 못했어요');}
+    try{renderBP();}catch(_){}return;}
   Notification.requestPermission().then(()=>{openSet();notify();renderBanner();});};
 $('testBtn').onclick=()=>{
   if(!('Notification'in window)||Notification.permission!=='granted'){
     if(navigator.vibrate)navigator.vibrate([220,110,220]);
     alert('알림 권한을 먼저 허용해 주세요.');return;}
   const rows=tomorrowRows();
-  fire(rows.length?`내일 ${rows.length}건`:'알림 테스트',rows.length?rows.slice(0,4).join('\n'):'이 화면이 보이면 정상입니다.');};
+  fire(rows.length?`내일 ${rows.length}건`:'알림 테스트',rows.length?rows.slice(0,4).join('\n'):'이 화면이 보이면 정상입니다.');
+  (async()=>{try{
+    if(!SB||!session)return;
+    let r=await SB.functions.invoke('brief-push',{body:{test:true}});let d=r.data;
+    if(!d||!d.ok){toastMsg('서버 알림 연결이 끊겨 있어 다시 연결합니다…');await pushEnable(true);r=await SB.functions.invoke('brief-push',{body:{test:true}});d=r.data;}
+    toastMsg(d&&d.ok?'서버 알림도 정상입니다 (VOC 알림 수신 가능)':'서버 알림을 보내지 못했어요. 잠시 뒤 다시 눌러 주세요');
+  }catch(e){toastMsg('서버 알림 점검 실패: '+(e.message||e));}})();};
 
 /* ── 날짜 미리보기 ── */
 const ctip=$('ctip');let tipT=null;
