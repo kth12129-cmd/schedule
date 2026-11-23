@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v225">
+<meta name="app-ver" content="v226">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -750,6 +750,15 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .capbar{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;
  padding:12px 0 4px;background:linear-gradient(transparent,var(--page) 22%)}
 
+
+.ctx .ph{width:100%;max-height:46vh;object-fit:contain;background:var(--field);border:1px solid var(--line);border-radius:10px;display:block;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.ctx .stp{margin:10px 2px;font-size:13px;line-height:1.6;color:var(--ink-2)}
+.ctx .stp b{color:var(--ink)}
+.ctx textarea{width:100%;box-sizing:border-box;min-height:120px;font-size:16px;line-height:1.5;padding:10px;border:1px solid var(--fieldline);border-radius:10px;background:var(--field);color:var(--ink);font-family:inherit;resize:vertical}
+.ctx .bt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.ctx .bt button{height:42px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:14px;color:var(--ink)}
+.ctx .bt .go{background:var(--navy);color:#fff;border-color:var(--navy)}
+.ctx .bt .wide{grid-column:span 2}
 .calp{margin-top:12px}
 .calp .ph{width:100%;max-height:30vh;object-fit:contain;background:var(--field);border:1px solid var(--line);border-radius:10px;display:block;cursor:zoom-in}
 .calp .ph.big{max-height:none;cursor:zoom-out}
@@ -2131,7 +2140,7 @@ body.picking #list .item .acts{pointer-events:none;opacity:.35}
 
 @media(max-width:700px){
   #capSheet{top:auto;max-height:55dvh;border-radius:18px 18px 0 0;box-shadow:0 -14px 40px rgba(10,20,50,.22);border-top:1px solid var(--line);padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
-  #capSheet:has(#capList:not(:empty)),#capSheet:has(#capPrev[src]:not([style*="none"])){max-height:92dvh}
+  #capSheet:has(#capList:not(:empty)),#capSheet:has(#calPhoto:not(:empty)),#capSheet:has(#capPrev[src]:not([style*="none"])){max-height:92dvh}
   #capSheet .sheet-bar{border-radius:18px 18px 0 0}
 }
 
@@ -9064,7 +9073,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v225';
+const APPVER=/*ver*/'v226';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9854,10 +9863,10 @@ function renderCaps(){
   $('capCard').style.display=capCands.length||capLast?'none':'';
   if(!capCands.length){
     box.innerHTML='<div class="card capnone">날짜나 시간이 적힌 일정을 찾지 못했습니다.<br>일정이 있는 부분만 골라 다시 캡처하면 더 잘 읽어요.'
-      +'<div class="caphead2"><button id="capAgain">다시 캡처</button>'+(capSkipped?'<button id="capUndated" class="alt">날짜 없는 줄 '+capSkipped+'개 보기</button>':'')+(capShown?'<button id="capCalBtn" class="alt">달력 사진으로 입력</button>':'')+'</div></div>';
+      +'<div class="caphead2"><button id="capAgain">다시 캡처</button>'+(capSkipped?'<button id="capUndated" class="alt">날짜 없는 줄 '+capSkipped+'개 보기</button>':'')+(capShown?'<button id="capCalBtn" class="alt">달력 사진으로 입력</button><button id="capTxtBtn" class="alt">글자 복사·붙여넣기</button>':'')+'</div></div>';
     $('capBar').style.display='none';return;}
   const opts=c=>store.cats.map(x=>`<option value="${x.id}"${x.id===c?' selected':''}>${esc(x.name)}</option>`).join('');
-  box.innerHTML='<div class="caphead"><b>일정 '+capCands.length+'건을 찾았어요</b><span>'+(capShown?'<button id="capCalBtn">달력 사진으로 입력</button> ':'')+'<button id="capAgain">다시 캡처</button></span></div>'+capCands.map((c,i)=>`<div class="capcard${c.on?' on':''}" data-i="${i}">
+  box.innerHTML='<div class="caphead"><b>일정 '+capCands.length+'건을 찾았어요</b><span>'+(capShown?'<button id="capTxtBtn">글자 붙여넣기</button> <button id="capCalBtn">달력 사진으로 입력</button> ':'')+'<button id="capAgain">다시 캡처</button></span></div>'+capCands.map((c,i)=>`<div class="capcard${c.on?' on':''}" data-i="${i}">
     <input type="checkbox" class="cc" data-f="on"${c.on?' checked':''}>
     <div class="cb">
       <input type="text" data-f="title" value="${esc(c.title)}">
@@ -9879,7 +9888,8 @@ function capReset(){calSt=null;const cp=$('calPhoto');if(cp){cp.style.display='n
 $('capList').addEventListener('click',e=>{
   if(e.target.id==='capAgain')capReset();
   else if(e.target.id==='capUndated')buildCaps(capLast,true);
-  else if(e.target.id==='capCalBtn')calOpen(capShown,capLast);});
+  else if(e.target.id==='capCalBtn')calOpen(capShown,capLast);
+  else if(e.target.id==='capTxtBtn')txtOpen(null,capShown);});
 $('capList').addEventListener('input',e=>{
   const card=e.target.closest('[data-i]');if(!card)return;
   const c=capCands[+card.dataset.i],f=e.target.dataset.f;if(!c||!f)return;
@@ -10085,6 +10095,29 @@ function calSave(){
   toastMsg(made.length+'건 등록했어요'+(dup?' · 중복 '+dup+'건 제외':''));
 }
 
+
+/* ── 아이폰/안드로이드 기기 글자 인식(사진 길게 눌러 복사) → 붙여넣기 → 일정 찾기 ── */
+const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
+let txtFile=null;
+function txtOpen(file,url){
+  txtFile=file||txtFile;
+  const src=url||(file?URL.createObjectURL(file):capShown||'');
+  capShown=capShown||src;
+  $('capCard').style.display='none';$('capList').innerHTML='';$('capBar').style.display='none';
+  const box=$('calPhoto');calSt=null;box.style.display='';
+  box.innerHTML=`<div class="ctx calp"><img class="ph" src="${src}" alt="">
+    <div class="stp">${isIOS?'<b>① 사진 속 글자를 길게 누르고</b> 「전체 선택」 → 「복사」<br>(번역이 필요하면 「번역」)<br><b>② 아래 「붙여넣기」</b>를 누른 뒤 <b>③ 「일정 찾기」</b>':'<b>① 사진 속 글자를 길게 눌러</b> 복사(또는 Google 렌즈)<br><b>② 아래 「붙여넣기」</b>를 누른 뒤 <b>③ 「일정 찾기」</b>'}</div>
+    <textarea id="txtIn" placeholder="복사한 글자가 여기에 들어갑니다. 직접 고쳐도 돼요."></textarea>
+    <div class="bt"><button id="txtPaste">붙여넣기</button><button class="go" id="txtFind">일정 찾기</button>
+    ${txtFile?'<button class="wide" id="txtAuto">앱이 자동으로 읽기 (느리고 덜 정확해요)</button>':''}<button class="wide" id="txtCal">달력 사진이면 날짜별로 직접 입력</button><button class="wide" id="txtAgain">다시 캡처</button></div></div>`;
+  $('txtPaste').onclick=async()=>{try{const t=await navigator.clipboard.readText();if(t){$('txtIn').value=t;}else toastMsg('복사된 글자가 없어요');}catch(e){toastMsg('붙여넣기가 막혔어요. 입력칸을 길게 눌러 「붙여넣기」를 선택하세요');$('txtIn').focus();}};
+  $('txtFind').onclick=()=>{const t=$('txtIn').value.trim();if(!t){toastMsg('글자를 먼저 붙여 넣어 주세요');return;}
+    box.style.display='none';box.innerHTML='';capLast=null;buildCaps({text:t},true);};
+  $('txtCal').onclick=()=>calOpen(src,null);
+  $('txtAgain').onclick=()=>capReset();
+  if($('txtAuto'))$('txtAuto').onclick=()=>{capPhoto=true;capRun(txtFile);};
+}
+
 /* ── 화면 캡처 · 자르기 ── */
 const canGrab=!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
 const isTouchDev=matchMedia('(pointer:coarse)').matches&&!canGrab;
@@ -10238,7 +10271,8 @@ async function crOut(){
   c.getContext('2d').drawImage(im,cr.x*k,cr.y*k,cr.w*k,cr.h*k,0,0,c.width,c.height);
   return toFile(c,'crop-'+Date.now()+'.png');
 }
-$('crOk').onclick=async()=>{const f=await crOut();closeCrop();$('capSheet').classList.add('open');capRun(f);};
+$('crOk').onclick=async()=>{const f=await crOut();closeCrop();$('capSheet').classList.add('open');
+  if(isIOS&&capPhoto){capPhoto=false;txtFile=f;capReset();txtOpen(f);}else capRun(f);};
 $('crSave').onclick=async()=>{const f=await crOut();closeCrop();attachImage(f,null);toastMsg('이미지로 저장했어요');};
 let lbId=null;
 function openLB(id){
