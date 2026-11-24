@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v243">
+<meta name="app-ver" content="v244">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6384,7 +6384,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='사람을 선택하면 목록 위에 "그룹으로 ▾ 이동"이 바로 나와요(선택 인원 문구·함께 넣기 창 삭제). 운영자가 만든 그룹에는 운영자가 구성원으로 들어가지 않고 전체를 볼 수만 있어요.';
+const RELNOTE='사람을 선택해 "그룹으로 이동"하면 원래 팀에서는 빠지고 그 그룹의 구성원이 돼요. 팀에서 빼도 이미 그룹에 들어간 사람은 그룹에 그대로 남아요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -7161,10 +7161,10 @@ const fmtPh=v=>{const d=String(v||'').replace(/\D/g,'');return d.length===11?`${
 let orgPh=new Set(),orgGForm=null,orgGSel=new Set(),orgGSelMode=false,orgGReq=[];
 const orgSite=()=>location.origin+location.pathname.replace(/index\.html$/,'');
 const orgG=()=>typeof orgSel==='string'&&orgSel.startsWith('g:')?orgSel.slice(2):null;
-function orgGPeople(gid){const out=[],seen=new Set();
-  (TS2.gmem[gid]||[]).forEach(m=>{const p=orgD&&orgD.people.find(x=>x.user_id===m.user_id);const k=p?'p'+p.id:'u'+m.user_id;if(seen.has(k))return;seen.add(k);
+function orgGPeople(gid){const out=[];
+  ((TS2.gpl||{})[gid]||[]).forEach(p=>out.push(p));
+  (TS2.gmem[gid]||[]).forEach(m=>{if(out.some(p=>p.user_id===m.user_id))return;const p=orgD&&orgD.people.find(x=>x.user_id===m.user_id);
     out.push(p||{id:'u'+m.user_id,name:m.name||'이름 없음',title:'',unit_id:null,is_leader:false,user_id:m.user_id,phone:'',email:'',name_ok:false});});
-  ((TS2.gpp||{})[gid]||[]).forEach(pid=>{const p=orgD&&orgD.people.find(x=>x.id===pid);if(!p||seen.has('p'+p.id))return;seen.add('p'+p.id);out.push(p);});
   return out;}
 function orgGroupHTML(ppl){
   const me=tmMe(),gid=orgG(),g=TS2.groups.find(x=>x.id===gid)||{};
@@ -9179,7 +9179,7 @@ async function tsLoadGroups(){
   try{const g=await SB.from('groups').select('*').order('created_at');TS2.groups=g.data||[];
     const m=await SB.from('group_members').select('*').eq('active',true);TS2.gmem={};
     (m.data||[]).forEach(x=>(TS2.gmem[x.group_id]=TS2.gmem[x.group_id]||[]).push(x));
-    TS2.gpp={};try{const gp=await SB.from('group_people').select('*');(gp.data||[]).forEach(x=>(TS2.gpp[x.group_id]=TS2.gpp[x.group_id]||[]).push(x.pid));}catch(_){}
+    TS2.gpp={};TS2.gpl={};try{const gp=await SB.rpc('group_people_list');(gp.data||[]).forEach(x=>(TS2.gpl[x.group_id]=TS2.gpl[x.group_id]||[]).push(x));}catch(_){}
     if(tsIsGrp()&&!TS2.groups.some(x=>x.id===TS2.gid))TS2.gid='team';
     await tsLoadGItems();}catch(e){}}
 async function tsLoadGItems(){
@@ -9217,9 +9217,11 @@ async function orgToGroup(keys,gid,move){
   if(move&&from&&from!==gid){
     if(us.length)await SB.rpc('group_member_remove',{p_gid:from,p_uids:us.map(p=>p.user_id)});
     if(ps.length)await SB.rpc('group_people_remove',{p_gid:from,p_pids:ps.map(p=>p.id)});}
+  /* 팀 목록에서 이동하면 그 팀에서는 빠지고 그룹으로만 소속됨 */
+  if(move&&!from){for(const p of ps){if(orgD.people.some(x=>x.id===p.id))await SB.rpc('org_member_del',{p_pid:p.id});}await orgLoad();}
   const gn=(TS2.groups.find(x=>x.id===gid)||{}).name||'그룹',no=ppl.filter(p=>!p.user_id).length;
   await tsLoadGroups();orgPh.clear();orgRender();
-  toastMsg(`${ppl.length}명을 '${gn}'에 ${move&&from?'옮겼어요':'넣었어요'}${no?` (미가입 ${no}명은 가입하면 일정이 함께 보여요)`:''}`);}
+  toastMsg(`${ppl.length}명을 '${gn}'으로 옮겼어요${no?` (미가입 ${no}명은 가입하면 일정이 함께 보여요)`:''}`);}
 $('tmBody').addEventListener('click',async e=>{const t=e.target;
   if(Date.now()-(window._lpAt||0)<700&&t.closest&&t.closest('.ot-r[data-gid]')){e.preventDefault();e.stopPropagation();return;}
   const gx=t.closest&&t.closest('[data-gmenu]');if(gx){const r=gx.getBoundingClientRect();orgGMenuOpen(gx.dataset.gmenu,r.left,r.bottom+4);return;}
@@ -9247,7 +9249,7 @@ document.addEventListener('dragend',()=>{document.body.classList.remove('org-dra
 document.addEventListener('dragover',e=>{const g=e.target.closest&&e.target.closest('.ot-root [data-tsg]');if(!g||!orgDragKeys.length)return;e.preventDefault();
   document.querySelectorAll('.ot-root .dz').forEach(x=>x!==g&&x.classList.remove('dz'));g.classList.add('dz');});
 document.addEventListener('drop',e=>{const g=e.target.closest&&e.target.closest('.ot-root [data-tsg]');if(!g||!orgDragKeys.length)return;e.preventDefault();
-  const k=orgDragKeys;orgDragKeys=[];g.classList.remove('dz');orgToGroup(k,g.dataset.tsg,orgG()&&!e.altKey&&!e.ctrlKey);});
+  const k=orgDragKeys;orgDragKeys=[];g.classList.remove('dz');orgToGroup(k,g.dataset.tsg,!e.altKey&&!e.ctrlKey);});
 $('ts').addEventListener('input',e=>{if(e.target.id==='tsSq'&&TS2.send){TS2.send.q=e.target.value;const p=e.target.selectionStart;const g=TS2.groups.find(x=>x.id===TS2.gid);const box=document.querySelector('.tsgs-list');if(box&&g){const L=tsSendList(g);box.innerHTML=L.length?L.map(p=>`<label class="tsgs-r"><input type="checkbox" data-tssel="${p.user_id}"${TS2.send.sel.has(p.user_id)?' checked':''}><span class="nm">${esc(p.name)}</span><span class="tt">${esc(p.title||'')}</span></label>`).join(''):'<div class="an2e">검색 결과가 없습니다.</div>';}}});
 $('ts').addEventListener('change',e=>{const c=e.target.closest('[data-tssel]');if(!c||!TS2.send)return;c.checked?TS2.send.sel.add(c.dataset.tssel):TS2.send.sel.delete(c.dataset.tssel);
   const g=TS2.groups.find(x=>x.id===TS2.gid);document.querySelectorAll('[data-tssend="app"],[data-tssend="mail"]').forEach(b=>{b.disabled=!TS2.send.sel.size;});const a=document.querySelector('[data-tssend="app"]');if(a)a.textContent=`선택한 ${TS2.send.sel.size}명에게 초대 보내기`;});
@@ -9309,7 +9311,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v243';
+const APPVER=/*ver*/'v244';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
