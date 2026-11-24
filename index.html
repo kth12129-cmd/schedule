@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v255">
+<meta name="app-ver" content="v256">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6392,7 +6392,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='캡처에서 Esc를 누르면 한 단계씩 뒤로 가요. 영역 선택 중이면 캡처 방식 목록으로, 결과 목록이면 캡처 방식 목록으로 돌아가고 전체가 닫히지 않아요.';
+const RELNOTE='캡처에서 날짜 줄("11/26(목) 限")의 글자가 깨져도 제목을 "요청" 문장에서 만들고, 내 이름이 적힌 담당 줄이 있으면 그 기한으로 내 일정을 올려요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9358,7 +9358,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v255';
+const APPVER=/*ver*/'v256';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10189,8 +10189,8 @@ function buildCaps(data,allowUndated){
       if(!sj){for(let j=i-1;j>=0;j--){if(!DT2.test(rows[j].t)&&rows[j].t.length>=4){sj=rows[j].t.replace(/^\s*\d{1,2}\s*[.)]\s*/,'').replace(/^[^:：]{1,6}[:：]\s*/,'');break;}}}
       if(sj&&sj.length>=2){note=line.replace(/^\s*(?:\d{1,2}\s*[.)]\s*)?[^:：]{1,6}[:：]\s*/,'').trim();t=sj;}}
     if(hasSec&&secIdx.has(i)){
-      const rest=t.replace(/[\d\/\.\-월일년\s()목금토일화수限:]+/g,'').trim();
-      if(rest.length<3){const rq=rows.find(x=>/(업데이트|작성|제출|회신).{0,30}요청\s*드리/.test(x.t));
+      const rest=t.replace(/[\d\/\.\-~：:()\s]+/g,'').replace(/[월화수목금토일옥년限]/g,'').replace(/[A-Za-z&]{1,4}$/,'').trim();
+      if((rest.match(/[가-힣]/g)||[]).length<3){const rq=rows.find(x=>/(업데이트|작성|제출|회신).{0,30}요청\s*드리/.test(x.t));
         const base=rq?rq.t.replace(/^.*?첨부의?\s*/,'').replace(/\s*(?:에\s*대해|에\s*대하여)?\s*[^가-힣]*(?:요청\s*드리).*$/,'').trim():'';
         t=(base||'일정')+' 회신';}}
     if(t.length<2){skipped++;return;}
@@ -10199,16 +10199,19 @@ function buildCaps(data,allowUndated){
       cat:p.cat||addCats()[0]||store.cats[0].id,cats:p.cats||[],title:t});
   });
   /* 내 이름이 들어간 줄: 문서 속 날짜(기한)에 내 담당 일정으로 올림 */
-  const me=(store.settings&&store.settings.name||'').trim();
+  const me=((store.settings&&store.settings.name)||(typeof myName==='function'&&myName())||'').trim();
   if(me&&me.length>=2){
     const mine=rows.filter(r=>r.t.includes(me)&&!DT2.test(r.t));
     const dl=rows.filter(r=>DT2.test(r.t)).map(r=>({r,p:parseInput(r.t,sel)}));
     if(mine.length&&dl.length){
       const base=dl[0];
       const keep=out.filter(c=>{const body=c.title.replace(/限|[A-Za-z&]{1,3}$/g,'').trim();return (body.match(/[가-힣]/g)||[]).length>=3;});
-      const mineC=mine.map(r=>({on:true,raw:r.t,date:base.p.date,endDate:null,time:null,endTime:null,pri:false,
-        note:'담당 · '+base.r.t.replace(/\s+/g,' '),cat:addCats()[0]||store.cats[0].id,
-        title:r.t.replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').trim()}));
+      const gen=keep.find(c=>/ 회신$/.test(c.title)&&c.date===base.p.date);
+      const mineC=mine.map(r=>{const site=r.t.replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').split(/\s*[:：\/]/)[0].trim();
+        return {on:true,raw:r.t,date:base.p.date,endDate:null,time:null,endTime:null,pri:false,
+        note:'담당 · '+r.t.replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').trim()+' / 기한 '+base.p.date.slice(5).replace('-','/'),cat:addCats()[0]||store.cats[0].id,
+        title:gen&&site.length>=2?site+' '+gen.title:r.t.replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').trim()};});
+      if(gen)keep.splice(keep.indexOf(gen),1);
       capEnrich(rows,mineC);
       capCands=[...mineC,...keep.filter(c=>!mine.some(m=>m.t===c.raw))];capSkipped=skipped;renderCaps();return;}}
   capEnrich(rows,out);
