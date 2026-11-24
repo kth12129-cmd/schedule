@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v249">
+<meta name="app-ver" content="v250">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6392,7 +6392,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='캡처 화면을 정리했어요. 전체 해제·등록·다시 캡처 순으로 아래에 모았어요. 안내문의 시간(오전 9시)·장소·작성자를 읽어 일정에 채우고, 연월일(26년11월25일)도 정확히 읽어요. 등록하면 "알림 등록할까요?" 창이 떠요.';
+const RELNOTE='캡처한 안내문이 "AFLP 재무전략 전파 교육(8층, 대회의실, 본사 대리급)"처럼 제목에 장소·대상이 들어가고, 시간(09:00)과 날짜 원문(26년11월25일(수))이 메모로 들어가도록 고쳤어요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9354,7 +9354,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v249';
+const APPVER=/*ver*/'v250';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10207,11 +10207,18 @@ function capEnrich(rows,list){
     m=t.match(/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:장소|위치|회의실)\s*[:：]\s*(.+)$/);if(m&&!place)place=m[1].trim();
     m=t.match(/([가-힣A-Za-z]{2,8}(?:팀|부|실|본부|센터|부서))\s+([가-힣]{2,4})\s*(사원|대리|과장|차장|부장|팀장|이사|상무|전무|실장|본부장|책임|선임|주임)/);
     if(m&&!who)who=m[1]+' '+m[2]+' '+m[3];});
-  const extra=[who?'작성 · '+who:'',place?'장소 · '+place:''].filter(Boolean).join(' / ');
+  /* 원문에 적힌 날짜 모양(26년11월25일(수))을 메모에 그대로 둠 */
+  let od='';try{const raw=(capLast&&capLast.lines&&capLast.lines.length)?capLast.lines.map(l=>l.text).join('\n'):((capLast&&capLast.text)||'');
+    const dm=raw.match(/\d{2,4}\s*년\s*\d{1,2}\s*월\s*\d{1,2}\s*일\s*(?:\(\s*[월화수목금토일]\s*\))?/);if(dm)od=dm[0].replace(/\s+/g,'');}catch(_){}
+  let tg='';rows.forEach(r=>{const m=r.t.match(/^\s*(?:\d{1,2}\s*[.)]\s*)?대상\s*[:：]\s*(.+)$/);if(m&&!tg)tg=m[1].trim();});
+  const pl=place.replace(/(\d+\s*층)\s+/g,'$1, ').trim();
+  const par=[pl,tg].filter(Boolean).join(', ');
   list.forEach(c=>{
     if(tm&&!c.time)c.time=tm;
-    if(extra)c.note=(c.note?c.note+' / ':'')+extra;
-    c.title=String(c.title||'').replace(/\s*관련\s*(?:하여|해|해서)?\s*(?:아래와\s*같이|다음과\s*같이)?\s*(?:안내|공지|알려)\s*(?:해\s*)?(?:드립니다|드려요|합니다|드리겠습니다)\.?$/,'').trim()||c.title;});
+    c.title=String(c.title||'').replace(/\s*관련\s*(?:하여|해|해서)?\s*(?:아래와\s*같이|다음과\s*같이)?\s*(?:안내|공지|알려)\s*(?:해\s*)?(?:드립니다|드려요|합니다|드리겠습니다)\.?$/,'').trim()||c.title;
+    if(par&&!/\(.*\)\s*$/.test(c.title))c.title+='('+par+')';
+    if(od&&/20\d{2}-\d{2}-\d{2}/.test(c.note||''))c.note=od+((c.note.match(/\([월화수목금토일]\)/)&&!/\([월화수목금토일]\)/.test(od))?c.note.match(/\([월화수목금토일]\)/)[0]:'');
+    else if(od&&!c.note)c.note=od;});
 }
 function renderCaps(){
   const box=$('capList');
