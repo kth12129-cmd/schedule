@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v231">
+<meta name="app-ver" content="v232">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -3132,6 +3132,15 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
 }
 @media (min-width:661px) and (max-width:1100px){
   .hsec-memo.open{overflow-x:auto!important;scrollbar-width:none}
+}
+@media(min-width:701px){
+  #capSheet{inset:auto;top:76px;left:50%;width:min(460px,92vw);height:auto;max-height:min(78vh,640px);transform:translate(-50%,-10px);opacity:0;visibility:hidden;
+    border-radius:16px;border:1px solid var(--line);box-shadow:0 18px 50px rgba(10,20,50,.28);padding-bottom:16px;
+    transition:transform .22s ease,opacity .2s ease,visibility 0s .22s}
+  #capSheet.open{transform:translate(-50%,0);opacity:1;visibility:visible;transition:transform .22s ease,opacity .2s ease}
+  #capSheet:has(#capList:not(:empty)),#capSheet:has(#calPhoto:not(:empty)),#capSheet:has(#capPrev[src]:not([style*="none"])){width:min(720px,94vw);max-height:88vh;top:36px}
+  #capSheet .sheet-bar{border-radius:16px 16px 0 0;padding:11px 14px}
+  #capSheet .sheet-body{padding:0 14px}
 }
 </style>
 </head>
@@ -9100,7 +9109,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v231';
+const APPVER=/*ver*/'v232';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9865,22 +9874,35 @@ function prepOCR(file,cb,photo){
 }
 const DT2=/(\d{4}\s*[-.\/]\s*\d{1,2}\s*[-.\/]\s*\d{1,2})|(\d{1,2}\s*월\s*\d{1,2}\s*일?)|(\d{1,2}\s*\/\s*\d{1,2})|(\b\d{1,2}\.\d{1,2}\b)|(\d{1,2}\s*:\s*\d{2})|((오전|오후)\s*\d{1,2}\s*시)|(\d{1,2}\s*시\s*(\d{1,2}\s*분)?)|(오늘|내일|모레|글피)|([일월화수목금토]요일)/;
 let capLast=null,capSkipped=0;
+const SUBJ_RE=/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:요청\s*사항|요청|제목|내용|건명|안건|업무|주제|목적|건)\s*[:：]\s*(.+)$/;
+const DLAB_RE=/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:일정|기한|마감|일시|날짜|기간|납기|제출)\s*[:：]/;
 function buildCaps(data,allowUndated){
   capLast=data;
-  let lines=[];
-  if(data&&data.lines&&data.lines.length)lines=data.lines.filter(l=>l.confidence==null||l.confidence>=45).map(l=>l.text);
-  else lines=((data&&data.text)||'').split(/\n+/);
-  lines=lines.map(x=>x.replace(/[|｜\\_~`ㅁ□■]+/g,' ').replace(/\s+/g,' ').trim()).filter(x=>x.length>=3&&/[가-힣A-Za-z]/.test(x));
+  const clean=x=>x.replace(/[|｜\\_~`ㅁ□■]+/g,' ').replace(/\s+/g,' ').trim();
+  let rows=[];
+  if(data&&data.lines&&data.lines.length)rows=data.lines.map(l=>({t:l.text,c:l.confidence==null?100:l.confidence}));
+  else rows=((data&&data.text)||'').split(/\n+/).map(t=>({t,c:100}));
+  rows=rows.map(r=>({t:clean(r.t),c:r.c})).filter(r=>r.t.length>=3&&/[가-힣A-Za-z]/.test(r.t));
   const seen=new Set(),out=[];let skipped=0;
-  lines.slice(0,80).forEach(line=>{
+  const subjBefore=i=>{for(let j=i-1;j>=0;j--){const m=rows[j].t.match(SUBJ_RE);if(m)return m[1].trim();}
+    for(let j=i+1;j<rows.length;j++){const m=rows[j].t.match(SUBJ_RE);if(m)return m[1].trim();}return null;};
+  rows.slice(0,100).forEach((r,i)=>{
+    const line=r.t;
+    if(r.c<45){return;}
     const dated=DT2.test(line);
     if(!dated&&!allowUndated){skipped++;return;}
     const p=parseInput(line,sel);
     let t=(p.title||line).replace(/^\s*[\(\[]?\d{1,2}[\)\]\.]\s+/,'').replace(/\(\s*[일월화수목금토]\s*\)/g,'')
       .replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').replace(/[:：\s]+$/,'').trim();
+    let note='';
+    if(dated&&DLAB_RE.test(line)){
+      /* '일정 : 11월 27일 …' 처럼 날짜만 알려 주는 줄 → 제목은 '요청 :' 줄(없으면 바로 앞 줄)에서 */
+      let sj=subjBefore(i);
+      if(!sj){for(let j=i-1;j>=0;j--){if(!DT2.test(rows[j].t)&&rows[j].t.length>=4){sj=rows[j].t.replace(/^\s*\d{1,2}\s*[.)]\s*/,'').replace(/^[^:：]{1,6}[:：]\s*/,'');break;}}}
+      if(sj&&sj.length>=2){note=line.replace(/^\s*(?:\d{1,2}\s*[.)]\s*)?[^:：]{1,6}[:：]\s*/,'').trim();t=sj;}}
     if(t.length<2){skipped++;return;}
     const key=p.date+'|'+(p.time||'')+'|'+t;if(seen.has(key))return;seen.add(key);
-    out.push({on:dated,raw:line,date:p.date,endDate:p.endDate,time:p.time,endTime:p.endTime,pri:p.pri,
+    out.push({on:dated,raw:line,date:p.date,endDate:p.endDate,time:p.time,endTime:p.endTime,pri:p.pri,note,
       cat:p.cat||addCats()[0]||store.cats[0].id,title:t});
   });
   capCands=out;capSkipped=skipped;renderCaps();
@@ -9889,7 +9911,7 @@ function renderCaps(){
   const box=$('capList');
   $('capCard').style.display=capCands.length||capLast?'none':'';
   if(!capCands.length){
-    box.innerHTML='<div class="card capnone">날짜나 시간이 적힌 일정을 찾지 못했습니다.<br>일정이 있는 부분만 골라 다시 캡처하면 더 잘 읽어요.'
+    box.innerHTML='<div class="caphead2" style="justify-content:center;padding:14px 0"><button id="capAgain">다시 캡처</button></div>';
       +'<div class="caphead2"><button id="capAgain">다시 캡처</button>'+(capSkipped?'<button id="capUndated" class="alt">날짜 없는 줄 '+capSkipped+'개 보기</button>':'')+(capShown?'<button id="capCalBtn" class="alt">달력 사진으로 입력</button><button id="capTxtBtn" class="alt">글자 복사·붙여넣기</button>':'')+'</div></div>';
     $('capBar').style.display='none';return;}
   const opts=c=>store.cats.map(x=>`<option value="${x.id}"${x.id===c?' selected':''}>${esc(x.name)}</option>`).join('');
@@ -9938,7 +9960,7 @@ $('capSave').onclick=()=>{
     store.items.push({id:(Date.now()+n).toString(36)+Math.random().toString(36).slice(2,6),
       date:c.date,endDate:c.endDate||null,time:c.time||null,endTime:c.endTime||null,
       title:c.title||c.raw,pri:!!c.pri,cats:[c.cat],cat:c.cat,
-      note:'',done:false,doneAt:null,mt:NOW()});});
+      note:c.note||'',done:false,doneAt:null,mt:NOW()});});
   save();
   const first=pick[0].date;
   $('capSheet').classList.remove('open');
@@ -10242,8 +10264,8 @@ async function startSnip(){
     :isMacOS?'<b>'+key+'</b> 를 누르고 필요한 부분을 <b>드래그</b>하세요.'
     :'기기의 캡처 기능으로 필요한 부분을 찍으세요.')
     +'<br>영역을 고르면 이 앱이 자동으로 읽어 일정 목록을 만들어요. (안 되면 이 화면에서 Ctrl+V)';
-  $('capWait').style.display='block';
-  clearInterval(snipT);snipT=setInterval(snipCheck,1200);clearTimeout(snipTO);snipTO=setTimeout(snipStop,30000);
+  $('capSheet').classList.remove('open');
+  clearInterval(snipT);snipT=setInterval(snipCheck,1200);clearTimeout(snipTO);snipTO=setTimeout(()=>{snipStop();$('capSheet').classList.add('open');},30000);
   if(isWinOS){try{const a=document.createElement('a');a.href='ms-screenclip:';a.style.display='none';document.body.appendChild(a);a.click();a.remove();}catch(e){}}
 }
 async function snipCheck(){
