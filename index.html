@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v253">
+<meta name="app-ver" content="v254">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6392,7 +6392,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='캡처할 때 첨부파일·다운로드 기간·파일 크기 줄을 일정으로 잡지 않고, "2. 제출 일정" 제목 아래 날짜만 일정으로 올려요. 날짜만 있는 줄은 "요청" 문장에서 제목을 만들어요.';
+const RELNOTE='캡처에서 "첨부파일·다운로드 기간·파일 이름/크기" 줄은 글자가 깨져 읽혀도(나운로드, MB} 등) 일정으로 올리지 않아요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9354,7 +9354,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v253';
+const APPVER=/*ver*/'v254';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10154,7 +10154,7 @@ function buildCaps(data,allowUndated){
   else rows=((data&&data.text)||'').split(/\n+/).map(t=>({t,c:100}));
   const dict=ocrDict();
   rows=rows.map(r=>({t:ocrFix(clean(r.t),dict),c:r.c})).filter(r=>r.t.length>=3&&/[가-힣A-Za-z]/.test(r.t));
-  const FILE_RE=/첨부\s*파일|다운로드|대용량|\.(?:pptx?|xlsx?|docx?|pdf|hwp|zip)\b|\(\s*\d+(?:\.\d+)?\s*[MKG]B\s*\)|\b\d+(?:\.\d+)?\s*[MKG]B\b/i;
+  const FILE_RE=/첨부\s*파[일열]|[다나]?운로드|대용량|기간\s*[:：]?\s*20\d{2}\s*[.\-]\s*\d{1,2}\s*[.\-]\s*\d{1,2}|20\d{2}\.\d{1,2}\.\d{1,2}\s+\d{1,2}:\d{2}|\.\s*pptx?\b|\.(?:pptx?|xlsx?|docx?|pdf|hwp|zip)\b|\(\s*\d+(?:\.\d+)?\s*[MKG]B\s*\)|\b\d+(?:\.\d+)?\s*[MKG]B\b|\b\d{1,3}\.\d{2}\s*M[B8]\W?/i;
   rows=rows.filter(r=>!FILE_RE.test(r.t));
   const seen=new Set(),out=[];let skipped=0;
   const subjBefore=i=>{for(let j=i-1;j>=0;j--){const m=rows[j].t.match(SUBJ_RE);if(m)return m[1].trim();}
