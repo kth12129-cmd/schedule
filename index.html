@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v241">
+<meta name="app-ver" content="v242">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -3163,6 +3163,8 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
 .shpop{position:fixed;z-index:9999;width:260px;max-width:calc(100vw - 12px);background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:12px;display:grid;gap:6px;font-size:13px}
 .shpop b{font-size:13.5px;margin-bottom:2px}.shr{display:flex;align-items:center;gap:8px;min-height:30px;color:var(--ink)}.shr input{width:16px;height:16px;accent-color:var(--navy);flex:none}
 .shl{display:grid;gap:0;padding-left:20px;max-height:200px;overflow:auto}.shl em{font-style:normal;color:var(--ink-3);font-size:12px}.shf{display:flex;justify-content:flex-end;margin-top:4px}
+.ot-r.on .ot-x{color:var(--page);opacity:.85}.ot-r.on .ot-x:hover,.ot-r.on .ot-x:focus{background:rgba(255,255,255,.22);color:var(--page);opacity:1}
+.ot-r:not(.on) .ot-x:hover{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -6381,7 +6383,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='일정을 어느 팀·그룹에 보일지 고를 수 있어요. 일정의 자물쇠를 누르면 "나만 보기 / 모든 곳 / 선택한 곳만"을 고르고, 설정의 분류별 "대상"에서 분류 전체를 정해요. 그룹은 조직도 목록에 묶여 나오고 우클릭·길게 누르기로 수정·삭제해요(만들기·삭제는 운영자, 팀원은 요청). 아침 알림은 기기를 연결하면 기본으로 와요.';
+const RELNOTE='선택된 그룹의 "⋯" 버튼이 눌렀을 때 사라지던 문제를 고쳤어요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9302,7 +9304,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v241';
+const APPVER=/*ver*/'v242';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
