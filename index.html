@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v235">
+<meta name="app-ver" content="v236">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -3142,6 +3142,7 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
   #capSheet .sheet-bar{border-radius:16px 16px 0 0;padding:11px 14px}
   #capSheet .sheet-body{padding:0 14px}
 }
+.ccx{font-size:12px;color:var(--ink-3);align-self:center;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -6360,7 +6361,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='상단 "기능 ▸"에 마우스를 올리면 목록이 스르륵 열려요. 문서·사진 캡처 글자 인식이 정밀해졌고(한자 限, 오인식 보정), 내 이름이 들어간 줄은 담당 일정으로 올라와요.';
+const RELNOTE='캡처·달력 사진으로 등록해도 "산포처리, 주촌현장"처럼 적힌 분류가 모두 붙고, 일정 옆에 분류가 나란히 표시돼요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9115,7 +9116,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v235';
+const APPVER=/*ver*/'v236';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9920,7 +9921,7 @@ function buildCaps(data,allowUndated){
     if(r.c<45){return;}
     const dated=DT2.test(line);
     if(!dated&&!allowUndated){skipped++;return;}
-    const p=parseInput(line,sel);
+    ensureSites(line);const p=parseInput(line,sel);
     let t=(p.title||line).replace(/^\s*[\(\[]?\d{1,2}[\)\]\.]\s+/,'').replace(/\(\s*[일월화수목금토]\s*\)/g,'')
       .replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').replace(/[:：\s]+$/,'').trim();
     let note='';
@@ -9932,7 +9933,7 @@ function buildCaps(data,allowUndated){
     if(t.length<2){skipped++;return;}
     const key=p.date+'|'+(p.time||'')+'|'+t;if(seen.has(key))return;seen.add(key);
     out.push({on:dated,raw:line,date:p.date,endDate:p.endDate,time:p.time,endTime:p.endTime,pri:p.pri,note,
-      cat:p.cat||addCats()[0]||store.cats[0].id,title:t});
+      cat:p.cat||addCats()[0]||store.cats[0].id,cats:p.cats||[],title:t});
   });
   /* 내 이름이 들어간 줄: 문서 속 날짜(기한)에 내 담당 일정으로 올림 */
   const me=(store.settings&&store.settings.name||'').trim();
@@ -9963,7 +9964,7 @@ function renderCaps(){
       <div class="cr">
         <input type="date" data-f="date" value="${c.date}">
         <input type="time" data-f="time" value="${c.time||''}">
-        <select data-f="cat">${opts(c.cat)}</select>
+        <select data-f="cat">${opts(c.cat)}</select>${c.cats&&c.cats.length>1&&c.cats[0]===c.cat?'<span class="ccx">+ '+esc(c.cats.slice(1).map(id=>catOf(id).name).join(', '))+'</span>':''}
         <label class="pl"><input type="checkbox" data-f="pri"${c.pri?' checked':''}>중요</label>
       </div>
     </div></div>`).join('');
@@ -10000,7 +10001,7 @@ $('capSave').onclick=()=>{
   pick.forEach((c,n)=>{
     store.items.push({id:(Date.now()+n).toString(36)+Math.random().toString(36).slice(2,6),
       date:c.date,endDate:c.endDate||null,time:c.time||null,endTime:c.endTime||null,
-      title:c.title||c.raw,pri:!!c.pri,cats:[c.cat],cat:c.cat,
+      title:c.title||c.raw,pri:!!c.pri,cats:(c.cats&&c.cats.length>1&&c.cats[0]===c.cat?c.cats.slice():[c.cat]),cat:c.cat,
       note:c.note||'',done:false,doneAt:null,mt:NOW()});});
   save();
   const first=pick[0].date;
@@ -10174,11 +10175,11 @@ function calSave(){
   for(let d=1;d<=n;d++){
     const ds=y+'-'+pad(m)+'-'+pad(d);
     (calSt.ev[d]||'').split('\n').map(x=>x.trim()).filter(Boolean).forEach(line=>{
-      const p=parseInput(line,ds);const title=(p.title||line).trim();
+      ensureSites(line);const p=parseInput(line,ds);const title=(p.title||line).trim();
       if(store.items.some(i=>i.date===ds&&i.title===title)){dup++;return;}
       made.push({id:(Date.now()+made.length).toString(36)+Math.random().toString(36).slice(2,6),
         date:ds,endDate:null,time:p.time||null,endTime:p.endTime||null,title,pri:!!p.pri,
-        cats:[p.cat||addCats()[0]||store.cats[0].id],cat:p.cat||addCats()[0]||store.cats[0].id,
+        cats:(p.cats&&p.cats.length?p.cats:[p.cat||addCats()[0]||store.cats[0].id]),cat:p.cat||addCats()[0]||store.cats[0].id,
         note:'',done:false,doneAt:null,mt:NOW()});});}
   if(!made.length){toastMsg(dup?'이미 등록된 일정이에요':'입력된 일정이 없어요');return;}
   store.items.push(...made);save();
