@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v252">
+<meta name="app-ver" content="v253">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6392,7 +6392,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='캡처 결과 화면의 "다시 캡처"를 누르면 목록을 거치지 않고 방금 쓴 캡처 방식(화면 캡처·영역 선택·사진)이 바로 시작돼요.';
+const RELNOTE='캡처할 때 첨부파일·다운로드 기간·파일 크기 줄을 일정으로 잡지 않고, "2. 제출 일정" 제목 아래 날짜만 일정으로 올려요. 날짜만 있는 줄은 "요청" 문장에서 제목을 만들어요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9354,7 +9354,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v252';
+const APPVER=/*ver*/'v253';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10154,16 +10154,24 @@ function buildCaps(data,allowUndated){
   else rows=((data&&data.text)||'').split(/\n+/).map(t=>({t,c:100}));
   const dict=ocrDict();
   rows=rows.map(r=>({t:ocrFix(clean(r.t),dict),c:r.c})).filter(r=>r.t.length>=3&&/[가-힣A-Za-z]/.test(r.t));
+  const FILE_RE=/첨부\s*파일|다운로드|대용량|\.(?:pptx?|xlsx?|docx?|pdf|hwp|zip)\b|\(\s*\d+(?:\.\d+)?\s*[MKG]B\s*\)|\b\d+(?:\.\d+)?\s*[MKG]B\b/i;
+  rows=rows.filter(r=>!FILE_RE.test(r.t));
   const seen=new Set(),out=[];let skipped=0;
   const subjBefore=i=>{for(let j=i-1;j>=0;j--){const m=rows[j].t.match(SUBJ_RE);if(m)return m[1].trim();}
     for(let j=i+1;j<rows.length;j++){const m=rows[j].t.match(SUBJ_RE);if(m)return m[1].trim();}return null;};
   /* 문서에 '일정/기한 :' 줄이 있으면 그 줄만 일정으로 — 본문 문장 속 날짜(예: 11월~12월 자료)는 일정이 아님 */
   const hasLab=rows.some(r=>DLAB_RE.test(r.t)&&DT2.test(r.t));
+  /* '2. 제출 일정' 같은 제목 아래 줄들(- 11/26(목) 限 …)만 일정으로 */
+  const secIdx=new Set();
+  if(!hasLab){const HD=/^\s*\d{1,2}\s*[.)]\s*(?:제출\s*|회신\s*)?(?:일정|기한|마감)\s*$/;
+    rows.forEach((r,i)=>{if(!HD.test(r.t))return;for(let j=i+1;j<rows.length&&!/^\s*\d{1,2}\s*[.)]\s*\S/.test(rows[j].t);j++)if(DT2.test(rows[j].t))secIdx.add(j);});}
+  const hasSec=secIdx.size>0;
   rows.slice(0,100).forEach((r,i)=>{
     const line=r.t;
     if(r.c<45){return;}
     if(/\d{1,2}\s*월\s*[~\-–]\s*\d{1,2}\s*월(?!\s*\d)/.test(line)&&!/\d{1,2}\s*월\s*\d{1,2}\s*일/.test(line))return;
     if(hasLab&&!(DLAB_RE.test(line)&&DT2.test(line)))return;
+    if(hasSec&&!secIdx.has(i))return;
     if(/(아래와|다음과)\s*같이/.test(line)&&!DLAB_RE.test(line)&&/(드리오니|드립니다|바랍니다|하오니)[,.]?\s*$/.test(line))return; /* 인사·설명 문장 속 날짜는 일정이 아님 */
     const dated=DT2.test(line);
     if(!dated&&!allowUndated){skipped++;return;}
@@ -10176,6 +10184,11 @@ function buildCaps(data,allowUndated){
       let sj=subjBefore(i);
       if(!sj){for(let j=i-1;j>=0;j--){if(!DT2.test(rows[j].t)&&rows[j].t.length>=4){sj=rows[j].t.replace(/^\s*\d{1,2}\s*[.)]\s*/,'').replace(/^[^:：]{1,6}[:：]\s*/,'');break;}}}
       if(sj&&sj.length>=2){note=line.replace(/^\s*(?:\d{1,2}\s*[.)]\s*)?[^:：]{1,6}[:：]\s*/,'').trim();t=sj;}}
+    if(hasSec&&secIdx.has(i)){
+      const rest=t.replace(/[\d\/\.\-월일년\s()목금토일화수限:]+/g,'').trim();
+      if(rest.length<3){const rq=rows.find(x=>/(업데이트|작성|제출|회신).{0,30}요청\s*드리/.test(x.t));
+        const base=rq?rq.t.replace(/^.*?첨부의?\s*/,'').replace(/\s*(?:에\s*대해|에\s*대하여)?\s*[^가-힣]*(?:요청\s*드리).*$/,'').trim():'';
+        t=(base||'일정')+' 회신';}}
     if(t.length<2){skipped++;return;}
     const key=p.date+'|'+(p.time||'')+'|'+t;if(seen.has(key))return;seen.add(key);
     out.push({on:dated,raw:line,date:p.date,endDate:p.endDate,time:p.time,endTime:p.endTime,pri:p.pri,note,
