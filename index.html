@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v250">
+<meta name="app-ver" content="v251">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6392,7 +6392,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='캡처한 안내문이 "AFLP 재무전략 전파 교육(8층, 대회의실, 본사 대리급)"처럼 제목에 장소·대상이 들어가고, 시간(09:00)과 날짜 원문(26년11월25일(수))이 메모로 들어가도록 고쳤어요.';
+const RELNOTE='캡처에서 "일정 :" 줄 글자가 잘못 읽혀도(월정 등) 그 줄을 일정으로 잡고, "~요청드리오니," 같은 본문 문장 속 날짜는 일정으로 올리지 않아요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9354,7 +9354,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v250';
+const APPVER=/*ver*/'v251';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10140,11 +10140,11 @@ function ocrFix(line,dict){
   t=t.replace(/[가-힣]{3,}/g,w=>{if(dict.includes(w))return w;
     const hit=dict.find(x=>x.length>=3&&x.length===w.length&&lev1(x,w));return hit||w;});
   t=t.replace(/원가투입현황\s*\(\s*[주추]정\s*\)/g,'원가투입현황(추정)').replace(/자료\s*작성\s*요청/g,'자료 작성 요청');
-  t=t.replace(/[가-힣]{2}/g,w=>w==='메정'?'예정':w==='제줄'?'제출':w);
+  t=t.replace(/[가-힣]{2}/g,w=>w==='월정'?'일정':w==='메정'?'예정':w==='제줄'?'제출':w);
   t=t.replace(/(제출|예정|완료|요청)\s+[A-Z]{1,3}\s*$/,'$1').replace(/\s+(?:AS|SS|ES|AAA|SSS|EAE)(?=\s|$)/g,'');
   return t.replace(/\s+/g,' ').trim();}
 const SUBJ_RE=/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:요청\s*사항|요청|제목|내용|건명|안건|업무|주제|목적|건)\s*[:：]\s*(.+)$/;
-const DLAB_RE=/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:일정|기한|마감|일시|날짜|기간|납기|제출)\s*[:：]/;
+const DLAB_RE=/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:일정|월정|기한|마감|일시|날짜|기간|납기|제출)\s*[:：]/;
 function buildCaps(data,allowUndated){
   capLast=data;
   const clean=x=>x.replace(/[|｜\\_~`ㅁ□■]+/g,' ').replace(/\s+/g,' ').trim();
@@ -10163,6 +10163,7 @@ function buildCaps(data,allowUndated){
     if(r.c<45){return;}
     if(/\d{1,2}\s*월\s*[~\-–]\s*\d{1,2}\s*월(?!\s*\d)/.test(line)&&!/\d{1,2}\s*월\s*\d{1,2}\s*일/.test(line))return;
     if(hasLab&&!(DLAB_RE.test(line)&&DT2.test(line)))return;
+    if(/(아래와|다음과)\s*같이/.test(line)&&!DLAB_RE.test(line)&&/(드리오니|드립니다|바랍니다|하오니)[,.]?\s*$/.test(line))return; /* 인사·설명 문장 속 날짜는 일정이 아님 */
     const dated=DT2.test(line);
     if(!dated&&!allowUndated){skipped++;return;}
     ensureSites(line);const p=parseInput(line,sel);{const iso=line.match(/(20\d{2})-(\d{2})-(\d{2})/);if(iso)p.date=iso[0];}
