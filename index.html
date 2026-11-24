@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v238">
+<meta name="app-ver" content="v239">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6361,7 +6361,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='문서 캡처 시 본문 문장 속 날짜(예: 11월~12월 자료)는 일정으로 잡지 않고, "일정 :" 줄의 날짜만 요청 제목과 묶어 1건으로 등록해요.';
+const RELNOTE='이미 등록된 일정도 제목에 적힌 분류(예: 산포처리, 주촌현장)가 모두 붙어요. 그룹·팀 만들기 입력 후 Enter를 누르면 바로 만들어져요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9116,7 +9116,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v238';
+const APPVER=/*ver*/'v239';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10660,6 +10660,22 @@ $('v-year').addEventListener('wheel',onWheel,{passive:false});
 paintCatBtn();paintPri();
 renderMonth();renderDay();renderBanner();notify();
 setInterval(notify,60000);
+
+/* Enter로 바로 등록: 그룹·팀 만들기 입력칸 */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||e.isComposing)return;
+  const m={tsGname:'tsGmake',tmNew:'tmCreate',tmMy1:'tmCreate'}[e.target&&e.target.id];
+  if(m){e.preventDefault();const b=document.getElementById(m);if(b)b.click();}});
+/* 한 번만: 이미 등록된 일정 중 제목에 다른 분류 이름이 함께 적힌 것은 분류를 모두 붙임 */
+setTimeout(()=>{try{
+  if(store.catMig2)return;store.catMig2=1;let n=0;
+  store.items.forEach(i=>{if(!i.title||(i.cats&&i.cats.length>1))return;
+    if(/산포/.test(i.title))ensureSites(i.title);
+    const p=parseInput(i.title,i.date);
+    if(p.cats&&p.cats.length>1){const cur=(i.cats&&i.cats[0])||i.cat;
+      const a=p.cats.includes(cur)?p.cats.slice():[...new Set([cur,...p.cats])];if(a.length>1){i.cats=a;i.cat=a[0];touch(i);n++;}}});
+  save();if(n){renderDay();renderMonth();}
+}catch(_){}},1500);
 </script>
 </body>
 </html>
