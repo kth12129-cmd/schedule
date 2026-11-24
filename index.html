@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v246">
+<meta name="app-ver" content="v247">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6384,7 +6384,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='CM팀 같은 기본 팀에도 "⋯"(우클릭·길게 누르기)로 이름 수정·삭제가 생겼어요(운영자 전용, 구성원이 있으면 삭제 불가). 구성원 추가 칸의 안내 글을 "이름·직급·아이디·연락처"로 간단히 줄였어요.';
+const RELNOTE='그룹 화면에서 구성원을 추가했을 때 반영되지 않거나 오류가 조용히 사라지던 문제를 고쳤어요. 추가하면 바로 그 그룹 목록에 나오고, 실패하면 이유가 화면에 떠요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -7393,17 +7393,27 @@ $('tmBody').addEventListener('click',async e=>{
      orgEd=null;toastMsg(r.data&&r.data.locked?'본인이 확인한 이름이라 이름은 그대로 두고 직급만 저장했습니다':'저장했습니다');return re();}
   if(b0=t0.closest('[data-od]')){if(!confirm('이 사람을 팀 구성원 목록에서 뺄까요?\n(이미 가입한 사람의 일정은 그대로 남습니다)'))return;
     const r=await SB.rpc('org_member_del',{p_pid:+b0.dataset.od});if(r.error){toastMsg('빼지 못했습니다');return;}toastMsg('구성원에서 뺐습니다');return re();}
-  if(t0.id==='orgAddBtn'){const n=$('oaN').value.trim();if(!n){orgAddMsg='이름을 적어 주세요.';return orgRender();}
-    const r=await SB.rpc('org_member_add',{p_name:n,p_title:$('oaT').value.trim(),p_id:$('oaI').value.trim()});
-    const gAdd=orgG();
-    orgAddMsg=r.error?(String(r.error.message||'추가하지 못했습니다').replace(/^.*?:\s*/,'')):'추가했습니다.';await orgLoad();
-    if(gAdd&&!r.error){const np0=[...orgD.people].reverse().find(p=>p.name===n);
-      if(np0){const ph0=($('oaP')&&$('oaP').value||'').trim();if(ph0)await SB.rpc('org_member_phone',{p_pid:np0.id,p_phone:ph0});
-        const a1=await SB.rpc('group_people_add',{p_gid:gAdd,p_pids:[np0.id]});
-        if(!a1.error){await SB.rpc('org_member_del',{p_pid:np0.id});await orgLoad();await tsLoadGroups();orgRender();toastMsg('이 그룹에 구성원을 추가했습니다');return;}}}
-    const ph=($('oaP')&&$('oaP').value||'').trim();if(!r.error&&ph){const np=[...orgD.people].reverse().find(p=>p.name===n&&!p.phone);if(np){const pr=await SB.rpc('org_member_phone',{p_pid:np.id,p_phone:ph});if(pr.error)orgAddMsg+=' (연락처는 저장하지 못했습니다)';else await orgLoad();}}
-    orgRender();
-    if(!r.error){toastMsg('구성원을 추가했습니다');}return;}
+  if(t0.id==='orgAddBtn'){
+    const n=$('oaN').value.trim();if(!n){orgAddMsg='이름을 적어 주세요.';toastMsg(orgAddMsg);return orgRender();}
+    const em=s=>String(s&&s.message||'').replace(/^.*?:\s*/,'');
+    const gAdd=orgG(),before=new Set((orgD&&orgD.people||[]).map(p=>p.id)),ph=($('oaP')&&$('oaP').value||'').trim();
+    t0.disabled=true;
+    try{
+      const r=await SB.rpc('org_member_add',{p_name:n,p_title:$('oaT').value.trim(),p_id:$('oaI').value.trim()});
+      if(r.error){orgAddMsg=em(r.error)||'추가하지 못했습니다';toastMsg(orgAddMsg);t0.disabled=false;return orgRender();}
+      await orgLoad();
+      const np=[...(orgD&&orgD.people||[])].reverse().find(p=>!before.has(p.id))||[...(orgD&&orgD.people||[])].reverse().find(p=>p.name===n);
+      if(np&&ph){const pr=await SB.rpc('org_member_phone',{p_pid:np.id,p_phone:ph});if(pr.error)toastMsg('연락처는 저장하지 못했습니다: '+em(pr.error));}
+      if(gAdd){
+        if(!np){orgAddMsg='추가한 사람을 찾지 못했습니다. 새로고침 후 다시 확인해 주세요';toastMsg(orgAddMsg);orgRender();return;}
+        const a1=await SB.rpc('group_people_add',{p_gid:gAdd,p_pids:[np.id]});
+        if(a1.error){orgAddMsg='그룹에 넣지 못했습니다: '+em(a1.error);toastMsg(orgAddMsg);await orgLoad();orgRender();return;}
+        const d1=await SB.rpc('org_member_del',{p_pid:np.id});
+        if(d1.error)toastMsg('팀 목록에서 빼지 못했습니다: '+em(d1.error));
+        await orgLoad();await tsLoadGroups();orgAddMsg='추가했습니다.';orgRender();toastMsg('이 그룹에 '+n+' 님을 추가했습니다');return;}
+      orgAddMsg='추가했습니다.';orgRender();toastMsg('구성원을 추가했습니다');
+    }catch(err){toastMsg('추가하지 못했습니다: '+(err&&err.message||err));try{t0.disabled=false;}catch(_){}}
+    return;}
   const t=e.target;let b;
   if(b=t.closest('[data-ot]')){const id=+b.dataset.ot;orgOpen.has(id)?orgOpen.delete(id):orgOpen.add(id);return orgRender();}
   if(b=t.closest('[data-os]')){orgSel=+b.dataset.os;orgQ='';const k=orgKids(orgSel);if(k.length)orgOpen.add(orgSel);return orgRender();}
@@ -9335,7 +9345,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v246';
+const APPVER=/*ver*/'v247';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
