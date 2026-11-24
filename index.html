@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v251">
+<meta name="app-ver" content="v252">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6392,7 +6392,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='캡처에서 "일정 :" 줄 글자가 잘못 읽혀도(월정 등) 그 줄을 일정으로 잡고, "~요청드리오니," 같은 본문 문장 속 날짜는 일정으로 올리지 않아요.';
+const RELNOTE='캡처 결과 화면의 "다시 캡처"를 누르면 목록을 거치지 않고 방금 쓴 캡처 방식(화면 캡처·영역 선택·사진)이 바로 시작돼요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9354,7 +9354,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v251';
+const APPVER=/*ver*/'v252';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10118,7 +10118,8 @@ function prepOCR(file,cb,photo){
   r.readAsDataURL(file);
 }
 const DT2=/(\d{4}\s*[-.\/]\s*\d{1,2}\s*[-.\/]\s*\d{1,2})|(\d{1,2}\s*월\s*\d{1,2}\s*일?)|(\d{1,2}\s*\/\s*\d{1,2})|(\b\d{1,2}\.\d{1,2}\b)|(\d{1,2}\s*:\s*\d{2})|((오전|오후)\s*\d{1,2}\s*시)|(\d{1,2}\s*시\s*(\d{1,2}\s*분)?)|(오늘|내일|모레|글피)|([일월화수목금토]요일)/;
-let capLast=null,capSkipped=0;
+let capLast=null,capSkipped=0,capMode='';
+function capAgainGo(){capReset();const b=capMode&&$({grab:'capGrab',region:'capRegion',drop:'capDrop'}[capMode]);if(b)b.click();}
 
 /* 글자 인식 결과 보정: 앱에 있는 분류·사람 이름과 비슷한 낱말은 그 이름으로, 자주 쓰는 말은 바로잡기 */
 const OCR_WORDS=['제출','예정','완료','회의','보고','작성','요청','검토','협의','마감','기한','일정','현장','담당','자료','참석','방문','점검','정산','기성','승인','준공'];
@@ -10248,7 +10249,7 @@ function renderCaps(){
 function capReset(){calSt=null;const cp=$('calPhoto');if(cp){cp.style.display='none';cp.innerHTML='';}try{snipStop();}catch(_){}capCands=[];capLast=null;capSkipped=0;$('capList').innerHTML='';$('capBar').style.display='none';
   $('capCard').style.display='';capSay('');}
 $('capList').addEventListener('click',e=>{
-  if(e.target.id==='capAgain')capReset();
+  if(e.target.id==='capAgain')capAgainGo();
   else if(e.target.id==='capUndated')buildCaps(capLast,true);
   else if(e.target.id==='capCalBtn')calOpen(capShown,capLast);
   else if(e.target.id==='capTxtBtn')txtOpen(null,capShown);});
@@ -10265,7 +10266,7 @@ $('capList').addEventListener('change',e=>{
   const card=e.target.closest('[data-i]');if(!card)return;
   const c=capCands[+card.dataset.i],f=e.target.dataset.f;if(!c||!f)return;
   if(f==='on'||f==='pri')c[f]=e.target.checked;else c[f]=e.target.value;});
-$('capAgain2').onclick=()=>capReset();
+$('capAgain2').onclick=()=>capAgainGo();
 $('capAll').onclick=()=>{const all=capCands.every(c=>c.on);
   capCands.forEach(c=>c.on=!all);renderCaps();};
 $('capSave').onclick=()=>{
@@ -10329,7 +10330,7 @@ function openCap(){
   capReset();
   closeFind();capUI();$('capSheet').classList.add('open');
 }
-$('capDrop').onclick=()=>{$('capFile').click();};
+$('capDrop').onclick=()=>{capMode='drop';$('capFile').click();};
 $('capFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f){capPhoto=f.type!=='image/png';openCrop(f);}e.target.value='';};
 $('capCam').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f){capPhoto=true;openCrop(f);}e.target.value='';};
 ['dragenter','dragover'].forEach(ev=>$('capDrop').addEventListener(ev,e=>{
@@ -10572,7 +10573,7 @@ async function startTimed(){
   tick();
 }
 let capPend='crop';
-$('capGrab').onclick=()=>{if(capTouch)$('capCam').click();else startGrab('full');};
+$('capGrab').onclick=()=>{capMode='grab';if(capTouch)$('capCam').click();else startGrab('full');};
 
 /* 화면 일부 캡처: OS 기본 캡처 도구(영역 드래그) → 클립보드 → 앱이 자동으로 불러옴 */
 let snipWait=false,snipBase=null,snipT=null;
@@ -10606,7 +10607,7 @@ async function snipCheck(){
 addEventListener('focus',()=>setTimeout(snipCheck,300));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(snipCheck,300);});
 $('capWaitX').onclick=snipStop;
-$('capRegion').onclick=()=>{if(capTouch)$('capFile').click();else startSnip();};
+$('capRegion').onclick=()=>{capMode='region';if(capTouch)$('capFile').click();else startSnip();};
 capUI();
 
 /* 자르기 창 */
