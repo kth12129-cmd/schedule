@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v233">
+<meta name="app-ver" content="v234">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -3164,7 +3164,7 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
     <div class="hsec hsec-list"><div class="lay" id="layBar"><button data-l="focus">한눈에</button><button data-l="split">분할</button><button data-l="cal">달력</button><button data-l="list">목록</button></div></div>
     <div class="hsec hsec-memo">
       <span class="hspace"></span>
-      <button class="hbtn seg" id="moreBtn" type="button" aria-expanded="false"><span>기능 ▾</span></button>
+      <button class="hbtn seg" id="moreBtn" type="button" aria-expanded="false"><span>기능 ▸</span></button>
       <button class="hbtn" id="zoomOut" data-tip="원래 크기로">⤡</button>
       <button class="hbtn" id="viewBtn" data-tip="누구의 일정을 볼지 선택">👥</button>
       <button class="hbtn" id="tmBtn" data-tip="팀 업무 현황">👥</button>
@@ -7578,8 +7578,14 @@ $('yearWrap').addEventListener('mouseleave',()=>{zMonth=null;});
 
 /* 폰: 기능 목록 접기/펼치기 */
 (function(){const mb=document.getElementById('moreBtn'),box=mb&&mb.parentNode;if(!mb)return;
-  const set=o=>{box.classList.toggle('open',o);if(o){box.scrollLeft=0;let i=0;box.querySelectorAll('.hbtn.seg').forEach(b=>{if(b!==mb&&b.id!=='setBtn'&&b.id!=='viewBtn')b.style.setProperty('--i',i++);});}mb.setAttribute('aria-expanded',o);mb.firstChild.textContent=o?'기능 ▴':'기능 ▾';};
+  const set=o=>{box.classList.toggle('open',o);if(o){box.scrollLeft=0;let i=0;box.querySelectorAll('.hbtn.seg').forEach(b=>{if(b!==mb&&b.id!=='setBtn'&&b.id!=='viewBtn')b.style.setProperty('--i',i++);});}mb.setAttribute('aria-expanded',o);mb.firstChild.textContent=o?'기능 ◂':'기능 ▸';};
   mb.addEventListener('click',e=>{e.stopPropagation();set(!box.classList.contains('open'));});
+  /* PC: 커서를 대면 스르륵 열리고, 벗어나면 잠시 뒤 접힘 */
+  if(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches){
+    let t=null;
+    mb.addEventListener('mouseenter',()=>{clearTimeout(t);if(!box.classList.contains('open'))set(true);});
+    box.addEventListener('mouseenter',()=>clearTimeout(t));
+    box.addEventListener('mouseleave',()=>{clearTimeout(t);t=setTimeout(()=>set(false),450);});}
   box.addEventListener('click',e=>{const b=e.target.closest('.hbtn');if(b&&b!==mb&&b.id!=='setBtn'&&b.id!=='viewBtn')set(false);});
   document.addEventListener('click',e=>{if(box.classList.contains('open')&&!box.contains(e.target))set(false);});
 })();
@@ -9109,7 +9115,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v233';
+const APPVER=/*ver*/'v234';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9859,11 +9865,10 @@ function prepOCR(file,cb,photo){
         x.putImageData(d,0,0);
         cb(c.toDataURL('image/png'),r0);return;
       }catch(e){}}
-      try{const d=x.getImageData(0,0,w,h),p=d.data;
-        for(let i=0;i<p.length;i+=4){
-          let g=0.299*p[i]+0.587*p[i+1]+0.114*p[i+2];
-          g=g<128?Math.max(0,(g-30)*1.35):Math.min(255,(g-30)*1.35);
-          p[i]=p[i+1]=p[i+2]=g;}
+      try{const d=x.getImageData(0,0,w,h),p=d.data;let sum=0;const gs=new Uint8Array(p.length/4);
+        for(let i=0,j=0;i<p.length;i+=4,j++){const mn=Math.min(p[i],p[i+1],p[i+2]),av=(p[i]+p[i+1]+p[i+2])/3,g=0.5*mn+0.5*av;gs[j]=g;sum+=g;}
+        const dark=sum/gs.length<110; /* 어두운 화면은 글자색을 반전 */
+        for(let i=0,j=0;i<p.length;i+=4,j++){let g=gs[j];if(dark)g=255-g;const v=g<155?0:255;p[i]=p[i+1]=p[i+2]=v;p[i+3]=255;}
         x.putImageData(d,0,0);}catch(e){}
       cb(c.toDataURL('image/png'),r.result);
     };
@@ -9874,6 +9879,29 @@ function prepOCR(file,cb,photo){
 }
 const DT2=/(\d{4}\s*[-.\/]\s*\d{1,2}\s*[-.\/]\s*\d{1,2})|(\d{1,2}\s*월\s*\d{1,2}\s*일?)|(\d{1,2}\s*\/\s*\d{1,2})|(\b\d{1,2}\.\d{1,2}\b)|(\d{1,2}\s*:\s*\d{2})|((오전|오후)\s*\d{1,2}\s*시)|(\d{1,2}\s*시\s*(\d{1,2}\s*분)?)|(오늘|내일|모레|글피)|([일월화수목금토]요일)/;
 let capLast=null,capSkipped=0;
+
+/* 글자 인식 결과 보정: 앱에 있는 분류·사람 이름과 비슷한 낱말은 그 이름으로, 자주 쓰는 말은 바로잡기 */
+const OCR_WORDS=['제출','예정','완료','회의','보고','작성','요청','검토','협의','마감','기한','일정','현장','담당','자료','참석','방문','점검','정산','기성','승인','준공'];
+function ocrDict(){const d=new Set(OCR_WORDS);
+  (store.cats||[]).forEach(c=>String(c.name).split(/[\s·]+/).forEach(w=>{if(w.length>=3)d.add(w.replace(/(현장|공사)$/,'')||w);}));
+  (store.items||[]).slice(-300).forEach(i=>String(i.title||'').split(/[\s,\/()·:]+/).forEach(w=>{if(/^[가-힣]{3,6}$/.test(w))d.add(w);}));
+  return [...d];}
+function lev1(a,b){if(a===b)return true;if(Math.abs(a.length-b.length)>1)return false;
+  let i=0;while(i<a.length&&i<b.length&&a[i]===b[i])i++;
+  if(a.length===b.length)return a.slice(i+1)===b.slice(i+1);
+  return a.length>b.length?a.slice(i+1)===b.slice(i):b.slice(i+1)===a.slice(i);}
+function ocrFix(line,dict){
+  let t=line;
+  t=t.replace(/(\d{1,2}\s*\/\s*\d{1,2}\s*\([월화수목금토]\))\s*(?:限|R+|&|[A-Za-z]{1,3}|是|恨|根)\s*$/,'$1 限');
+  if(/\/\s*\(/.test(t)){
+    t=t.replace(/^(\W*[가-힣A-Za-z0-9 ]{2,20}?)\s[-–~«]\s*/,'$1 : ');
+    t=t.replace(/(:\s*)([^\/가-힣]{1,9}|[A-Za-z0-9\\是]{1,6}팀?)\s*\/\s*\(/,(m,a,b)=>/^[CcOo0][\w\\是]*$/.test(b.trim().replace(/팀$/,''))?a+'CM팀 / (':m);
+    t=t.replace(/(CM팀?|cME|CMS|CMe)\s*\/\s*\(/,'CM팀 / (');}
+  t=t.replace(/[가-힣]{3,}/g,w=>{if(dict.includes(w))return w;
+    const hit=dict.find(x=>x.length>=3&&x.length===w.length&&lev1(x,w));return hit||w;});
+  t=t.replace(/[가-힣]{2}/g,w=>w==='메정'?'예정':w==='제줄'?'제출':w);
+  t=t.replace(/(제출|예정|완료|요청)\s+[A-Z]{1,3}\s*$/,'$1').replace(/\s+(?:AS|SS|ES|AAA|SSS|EAE)(?=\s|$)/g,'');
+  return t.replace(/\s+/g,' ').trim();}
 const SUBJ_RE=/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:요청\s*사항|요청|제목|내용|건명|안건|업무|주제|목적|건)\s*[:：]\s*(.+)$/;
 const DLAB_RE=/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:일정|기한|마감|일시|날짜|기간|납기|제출)\s*[:：]/;
 function buildCaps(data,allowUndated){
@@ -9882,7 +9910,8 @@ function buildCaps(data,allowUndated){
   let rows=[];
   if(data&&data.lines&&data.lines.length)rows=data.lines.map(l=>({t:l.text,c:l.confidence==null?100:l.confidence}));
   else rows=((data&&data.text)||'').split(/\n+/).map(t=>({t,c:100}));
-  rows=rows.map(r=>({t:clean(r.t),c:r.c})).filter(r=>r.t.length>=3&&/[가-힣A-Za-z]/.test(r.t));
+  const dict=ocrDict();
+  rows=rows.map(r=>({t:ocrFix(clean(r.t),dict),c:r.c})).filter(r=>r.t.length>=3&&/[가-힣A-Za-z]/.test(r.t));
   const seen=new Set(),out=[];let skipped=0;
   const subjBefore=i=>{for(let j=i-1;j>=0;j--){const m=rows[j].t.match(SUBJ_RE);if(m)return m[1].trim();}
     for(let j=i+1;j<rows.length;j++){const m=rows[j].t.match(SUBJ_RE);if(m)return m[1].trim();}return null;};
@@ -9905,6 +9934,18 @@ function buildCaps(data,allowUndated){
     out.push({on:dated,raw:line,date:p.date,endDate:p.endDate,time:p.time,endTime:p.endTime,pri:p.pri,note,
       cat:p.cat||addCats()[0]||store.cats[0].id,title:t});
   });
+  /* 내 이름이 들어간 줄: 문서 속 날짜(기한)에 내 담당 일정으로 올림 */
+  const me=(store.settings&&store.settings.name||'').trim();
+  if(me&&me.length>=2){
+    const mine=rows.filter(r=>r.t.includes(me)&&!DT2.test(r.t));
+    const dl=rows.filter(r=>DT2.test(r.t)).map(r=>({r,p:parseInput(r.t,sel)}));
+    if(mine.length&&dl.length){
+      const base=dl[0];
+      const keep=out.filter(c=>{const body=c.title.replace(/限|[A-Za-z&]{1,3}$/g,'').trim();return (body.match(/[가-힣]/g)||[]).length>=3;});
+      const mineC=mine.map(r=>({on:true,raw:r.t,date:base.p.date,endDate:null,time:null,endTime:null,pri:false,
+        note:'담당 · '+base.r.t.replace(/\s+/g,' '),cat:addCats()[0]||store.cats[0].id,
+        title:r.t.replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').trim()}));
+      capCands=[...mineC,...keep.filter(c=>!mine.some(m=>m.t===c.raw))];capSkipped=skipped;renderCaps();return;}}
   capCands=out;capSkipped=skipped;renderCaps();
 }
 function renderCaps(){
@@ -9977,10 +10018,12 @@ async function capRun(file){
     try{
       capSay('글자 인식 준비 중…');
       const T=await loadTess();
-      const worker=await T.createWorker('kor+eng',1,{logger:m=>{
+      const lg=m=>{
         if(m.status==='recognizing text')capSay('글자 읽는 중… '+Math.round((m.progress||0)*100)+'%');
-        else if(/traineddata|loading language/i.test(m.status||''))capSay('한국어 인식 자료 받는 중… (처음 한 번만, 1~2분)');
-      }});
+        else if(/traineddata|loading language/i.test(m.status||''))capSay('정밀 한국어 인식 자료 받는 중… (처음 한 번만, 1~2분)');};
+      let worker;
+      try{worker=await T.createWorker('kor+eng',1,{langPath:'https://cdn.jsdelivr.net/gh/tesseract-ocr/tessdata_best@main',gzip:false,logger:lg});}
+      catch(e){worker=await T.createWorker('kor+eng',1,{logger:lg});}
       try{await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});}catch(_){}
       let res=await worker.recognize(forOcr);
       let rd=res&&res.data?res.data:null;
