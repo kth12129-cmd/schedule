@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v240">
+<meta name="app-ver" content="v241">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -3149,6 +3149,20 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
 .om-av[draggable=true]{cursor:grab}
 .ot-grp button.on{border-color:var(--ink);background:var(--field)}.ot-grp button.dz{border-color:var(--indigo);background:var(--field);box-shadow:0 0 0 2px var(--indigo) inset}
 .om-pi[readonly]{border-color:transparent;background:transparent;pointer-events:none}
+.ot-r{position:relative}.ot-x{flex:none;width:28px;height:28px;border:0;background:transparent;color:var(--ink-3);font-size:16px;border-radius:6px;opacity:.55}.ot-x:hover{opacity:1;background:var(--field)}.ot-r.on .ot-x{color:var(--page)}
+.ot-ck{flex:none;margin:0 2px 0 6px;width:16px;height:16px;accent-color:var(--navy)}
+.og-new{display:block;width:100%;margin-top:10px;height:34px;border:1px dashed var(--line);border-radius:9px;background:transparent;color:var(--indigo);font-size:13px;font-weight:600;text-align:left;padding:0 10px}
+.og-f2{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px;display:grid;gap:8px;background:var(--surface)}.og-f2 b{font-size:13px}.og-f2 em{font-style:normal;font-size:12px;color:var(--ink-3)}
+.og-f2 input,.og-f2 select{height:34px;border:1px solid var(--line);border-radius:7px;background:var(--field);color:var(--ink);padding:0 8px;font-size:13px;width:100%;min-width:0}
+.og-b{display:flex;gap:6px}.og-b .vbtn{flex:1}
+.org-req{margin-bottom:10px;padding:10px;border:1px solid var(--navy);border-radius:9px;display:grid;gap:6px;background:var(--surface)}.org-req b{font-size:13px}
+.org-req .rq{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;align-items:center;font-size:12.5px}.org-req .rq span{min-width:0;overflow-wrap:anywhere}
+.gmenu{position:fixed;z-index:9999;min-width:190px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:6px;display:grid;gap:2px}
+.gmenu button{height:36px;text-align:left;padding:0 10px;border:0;background:transparent;border-radius:7px;font-size:13.5px;color:var(--ink)}.gmenu button:hover{background:var(--field)}.gmenu .dng{color:#c0392b}
+.tsug{margin-bottom:8px}.tsug .tsw{display:block;font-size:13px;margin:0 0 3px}
+.shpop{position:fixed;z-index:9999;width:260px;max-width:calc(100vw - 12px);background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:12px;display:grid;gap:6px;font-size:13px}
+.shpop b{font-size:13.5px;margin-bottom:2px}.shr{display:flex;align-items:center;gap:8px;min-height:30px;color:var(--ink)}.shr input{width:16px;height:16px;accent-color:var(--navy);flex:none}
+.shl{display:grid;gap:0;padding-left:20px;max-height:200px;overflow:auto}.shl em{font-style:normal;color:var(--ink-3);font-size:12px}.shf{display:flex;justify-content:flex-end;margin-top:4px}
 </style>
 </head>
 <body>
@@ -6367,7 +6381,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='내 그룹을 누르면 그 그룹의 구성원 화면으로 바뀌어요. 사람을 선택해 "함께 넣기·옮기기"로 여러 그룹에 중복 배정하거나, 이름 동그라미를 왼쪽 그룹으로 끌어다 놓을 수 있어요. Enter로 그룹·팀 만들기도 돼요.';
+const RELNOTE='일정을 어느 팀·그룹에 보일지 고를 수 있어요. 일정의 자물쇠를 누르면 "나만 보기 / 모든 곳 / 선택한 곳만"을 고르고, 설정의 분류별 "대상"에서 분류 전체를 정해요. 그룹은 조직도 목록에 묶여 나오고 우클릭·길게 누르기로 수정·삭제해요(만들기·삭제는 운영자, 팀원은 요청). 아침 알림은 기기를 연결하면 기본으로 와요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -7003,7 +7017,7 @@ const tmMe=()=>session&&session.user.id;
 const onDay=(o,d)=>o.date===d||(o.endDate&&o.date<=d&&d<=o.endDate);
 const byTime=(a,b)=>(a.time||'99:99')<(b.time||'99:99')?-1:(a.time||'99:99')>(b.time||'99:99')?1:0;
 function tmItems(uid){
-  return uid===tmMe()?store.items.filter(isShared).map(i=>({...shareData(i),item_id:i.id,owner:uid})):teamItems.filter(o=>o.owner===uid);
+  return uid===tmMe()?store.items.filter(i=>isShared(i)&&shVis(shTo(i),'team')).map(i=>({...shareData(i),item_id:i.id,owner:uid})):teamItems.filter(o=>o.owner===uid);
 }
 const tmOnDay=(uid,d)=>tmItems(uid).filter(o=>onDay(o,d)).sort(byTime);
 const tmAbsent=(m,d)=>m.status!=='active'&&(!m.status_from||m.status_from<=d)&&(!m.status_to||d<=m.status_to);
@@ -7023,7 +7037,7 @@ async function loadTeam(){
       SB.from('shared_items').select('owner_id,item_id,data').in('owner_id',tmMembers.map(x=>x.user_id)),
       SB.from('handovers').select('*').eq('team_id',tid).order('created_at',{ascending:false}).limit(30)]);
     team=t.data;
-    teamItems=(si.data||[]).filter(r=>r.owner_id!==tmMe()).map(r=>({owner:r.owner_id,item_id:r.item_id,...r.data}));
+    teamItems=(si.data||[]).filter(r=>r.owner_id!==tmMe()&&shVis((r.data||{}).to,'team')).map(r=>({owner:r.owner_id,item_id:r.item_id,...r.data}));
     handLog=h.data||[];
     if(!tmChan){const kick=()=>{clearTimeout(tmT);tmT=setTimeout(loadTeam,700);};
       tmChan=SB.channel('team-'+tmMe()).on('postgres_changes',{event:'*',schema:'public',table:'shared_items'},kick)
@@ -7123,6 +7137,7 @@ async function orgJoin(){
 async function orgLoad(){
   if(backend!=='sb'||!SB||!session)return;
   try{const[r,a]=await Promise.all([SB.rpc('org_tree'),SB.rpc('voc_is_admin')]);orgAdmin=a.data===true;try{await tsLoadGroups();}catch(_){}
+    if(orgAdmin){try{const q=await SB.rpc('group_requests_open');const n0=orgGReq.length;orgGReq=q.data||[];if(orgGReq.length>n0)toastMsg('그룹 요청 '+orgGReq.length+'건이 있어요');}catch(_){}}
     if(r.data){orgD=r.data;
       if(orgSel==null){const me=tmMe(),mp=orgD.people.find(x=>x.user_id===me);
         orgSel=mp?mp.unit_id:((orgD.units.find(u=>orgD.people.some(p=>p.unit_id===u.id))||orgD.units[0]||{}).id||null);
@@ -7140,20 +7155,23 @@ function orgTreeHTML(pid,depth){
 }
 let orgEd=null,orgAddMsg='';
 const fmtPh=v=>{const d=String(v||'').replace(/\D/g,'');return d.length===11?`${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}`:d.length===10?`${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`:d;};
-let orgPh=new Set(),orgGrpForm=false;
+let orgPh=new Set(),orgGForm=null,orgGSel=new Set(),orgGSelMode=false,orgGReq=[];
 const orgSite=()=>location.origin+location.pathname.replace(/index\.html$/,'');
 const orgG=()=>typeof orgSel==='string'&&orgSel.startsWith('g:')?orgSel.slice(2):null;
-function orgGPeople(gid){return (TS2.gmem[gid]||[]).map(m=>{const p=orgD&&orgD.people.find(x=>x.user_id===m.user_id);
-  return p||{id:'u'+m.user_id,name:m.name||'이름 없음',title:'',unit_id:null,is_leader:false,user_id:m.user_id,phone:'',email:'',name_ok:false};});}
+function orgGPeople(gid){const out=[],seen=new Set();
+  (TS2.gmem[gid]||[]).forEach(m=>{const p=orgD&&orgD.people.find(x=>x.user_id===m.user_id);const k=p?'p'+p.id:'u'+m.user_id;if(seen.has(k))return;seen.add(k);
+    out.push(p||{id:'u'+m.user_id,name:m.name||'이름 없음',title:'',unit_id:null,is_leader:false,user_id:m.user_id,phone:'',email:'',name_ok:false});});
+  ((TS2.gpp||{})[gid]||[]).forEach(pid=>{const p=orgD&&orgD.people.find(x=>x.id===pid);if(!p||seen.has('p'+p.id))return;seen.add('p'+p.id);out.push(p);});
+  return out;}
 function orgGroupHTML(ppl){
   const me=tmMe(),gid=orgG(),g=TS2.groups.find(x=>x.id===gid)||{};
   return orgHead()+orgGBar()+ppl.map(p=>{const pk=String(p.id);
     return `<div class="om" data-opk="${pk}"><label class="om-ck"><input type="checkbox" data-ophs="${pk}"${orgPh.has(p.id)?' checked':''}></label>
-      <div class="om-b"><div class="om-n"><span class="om-tm">${esc(g.name||'그룹')}</span><span class="om-av" draggable="true" data-odrag="${pk}" title="끌어서 다른 그룹에 넣기">${esc(p.name.charAt(0))}</span><i class="om-d${p.user_id?' on':''}"></i><b>${esc(p.name)}</b><span>${esc(p.title||'')}</span>${p.user_id===me?'<em class="tmb">나</em>':''}</div>
+      <div class="om-b"><div class="om-n"><span class="om-tm">${esc(g.name||'그룹')}</span><span class="om-av" draggable="true" data-odrag="${pk}" title="끌어서 다른 그룹에 넣기">${esc(p.name.charAt(0))}</span><i class="om-d${p.user_id?' on':''}"></i><b>${esc(p.name)}</b><span>${esc(p.title||'')}</span>${p.user_id===me?'<em class="tmb">나</em>':''}</div></div>
       <span class="om-em">${esc(p.email||'')}</span>
       <input class="om-pi" readonly tabindex="-1" value="${esc(p.phone?fmtPh(p.phone):'')}">
       <span class="om-s">${p.user_id?'가입':'미가입'}</span>
-      <div class="om-r"><button class="vbtn alt sm" data-ogr="${p.user_id||''}">빼기</button></div></div></div>`;}).join('');}
+      <div class="om-r"><button class="vbtn alt sm" data-ogr="${p.user_id||''}" data-ogp="${typeof p.id==='number'?p.id:''}">빼기</button></div></div>`;}).join('');}
 function orgVisible(){if(orgG())return orgGPeople(orgG());const ids=orgSub?orgSubIds(orgSel):[orgSel],q=orgQ.trim();
   return q?orgD.people.filter(p=>p.name.includes(q)||(p.title||'').includes(q)):orgD.people.filter(p=>ids.includes(p.unit_id));}
 function orgHead(){
@@ -7198,6 +7216,92 @@ async function orgSoft(force){
 setInterval(()=>{if(!document.hidden&&$('tmSheet')&&$('tmSheet').classList.contains('open')&&tmView==='board')orgSoft(true);},8000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)orgSoft(true);});
 addEventListener('focus',()=>orgSoft(true));
+
+const orgGKids=pid=>{const ids=new Set((TS2.groups||[]).map(g=>g.id));return (TS2.groups||[]).filter(g=>pid===null?(!g.parent_id||!ids.has(g.parent_id)):g.parent_id===pid);};
+const orgGDesc=id=>{const o=[];orgGKids(id).forEach(k=>{o.push(k.id,...orgGDesc(k.id));});return o;};
+function orgGTreeHTML(pid,depth){
+  return orgGKids(pid).map(g=>{const k=orgGKids(g.id),key='g'+g.id,open=orgOpen.has(key),n=orgGPeople(g.id).length,on=orgG()===g.id;
+    return `<div class="ot-n"><div class="ot-r${on?' on':''}" data-gid="${g.id}" style="padding-left:${8+depth*16}px">
+      ${orgGSelMode?`<input type="checkbox" class="ot-ck" data-gck="${g.id}"${orgGSel.has(g.id)?' checked':''}>`:''}
+      <button class="ot-c" data-otg="${key}" ${k.length?'':'disabled'} aria-label="펼치기">${k.length?(open?'▾':'▸'):''}</button>
+      <button class="ot-l" data-tsg="${g.id}"><span>${esc(g.name)}</span>${n?`<i>${n}</i>`:''}</button>
+      <button class="ot-x" data-gmenu="${g.id}" aria-label="더보기" title="수정·삭제">⋯</button></div>${k.length&&open?orgGTreeHTML(g.id,depth+1):''}</div>`;}).join('');}
+function orgReqHTML(){
+  if(!orgAdmin||!orgGReq.length)return '';
+  const tx=r=>r.kind==='create'?`'${esc(r.name)}' 만들기`:r.kind==='delete'?`'${esc(r.gname||'')}' 삭제`:`'${esc(r.gname||'')}' → '${esc(r.name||'')}' 수정`;
+  return `<div class="org-req"><b>그룹 요청 ${orgGReq.length}건</b>${orgGReq.map(r=>`<div class="rq"><span>${esc(r.by||'팀원')} · ${tx(r)}</span><button class="vbtn sm" data-grq="${r.id}" data-ok="1">승인</button><button class="vbtn alt sm" data-grq="${r.id}" data-ok="0">거절</button></div>`).join('')}</div>`;}
+function orgGSideBar(){
+  if(orgGForm){const f=orgGForm,ex=f.mode==='edit'?new Set([f.gid,...orgGDesc(f.gid)]):new Set(),g=f.mode==='edit'?TS2.groups.find(x=>x.id===f.gid):null;
+    const opts=(TS2.groups||[]).filter(x=>!ex.has(x.id)).map(x=>`<option value="${x.id}"${g&&g.parent_id===x.id?' selected':''}>${esc(x.name)}</option>`).join('');
+    return `<div class="og-f2"><b>${f.mode==='edit'?'그룹 수정':'그룹 만들기'}${orgAdmin?'':' 요청'}</b>
+      <input id="orgGn" maxlength="30" placeholder="그룹 이름 (예: 건설본부)" value="${esc(g?g.name:'')}" autocomplete="off">
+      <select id="orgGp"><option value="">상위 없음 (최상위)</option>${opts}</select>
+      <div class="og-b"><button id="orgGmake" class="vbtn sm">${orgAdmin?'저장':'운영자에게 요청'}</button><button id="orgGcancel" class="vbtn alt sm">취소</button></div></div>`;}
+  if(orgGSelMode)return `<div class="og-f2"><b>${orgGSel.size}개 선택됨</b><div class="og-b"><button id="orgGdelSel" class="vbtn sm"${orgGSel.size?'':' disabled'}>${orgAdmin?'삭제':'삭제 요청'}</button><button id="orgGselX" class="vbtn alt sm">취소</button></div><em>그룹 이름 앞 칸을 눌러 여러 개를 고르세요</em></div>`;
+  return `<button class="og-new" id="orgGnew">+ 그룹 만들기${orgAdmin?'':' (운영자 승인)'}</button>`;}
+async function orgGDelete(ids){
+  if(!ids.length)return;
+  const names=ids.map(i=>(TS2.groups.find(g=>g.id===i)||{}).name).filter(Boolean).join(', ');
+  if(!orgAdmin){
+    if(!confirm(`'${names}' 삭제를 운영자에게 요청할까요?`))return;
+    for(const id of ids){const r=await SB.rpc('group_request',{p_kind:'delete',p_gid:id,p_name:'',p_parent:null,p_my_name:tsNameOf(tsMeId())});if(r.error){toastMsg(String(r.error.message||'요청하지 못했습니다').replace(/^.*?:\s*/,''));return;}}
+    orgGSel.clear();orgGSelMode=false;orgRender();toastMsg('운영자에게 삭제를 요청했어요');return;}
+  if(!confirm(`'${names}' 그룹 ${ids.length}개를 삭제할까요?\n구성원 연결이 사라져요. (일정은 그대로 남아요)`))return;
+  const r=await SB.rpc('group_delete',{p_ids:ids});if(r.error){toastMsg(String(r.error.message||'삭제하지 못했습니다').replace(/^.*?:\s*/,''));return;}
+  if(orgG()&&ids.includes(orgG())){orgSel=(orgD.units[0]||{}).id||null;}
+  orgGSel.clear();orgGSelMode=false;await tsLoadGroups();orgRender();toastMsg('삭제했어요');}
+
+/* 공개 대상 고르기: 일정 하나 또는 분류 전체를 어느 팀·그룹에 보여줄지 */
+let shPop=null;
+function shClose(){if(shPop){shPop.remove();shPop=null;}}
+async function shPick(kind,obj,x,y){
+  shClose();
+  if(!(TS2.groups&&TS2.groups.length)){try{await tsLoadGroups();}catch(_){}}
+  const aud=[...(team&&team.id?[{k:'team',n:team.name||'내 팀'}]:[]),...(TS2.groups||[]).map(g=>({k:g.id,n:g.name}))];
+  const isItem=kind==='item';
+  const cur=()=>isItem?(isShared(obj)?shTo(obj):[]):(obj.share?(Array.isArray(obj.to)?obj.to:null):[]);
+  const el=document.createElement('div');el.className='shpop';
+  const paint=()=>{const c=cur(),all=c===null,none=Array.isArray(c)&&!c.length;
+    el.innerHTML=`<b>${isItem?'이 일정을 보여줄 곳':esc(obj.name)+' 분류를 보여줄 곳'}</b>
+      <label class="shr"><input type="radio" name="shm" value="none"${none?' checked':''}> 나만 보기</label>
+      <label class="shr"><input type="radio" name="shm" value="all"${all?' checked':''}> 모든 팀·그룹${isItem?'':' (기본)'}</label>
+      <label class="shr"><input type="radio" name="shm" value="pick"${!all&&!none?' checked':''}> 선택한 곳만</label>
+      <div class="shl">${aud.length?aud.map(a=>`<label class="shr s2"><input type="checkbox" data-sk="${a.k}"${Array.isArray(c)&&c.includes(a.k)?' checked':''}${all||none?' disabled':''}> ${esc(a.n)}</label>`).join(''):'<em>팀이나 그룹이 아직 없어요</em>'}</div>
+      ${isItem&&Array.isArray(obj.to)===false&&false?'':''}<div class="shf"><button class="vbtn sm" data-shx="1">닫기</button></div>`;};
+  const apply=v=>{
+    if(isItem){if(v===null){obj.share=true;delete obj.to;}else if(!v.length){obj.share=false;delete obj.to;}else{obj.share=true;obj.to=v;}touch(obj);}
+    else{if(v===null){obj.share=true;delete obj.to;}else if(!v.length){obj.share=false;delete obj.to;}else{obj.share=true;obj.to=v;}store.catsMt=NOW();
+      store.items.forEach(i=>{if(i.share!==undefined&&i.share!==null&&catsOf(i).some(c=>c.id===obj.id)){delete i.share;touch(i);}});}
+    save();try{redrawAll();}catch(_){}try{if(!isItem)renderCats();}catch(_){}paint();};
+  el.addEventListener('change',e=>{const t=e.target;
+    if(t.name==='shm'){apply(t.value==='none'?[]:t.value==='all'?null:(aud.length?[aud[0].k]:[]));}
+    else if(t.dataset.sk){const set=new Set(Array.isArray(cur())?cur():[]);t.checked?set.add(t.dataset.sk):set.delete(t.dataset.sk);
+      apply([...set]);}});
+  el.addEventListener('click',e=>{if(e.target.closest('[data-shx]'))shClose();});
+  paint();document.body.appendChild(el);
+  const w=el.offsetWidth,h=el.offsetHeight;el.style.left=Math.max(6,Math.min(x,innerWidth-w-6))+'px';el.style.top=Math.max(6,Math.min(y,innerHeight-h-6))+'px';shPop=el;}
+document.addEventListener('mousedown',e=>{if(shPop&&!e.target.closest('.shpop')&&!e.target.closest('[data-act="share"],[data-cto]'))shClose();},true);
+let orgMenuEl=null;
+function orgGMenuClose(){if(orgMenuEl){orgMenuEl.remove();orgMenuEl=null;}}
+function orgGMenuOpen(gid,x,y){
+  orgGMenuClose();const el=document.createElement('div');el.className='gmenu';
+  el.innerHTML=`<button data-gm="edit">${orgAdmin?'이름·상위 수정':'수정 요청'}</button><button data-gm="sel">선택해서 여러 개 삭제</button><button data-gm="del" class="dng">${orgAdmin?'삭제':'삭제 요청'}</button>`;
+  document.body.appendChild(el);const w=el.offsetWidth,h=el.offsetHeight;
+  el.style.left=Math.max(6,Math.min(x,innerWidth-w-6))+'px';el.style.top=Math.max(6,Math.min(y,innerHeight-h-6))+'px';
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-gm]');if(!b)return;orgGMenuClose();const k=b.dataset.gm;
+    if(k==='edit'){orgGForm={mode:'edit',gid};orgRender();setTimeout(()=>{const i=$('orgGn');if(i){i.focus();i.select();}},30);}
+    else if(k==='sel'){orgGSelMode=true;orgGSel=new Set([gid]);orgRender();}
+    else orgGDelete([gid]);});
+  orgMenuEl=el;}
+document.addEventListener('mousedown',e=>{if(orgMenuEl&&!e.target.closest('.gmenu'))orgGMenuClose();},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')orgGMenuClose();});
+document.addEventListener('contextmenu',e=>{const r=e.target.closest&&e.target.closest('#tmBody .ot-r[data-gid]');if(!r)return;e.preventDefault();orgGMenuOpen(r.dataset.gid,e.clientX,e.clientY);});
+{let lp=null,lx=0,ly=0;
+ document.addEventListener('touchstart',e=>{const r=e.target.closest&&e.target.closest('#tmBody .ot-r[data-gid]');if(!r)return;const t=e.touches[0];lx=t.clientX;ly=t.clientY;
+   lp=setTimeout(()=>{lp=null;window._lpGid=r.dataset.gid;window._lpAt=Date.now();try{navigator.vibrate&&navigator.vibrate(15);}catch(_){}orgGMenuOpen(r.dataset.gid,lx,ly);},550);},{passive:true});
+ const cx=()=>{if(lp){clearTimeout(lp);lp=null;}};
+ document.addEventListener('touchmove',e=>{const t=e.touches[0];if(lp&&(Math.abs(t.clientX-lx)>10||Math.abs(t.clientY-ly)>10))cx();},{passive:true});
+ document.addEventListener('touchend',cx);document.addEventListener('touchcancel',cx);}
 function orgRender(){
   const box=$('tmBody');
   orgSoft();
@@ -7211,8 +7315,8 @@ function orgRender(){
   const mine=team?`<span class="oc-t">${esc(team.name)} · 팀원 ${tmMembers.length}명</span>`:'';
   box.innerHTML=`<div class="org">
    <aside class="org-tree"><input class="org-q" id="orgQ" type="search" placeholder="이름 검색" value="${esc(orgQ)}" autocomplete="off">
-     <div class="ot-root">${orgTreeHTML(null,0)}</div>
-     <div class="ot-grp"><b>내 그룹</b>${(TS2.groups||[]).map(g=>`<button data-tsg="${g.id}" class="${orgG()===g.id?'on':''}">${esc(g.name)}<i>${(TS2.gmem[g.id]||[]).length}</i></button>`).join('')}<button class="new" data-tsg="__new">+ 그룹 만들기</button>${orgGrpForm?`<div class="og-f"><input id="orgGn" maxlength="30" placeholder="그룹 이름" autocomplete="off"><button id="orgGmake">만들기</button></div>`:''}</div></aside>
+     ${orgReqHTML()}<div class="ot-root">${orgTreeHTML(null,0)}${orgGTreeHTML(null,0)}</div>
+     ${orgGSideBar()}</aside>
    <section class="org-main">
      <div class="org-bc">${path.map((x,i)=>`<span${i===path.length-1?' class="cur"':''}>${esc(x.name)}</span>`).join('<i>›</i>')}</div>
      <div class="org-bar"><div class="org-tabs">${tabs}</div>${gid?'':`<label class="org-sub"><input type="checkbox" id="orgSub" ${orgSub?'checked':''}> 하위부서 포함</label>`}
@@ -7250,11 +7354,14 @@ $('tmBody').addEventListener('click',async e=>{
       const blob=await new Promise(r=>c.toBlob(r,'image/png')),f=new File([blob],'ty-scheduler-qr.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:orgSmsText(),title:'TY-Scheduler'});return;}
       const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ty-scheduler-qr.png';a.click();toastMsg('QR 이미지를 저장했어요');}catch(err){if(!(err&&err.name==='AbortError'))toastMsg('QR을 공유하지 못했습니다');}return;}
-  if(t0.id==='orgGmake'){const nm=($('orgGn').value||'').trim();if(!nm)return;
-    const r=await SB.rpc('group_create',{p_name:nm,p_my_name:tsNameOf(tsMeId())});
-    if(r.error){toastMsg(r.error.message||'그룹을 만들지 못했습니다');return;}
-    orgGrpForm=false;await tsLoadGroups();orgRender();toastMsg('그룹을 만들었어요. 코드 보내기로 사람을 초대하세요');
-    await tsOpen();TS2.gid=r.data.id;await tsLoadGItems();tsRender();tsLoadMemos();return;}
+  if(t0.id==='orgGmake'){const nm=($('orgGn').value||'').trim();if(!nm){toastMsg('그룹 이름을 입력하세요');return;}
+    const par=($('orgGp').value||null),f=orgGForm||{mode:'new'},me=tsNameOf(tsMeId());
+    const fail=r=>{toastMsg(String(r.error.message||'저장하지 못했습니다').replace(/^.*?:\s*/,''));};
+    if(!orgAdmin){const r=await SB.rpc('group_request',{p_kind:f.mode==='edit'?'edit':'create',p_gid:f.mode==='edit'?f.gid:null,p_name:nm,p_parent:par,p_my_name:me});
+      if(r.error)return fail(r);orgGForm=null;orgRender();toastMsg('운영자에게 요청했어요. 승인되면 목록에 나타나요');return;}
+    if(f.mode==='edit'){const r=await SB.rpc('group_edit',{p_gid:f.gid,p_name:nm,p_parent:par});if(r.error)return fail(r);orgGForm=null;await tsLoadGroups();orgRender();toastMsg('저장했어요');return;}
+    const r=await SB.rpc('group_create',{p_name:nm,p_my_name:me,p_parent:par});if(r.error)return fail(r);
+    orgGForm=null;if(par)orgOpen.add('g'+par);await tsLoadGroups();orgSel='g:'+r.data.id;orgRender();toastMsg('그룹을 만들었어요');return;}
   if(b0=t0.closest('[data-oe]')){orgEd=+b0.dataset.oe;return orgRender();}
   if(t0.closest('[data-oec]')){orgEd=null;return orgRender();}
   if(t0.closest('[data-onc]')){const r=await SB.rpc('org_name_confirm');if(r.error){toastMsg('확인하지 못했습니다: '+r.error.message);return;}toastMsg('이름을 확인했습니다. 이제 다른 사람이 바꿀 수 없습니다.');await orgLoad();orgRender();return;}
@@ -8281,9 +8388,7 @@ $('list').onclick=e=>{
   else if(a==='todo'){it.todo=it.todo?0:1;touch(it);toastMsg(it.todo?'해야 할 일에 담았습니다':'해야 할 일에서 뺐습니다');}
   else if(a==='share'){
     if(backend!=='sb'||!session){toastMsg('로그인하면 공유할 수 있습니다');return;}
-    it.share=!isShared(it);touch(it);
-    if(it.share&&!team&&!myShares.length)toastMsg('팀에 가입하거나 공유할 사람을 먼저 추가하세요 (👥 팀 업무 현황)');
-    else toastMsg(it.share?(team?'팀원에게 공개했어요':'공유했습니다'):'나만 보도록 바꿨어요');}
+    const r=e.target.closest('[data-act="share"]').getBoundingClientRect();shPick('item',it,r.left,r.bottom+4);return;}
   else if(a==='del'){store.tomb[it.id]=NOW();store.items=store.items.filter(i=>i.id!==it.id);setTimeout(()=>toastMsg('일정을 삭제했습니다','되돌리기',undoDo),0);}
   else if(a==='open'){openNote=openNote===it.id?null:it.id;save();renderDay();return;}
   save();renderDay();renderMonth();renderBanner();};
@@ -8535,7 +8640,10 @@ let sharedServerIds=null,sharedHash={},shChan=null,shT=null;
 const myName=()=>((store.settings&&store.settings.name)||((session&&session.user.email)||'').split('@')[0]||'').trim();
 function shareData(i){const c=catsOf(i)[0];
   return{date:i.date,endDate:i.endDate||null,wk:i.wk?1:0,time:i.time||null,endTime:i.endTime||null,title:i.title,
-    done:!!i.done,pri:!!i.pri,note:(i.note||'').slice(0,1500),cat:c?c.name:'',color:c?c.color:'#8a8f9e'};}
+    done:!!i.done,pri:!!i.pri,note:(i.note||'').slice(0,1500),cat:c?c.name:'',color:c?c.color:'#8a8f9e',to:shTo(i)};}
+/* 공개 대상: null=모든 팀·그룹, 배열=그 팀·그룹에만 (일정 > 분류 순으로 적용) */
+function shTo(i){if(Array.isArray(i.to))return i.to;const cs=catsOf(i);if(!cs.length||cs.some(c=>!Array.isArray(c.to)))return null;const u=new Set();cs.forEach(c=>c.to.forEach(x=>u.add(x)));return [...u];}
+const shVis=(to,aud)=>!Array.isArray(to)||to.includes(aud);
 async function syncShared(){
   if(backend!=='sb'||!SB||!session)return;
   const uid=session.user.id;
@@ -8939,7 +9047,7 @@ const tsOn=(o,k)=>o.date===k||(o.endDate&&o.date<=k&&k<=o.endDate);
 function tsTeam(k){
   const me=tsMeId(),L=[];
   tsSrc().forEach(o=>{if(tsOn(o,k))L.push({uid:o.owner,who:tsNameOf(o.owner),time:o.time||'',end:o.endTime||'',title:o.title||'',done:!!o.done,span:!!o.endDate&&o.endDate>o.date});});
-  store.items.forEach(i=>{if(!i.wk&&isShared(i)&&tsOn(i,k))L.push({uid:me,who:tsNameOf(me)||'나',mine:true,time:i.time||'',end:i.endTime||'',title:i.title,done:!!i.done,span:!!i.endDate&&i.endDate>i.date});});
+  store.items.forEach(i=>{if(!i.wk&&isShared(i)&&shVis(shTo(i),tsIsGrp()?TS2.gid:'team')&&tsOn(i,k))L.push({uid:me,who:tsNameOf(me)||'나',mine:true,time:i.time||'',end:i.endTime||'',title:i.title,done:!!i.done,span:!!i.endDate&&i.endDate>i.date});});
   return L.sort((a,b)=>(a.time||'99:99')<(b.time||'99:99')?-1:(a.time||'99:99')>(b.time||'99:99')?1:a.who<b.who?-1:1);}
 const tsMine=k=>store.items.filter(i=>!i.wk&&tsOn(i,k)&&!isShared(i)).map(i=>({title:i.title,time:i.time||'',end:i.endTime||'',done:!!i.done}));
 const tsMineAll=k=>store.items.filter(i=>!i.wk&&tsOn(i,k));
@@ -8976,7 +9084,10 @@ function tsTable(k){
   const lay=arr=>{const lanes=[];arr.forEach(e=>{let li=lanes.findIndex(z=>z<=e.a);if(li<0)li=lanes.length;lanes[li]=e.b;e.l=li;});const N=Math.max(1,lanes.length);
     return arr.map(e=>`<div class="tsb${e.pv?' pv':''}${e.x.done?' dn':''}${e.cf?' cf':''}" style="--c:${e.c};top:${Y(e.a)}px;height:${Math.max(24,(e.b-e.a)/60*H-1)}px;left:${e.l/N*100}%;width:calc(${100/N}% - 3px)"><b>${e.x.time}${e.x.end?'~'+e.x.end:''} · ${esc(e.x.who)}${e.cf?' · 겹침':''}</b><span>${esc(e.x.title)}</span></div>`).join('');};
   let rows='';for(let hr=S;hr<=E;hr++)rows+=`<div class="tsr" style="top:${(hr-S)*H}px"><span>${pad(hr)}:00</span></div>`;
-  const un=(arr,cls)=>arr.length?arr.map((x,n)=>`<div class="tsu${cls||''}"><i>${n+1}</i><span>${x.who?`<b>${esc(x.who)}</b> `:''}${esc(x.title)}</span></div>`).join(''):'<div class="tsu0">없음</div>';
+  const un=(arr,cls)=>{if(!arr.length)return '<div class="tsu0">없음</div>';
+    /* 사람별로 한 번만 이름을 쓰고 그 아래에 일정을 쭉 나열 */
+    const g=[];arr.forEach(x=>{const k=x.who||'';let o=g.find(y=>y.k===k);if(!o)g.push(o={k,l:[]});o.l.push(x);});
+    return g.map(o=>`<div class="tsug${cls||''}">${o.k?`<b class="tsw">${esc(o.k)}</b>`:''}${o.l.map((x,n)=>`<div class="tsu${cls||''}"><i>${n+1}</i><span>${esc(x.title)}</span></div>`).join('')}</div>`).join('');};
   const pT=plain.filter(x=>!x.mine||!TS2.ovMe),pM=TS2.ovMe?mine.filter(x=>!x.time):[];
   const chips=(pT.length||pM.length)?`<div class="tsun${TS2.ovMe?' two':''}"><div><em>시간 미정 · 팀</em>${un(pT)}</div>${TS2.ovMe?`<div><em>시간 미정 · 내 일정</em>${un(pM,' pv')}</div>`:''}</div>`:'';
   const vac=TS2.ovVac?tsVac(k).map(v=>`<span class="tsk vc"><b>${esc(v.name)}</b> ${esc(v.kind)}</span>`).join(''):'';
@@ -9061,13 +9172,14 @@ async function tsLoadGroups(){
   try{const g=await SB.from('groups').select('*').order('created_at');TS2.groups=g.data||[];
     const m=await SB.from('group_members').select('*').eq('active',true);TS2.gmem={};
     (m.data||[]).forEach(x=>(TS2.gmem[x.group_id]=TS2.gmem[x.group_id]||[]).push(x));
+    TS2.gpp={};try{const gp=await SB.from('group_people').select('*');(gp.data||[]).forEach(x=>(TS2.gpp[x.group_id]=TS2.gpp[x.group_id]||[]).push(x.pid));}catch(_){}
     if(tsIsGrp()&&!TS2.groups.some(x=>x.id===TS2.gid))TS2.gid='team';
     await tsLoadGItems();}catch(e){}}
 async function tsLoadGItems(){
   TS2.gitems=[];if(!tsIsGrp())return;
   const ids=(TS2.gmem[TS2.gid]||[]).map(x=>x.user_id).filter(u=>u!==tsMeId());if(!ids.length)return;
   try{const r=await SB.from('shared_items').select('owner_id,item_id,data').in('owner_id',ids);
-    TS2.gitems=(r.data||[]).map(x=>({owner:x.owner_id,item_id:x.item_id,...x.data}));}catch(e){}}
+    TS2.gitems=(r.data||[]).map(x=>({owner:x.owner_id,item_id:x.item_id,...x.data})).filter(o=>shVis(o.to,TS2.gid));}catch(e){}}
 async function tsOpen(form){
   if(backend!=='sb'||!session){toastMsg('로그인하면 볼 수 있습니다');return;}
   if(!team){try{await loadTeam();}catch(e){}}
@@ -9079,35 +9191,55 @@ async function tsOpen(form){
   if(!TS2.chan&&SB){const kick=()=>{if($('tsSheet').classList.contains('open')){tsLoadGroups().then(()=>{tsRender();tsLoadMemos();});}};
     TS2.chan=SB.channel('tsmemo',{config:{presence:{key:String(tsMeId())}}}).on('presence',{event:'sync'},()=>{try{TS2.pres=Object.values(TS2.chan.presenceState()).map(a=>a[0]).filter(Boolean);}catch(_){TS2.pres=[];}const b=$('tsPres');if(b)b.innerHTML=tsPresHtml();}).on('postgres_changes',{event:'*',schema:'public',table:'team_memos'},()=>{if($('tsSheet').classList.contains('open'))tsLoadMemos();})
       .on('postgres_changes',{event:'*',schema:'public',table:'group_invites'},()=>tsInvChk()).on('postgres_changes',{event:'*',schema:'public',table:'group_members'},kick).on('postgres_changes',{event:'*',schema:'public',table:'shared_items'},kick).subscribe(st=>{if(st==='SUBSCRIBED')tsTrack();});}else tsTrack();}
-document.addEventListener('click',e=>{const g=e.target.closest('.ot-grp [data-tsg]');if(!g)return;
-  const v=g.dataset.tsg;if(v==='__new'){orgGrpForm=!orgGrpForm;orgRender();setTimeout(()=>{const i=$('orgGn');if(i)i.focus();},30);return;}
+document.addEventListener('click',e=>{const g=e.target.closest('.ot-root [data-tsg]');if(!g)return;
+  if(Date.now()-(window._lpAt||0)<700)return;
+  const v=g.dataset.tsg;
+  if(orgGSelMode){orgGSel.has(v)?orgGSel.delete(v):orgGSel.add(v);orgRender();return;}
   orgSel='g:'+v;orgQ='';orgPh.clear();orgTab='mem';orgRender();});
 /* 그룹 이동·함께 넣기 / 끌어놓기 */
 let orgDragKeys=[];
 async function orgToGroup(keys,gid,move){
-  const from=orgG(),all=orgVisible?[...orgD.people,...(from?orgGPeople(from):[])]:[];
-  const ppl=keys.map(k=>all.find(p=>String(p.id)===String(k))).filter(Boolean),ok=ppl.filter(p=>p.user_id),no=ppl.length-ok.length;
-  if(!ok.length){toastMsg('앱에 가입한 사람만 그룹에 넣을 수 있어요');return;}
-  const r=await SB.rpc('group_member_add',{p_gid:gid,p_uids:ok.map(p=>p.user_id),p_names:ok.map(p=>p.name)});
-  if(r.error){toastMsg(String(r.error.message||'넣지 못했습니다').replace(/^.*?:\s*/,''));return;}
-  if(move&&from&&from!==gid){const d=await SB.rpc('group_member_remove',{p_gid:from,p_uids:ok.map(p=>p.user_id)});if(d.error)toastMsg('원래 그룹에서 빼지 못했습니다');}
-  const gn=(TS2.groups.find(x=>x.id===gid)||{}).name||'그룹';
+  const from=orgG(),all=[...orgD.people,...(from?orgGPeople(from):[])];
+  const ppl=keys.map(k=>all.find(p=>String(p.id)===String(k))).filter(Boolean);
+  if(!ppl.length)return;
+  const us=ppl.filter(p=>p.user_id),ps=ppl.filter(p=>typeof p.id==='number');
+  if(us.length){const r=await SB.rpc('group_member_add',{p_gid:gid,p_uids:us.map(p=>p.user_id),p_names:us.map(p=>p.name)});
+    if(r.error){toastMsg(String(r.error.message||'넣지 못했습니다').replace(/^.*?:\s*/,''));return;}}
+  if(ps.length){const r=await SB.rpc('group_people_add',{p_gid:gid,p_pids:ps.map(p=>p.id)});
+    if(r.error){toastMsg(String(r.error.message||'넣지 못했습니다').replace(/^.*?:\s*/,''));return;}}
+  if(move&&from&&from!==gid){
+    if(us.length)await SB.rpc('group_member_remove',{p_gid:from,p_uids:us.map(p=>p.user_id)});
+    if(ps.length)await SB.rpc('group_people_remove',{p_gid:from,p_pids:ps.map(p=>p.id)});}
+  const gn=(TS2.groups.find(x=>x.id===gid)||{}).name||'그룹',no=ppl.filter(p=>!p.user_id).length;
   await tsLoadGroups();orgPh.clear();orgRender();
-  toastMsg(`${ok.length}명을 '${gn}'에 ${move&&from?'옮겼어요':'넣었어요'}${no?` · 미가입 ${no}명은 제외`:''}`);}
+  toastMsg(`${ppl.length}명을 '${gn}'에 ${move&&from?'옮겼어요':'넣었어요'}${no?` (미가입 ${no}명은 가입하면 일정이 함께 보여요)`:''}`);}
 $('tmBody').addEventListener('click',async e=>{const t=e.target;
+  if(Date.now()-(window._lpAt||0)<700&&t.closest&&t.closest('.ot-r[data-gid]')){e.preventDefault();e.stopPropagation();return;}
+  const gx=t.closest&&t.closest('[data-gmenu]');if(gx){const r=gx.getBoundingClientRect();orgGMenuOpen(gx.dataset.gmenu,r.left,r.bottom+4);return;}
+  const gc=t.closest&&t.closest('[data-gck]');if(gc){const id=gc.dataset.gck;gc.checked?orgGSel.add(id):orgGSel.delete(id);orgRender();return;}
+  const og=t.closest&&t.closest('[data-otg]');if(og){const k=og.dataset.otg;orgOpen.has(k)?orgOpen.delete(k):orgOpen.add(k);orgRender();return;}
+  const rq=t.closest&&t.closest('[data-grq]');if(rq){const r=await SB.rpc('group_request_resolve',{p_id:+rq.dataset.grq,p_ok:rq.dataset.ok==='1'});
+    if(r.error){toastMsg(String(r.error.message||'처리하지 못했습니다').replace(/^.*?:\s*/,''));return;}
+    const q=await SB.rpc('group_requests_open');orgGReq=q.data||[];await tsLoadGroups();orgRender();toastMsg(rq.dataset.ok==='1'?'승인했어요':'거절했어요');return;}
+  if(t.id==='orgGnew'){orgGForm={mode:'new'};orgRender();setTimeout(()=>{const i=$('orgGn');if(i)i.focus();},30);return;}
+  if(t.id==='orgGcancel'){orgGForm=null;orgRender();return;}
+  if(t.id==='orgGselX'){orgGSelMode=false;orgGSel.clear();orgRender();return;}
+  if(t.id==='orgGdelSel'){orgGDelete([...orgGSel]);return;}
   if(t.id==='osmAdd'||t.id==='osmMove'){const to=$('osmTo').value;if(!to)return;return orgToGroup([...orgPh],to,t.id==='osmMove');}
-  const r=t.closest&&t.closest('[data-ogr]');if(r){const u=r.dataset.ogr,gid=orgG();if(!u||!gid)return;if(!confirm('이 그룹에서 뺄까요?'))return;
-    const d=await SB.rpc('group_member_remove',{p_gid:gid,p_uids:[u]});if(d.error){toastMsg(String(d.error.message||'빼지 못했습니다').replace(/^.*?:\s*/,''));return;}
+  const r=t.closest&&t.closest('[data-ogr]');if(r){const u=r.dataset.ogr,pid=r.dataset.ogp,gid=orgG();if(!gid)return;if(!confirm('이 그룹에서 뺄까요?'))return;
+    let er=null;if(u){const d=await SB.rpc('group_member_remove',{p_gid:gid,p_uids:[u]});er=er||d.error;}
+    if(pid){const d=await SB.rpc('group_people_remove',{p_gid:gid,p_pids:[+pid]});er=er||d.error;}
+    if(er){toastMsg(String(er.message||'빼지 못했습니다').replace(/^.*?:\s*/,''));return;}
     await tsLoadGroups();orgRender();toastMsg('그룹에서 뺐어요');return;}
-  if(t.id==='orgGsched'){const gid=orgG();tsOpen('').then(()=>{TS2.gid=gid;tsLoadGItems().then(()=>{tsRender();tsLoadMemos();});});}});
+  if(t.id==='orgGsched'){const gid=orgG();$('tmSheet').classList.remove('open');tsOpen('').then(()=>{TS2.gid=gid;tsLoadGItems().then(()=>{tsRender();tsLoadMemos();});});}});
 document.addEventListener('dragstart',e=>{const h=e.target.closest&&e.target.closest('[data-odrag]');if(!h)return;
   const k=h.dataset.odrag;orgDragKeys=orgPh.size&&[...orgPh].some(x=>String(x)===k)?[...orgPh]:[k];
   try{e.dataTransfer.setData('text/plain',k);e.dataTransfer.effectAllowed='copyMove';const row=h.closest('.om');if(row)e.dataTransfer.setDragImage(row,20,20);}catch(_){}
   document.body.classList.add('org-dragging');});
-document.addEventListener('dragend',()=>{document.body.classList.remove('org-dragging');document.querySelectorAll('.ot-grp .dz').forEach(x=>x.classList.remove('dz'));});
-document.addEventListener('dragover',e=>{const g=e.target.closest&&e.target.closest('.ot-grp [data-tsg]');if(!g||g.dataset.tsg==='__new'||!orgDragKeys.length)return;e.preventDefault();
-  document.querySelectorAll('.ot-grp .dz').forEach(x=>x!==g&&x.classList.remove('dz'));g.classList.add('dz');});
-document.addEventListener('drop',e=>{const g=e.target.closest&&e.target.closest('.ot-grp [data-tsg]');if(!g||g.dataset.tsg==='__new'||!orgDragKeys.length)return;e.preventDefault();
+document.addEventListener('dragend',()=>{document.body.classList.remove('org-dragging');document.querySelectorAll('.ot-root .dz').forEach(x=>x.classList.remove('dz'));});
+document.addEventListener('dragover',e=>{const g=e.target.closest&&e.target.closest('.ot-root [data-tsg]');if(!g||!orgDragKeys.length)return;e.preventDefault();
+  document.querySelectorAll('.ot-root .dz').forEach(x=>x!==g&&x.classList.remove('dz'));g.classList.add('dz');});
+document.addEventListener('drop',e=>{const g=e.target.closest&&e.target.closest('.ot-root [data-tsg]');if(!g||!orgDragKeys.length)return;e.preventDefault();
   const k=orgDragKeys;orgDragKeys=[];g.classList.remove('dz');orgToGroup(k,g.dataset.tsg,orgG()&&!e.altKey&&!e.ctrlKey);});
 $('ts').addEventListener('input',e=>{if(e.target.id==='tsSq'&&TS2.send){TS2.send.q=e.target.value;const p=e.target.selectionStart;const g=TS2.groups.find(x=>x.id===TS2.gid);const box=document.querySelector('.tsgs-list');if(box&&g){const L=tsSendList(g);box.innerHTML=L.length?L.map(p=>`<label class="tsgs-r"><input type="checkbox" data-tssel="${p.user_id}"${TS2.send.sel.has(p.user_id)?' checked':''}><span class="nm">${esc(p.name)}</span><span class="tt">${esc(p.title||'')}</span></label>`).join(''):'<div class="an2e">검색 결과가 없습니다.</div>';}}});
 $('ts').addEventListener('change',e=>{const c=e.target.closest('[data-tssel]');if(!c||!TS2.send)return;c.checked?TS2.send.sel.add(c.dataset.tssel):TS2.send.sel.delete(c.dataset.tssel);
@@ -9142,7 +9274,7 @@ $('ts').addEventListener('click',async e=>{
   const gb=e.target.closest('[data-tsg]');
   if(gb){const v=gb.dataset.tsg;
     if(v==='__send'){if(!orgD){try{await orgLoad();}catch(_){}}TS2.send=TS2.send?null:{sel:new Set(),q:''};tsRender();return;}
-    if(v==='__new'){$('tsSheet').classList.remove('open');orgGrpForm=true;await tmOpen();try{if(!orgD)await orgLoad();}catch(_){}orgRender();setTimeout(()=>{const i=$('orgGn');if(i)i.focus();},60);return;}
+    if(v==='__new'){$('tsSheet').classList.remove('open');orgGForm={mode:'new'};await tmOpen();try{if(!orgD)await orgLoad();}catch(_){}orgRender();setTimeout(()=>{const i=$('orgGn');if(i)i.focus();},60);return;}
     if(v==='__join'){TS2.form=TS2.form==='join'?'':'join';tsRender();return;}
     if(v==='__leave'){if(!confirm('이 그룹에서 나갈까요? 나가도 다시 초대 코드로 참여할 수 있습니다.'))return;
       try{await SB.rpc('group_leave',{p_gid:TS2.gid});}catch(_){}TS2.gid='team';await tsLoadGroups();tsRender();tsLoadMemos();return;}
@@ -9170,7 +9302,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v240';
+const APPVER=/*ver*/'v241';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9576,7 +9708,7 @@ function renderCats(){
   $('catList').innerHTML=store.cats.map((c,i)=>`<div class="crow">
     <input type="color" value="${c.color}" data-i="${i}" data-f="color" title="색 바꾸기">
     <input type="text" value="${esc(c.name)}" data-i="${i}" data-f="name" data-name="${i}">
-    <button class="cshare${c.share?' on':''}" data-csh="${i}" title="${c.share?'팀에 공유 중 · 누르면 비공개':'비공개 · 누르면 팀에 공유'}">${c.share?'공유':'비공개'}</button>
+    <button class="cshare${c.share?' on':''}" data-csh="${i}" title="${c.share?'팀에 공유 중 · 누르면 비공개':'비공개 · 누르면 팀에 공유'}">${c.share?'공유':'비공개'}</button>${c.share?`<button class="cbtn2" data-cto="${i}" title="어느 팀에 보일지 선택">${Array.isArray(c.to)?'대상 '+c.to.length:'대상 전체'}</button>`:''}
     <button class="cbtn2" data-cedit="${i}" title="이름 수정">✎</button>
     <button class="cbtn2" data-cup="${i}" title="위로">↑</button>
     <button class="cbtn2" data-cdel="${i}" title="삭제">×</button></div>`).join('');
@@ -9586,6 +9718,7 @@ $('catList').oninput=e=>{const t=e.target;if(t.dataset.i===undefined)return;
   if(t.dataset.f==='name')c.name=t.value;else c.color=t.value;
   store.catsMt=NOW();save();paintCatBtn();};
 $('catList').onclick=e=>{
+  const ct=e.target.closest('[data-cto]');if(ct){const r=ct.getBoundingClientRect();shPick('cat',store.cats[+ct.dataset.cto],r.left,r.bottom+4);return;}
   const sh=e.target.closest('[data-csh]');
   if(sh){const c=store.cats[+sh.dataset.csh];c.share=!c.share;store.catsMt=NOW();save();renderCats();
     try{redrawAll();}catch(_){}toastMsg(c.share?`'${c.name}' 분류의 일정이 팀에 공유됩니다`:`'${c.name}' 분류의 일정은 나만 봅니다`);return;}
@@ -10718,7 +10851,7 @@ setInterval(notify,60000);
 /* Enter로 바로 등록: 그룹·팀 만들기 입력칸 */
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter'||e.isComposing)return;
-  const m={tsGname:'tsGmake',tmNew:'tmCreate',tmMy1:'tmCreate'}[e.target&&e.target.id];
+  const m={tsGname:'tsGmake',tmNew:'tmCreate',tmMy1:'tmCreate',orgGn:'orgGmake'}[e.target&&e.target.id];
   if(m){e.preventDefault();const b=document.getElementById(m);if(b)b.click();}});
 /* 한 번만: 이미 등록된 일정 중 제목에 다른 분류 이름이 함께 적힌 것은 분류를 모두 붙임 */
 setTimeout(()=>{try{
