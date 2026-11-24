@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v232">
+<meta name="app-ver" content="v233">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6331,9 +6331,9 @@ function pickDel(ids){ids=[...ids].filter(id=>store.items.some(i=>i.id===id));if
 })();
 /* 캡처 안내는 캡처 창이 닫히거나 Esc·바깥 클릭이면 바로 사라짐 */
 (function(){const sh=document.getElementById('capSheet');if(!sh)return;
-  new MutationObserver(()=>{if(!sh.classList.contains('open')&&snipWait)snipStop();}).observe(sh,{attributes:true,attributeFilter:['class']});
+  new MutationObserver(()=>{if(!sh.classList.contains('open')&&snipWait&&!snipHid)snipStop();}).observe(sh,{attributes:true,attributeFilter:['class']});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&snipWait)snipStop();});
-  document.addEventListener('mousedown',e=>{if(snipWait&&!e.target.closest('#capWait,#capRegion'))snipStop();},true);})();
+  document.addEventListener('mousedown',()=>{if(snipWait)setTimeout(()=>{try{snipCheck();}catch(e){}},250);},true);})();
 /* 메일 보내기: 메일 프로그램 열기 또는 그룹웨어 메일에 붙여 넣도록 복사 */
 function mailPick(to,subj,body){
   let d=document.getElementById('mailDlg');if(!d){d=document.createElement('div');d.id='mailDlg';d.className='xdlg';document.body.appendChild(d);}
@@ -9109,7 +9109,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v232';
+const APPVER=/*ver*/'v233';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10256,7 +10256,8 @@ async function clipImage(){
   return null;}
 const clipSig=f=>f?f.size+':'+f.type:null;
 let snipTO=null;
-function snipStop(){snipWait=false;clearInterval(snipT);clearTimeout(snipTO);$('capWait').style.display='none';}
+let snipHid=false;
+function snipStop(){snipWait=false;snipHid=false;clearInterval(snipT);clearTimeout(snipTO);$('capWait').style.display='none';}
 async function startSnip(){
   const f0=await clipImage();snipBase=clipSig(f0);snipWait=true;
   const key=isWinOS?'Win + Shift + S':isMacOS?'⌘ + Control + Shift + 4':'';
@@ -10264,8 +10265,8 @@ async function startSnip(){
     :isMacOS?'<b>'+key+'</b> 를 누르고 필요한 부분을 <b>드래그</b>하세요.'
     :'기기의 캡처 기능으로 필요한 부분을 찍으세요.')
     +'<br>영역을 고르면 이 앱이 자동으로 읽어 일정 목록을 만들어요. (안 되면 이 화면에서 Ctrl+V)';
-  $('capSheet').classList.remove('open');
-  clearInterval(snipT);snipT=setInterval(snipCheck,1200);clearTimeout(snipTO);snipTO=setTimeout(()=>{snipStop();$('capSheet').classList.add('open');},30000);
+  snipHid=true;$('capSheet').classList.remove('open');toastMsg('영역을 드래그해 캡처한 뒤, 이 화면을 한 번 눌러 주세요');
+  clearInterval(snipT);snipT=setInterval(snipCheck,1200);clearTimeout(snipTO);snipTO=setTimeout(()=>{snipStop();$('capSheet').classList.add('open');},90000);
   if(isWinOS){try{const a=document.createElement('a');a.href='ms-screenclip:';a.style.display='none';document.body.appendChild(a);a.click();a.remove();}catch(e){}}
 }
 async function snipCheck(){
