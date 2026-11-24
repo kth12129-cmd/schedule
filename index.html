@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v242">
+<meta name="app-ver" content="v243">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -3165,6 +3165,7 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
 .shl{display:grid;gap:0;padding-left:20px;max-height:200px;overflow:auto}.shl em{font-style:normal;color:var(--ink-3);font-size:12px}.shf{display:flex;justify-content:flex-end;margin-top:4px}
 .ot-r.on .ot-x{color:var(--page);opacity:.85}.ot-r.on .ot-x:hover,.ot-r.on .ot-x:focus{background:rgba(255,255,255,.22);color:var(--page);opacity:1}
 .ot-r:not(.on) .ot-x:hover{color:var(--ink)}
+.osm-to{height:30px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);padding:0 8px;font-size:13px;max-width:150px;min-width:0}
 </style>
 </head>
 <body>
@@ -6383,7 +6384,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='선택된 그룹의 "⋯" 버튼이 눌렀을 때 사라지던 문제를 고쳤어요.';
+const RELNOTE='사람을 선택하면 목록 위에 "그룹으로 ▾ 이동"이 바로 나와요(선택 인원 문구·함께 넣기 창 삭제). 운영자가 만든 그룹에는 운영자가 구성원으로 들어가지 않고 전체를 볼 수만 있어요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -7180,9 +7181,13 @@ function orgHead(){
   const ppl=orgVisible(),n=ppl.filter(p=>orgPh.has(p.id)).length,sel=ppl.filter(p=>orgPh.has(p.id)),has=sel.filter(p=>p.phone).length;
   const st=n===0?'':(n===ppl.length?'checked':'data-part="1"'),hm=sel.filter(p=>p.email).length;
   return `<div class="omh"><label class="om-ck" title="전체 선택 / 해제"><input type="checkbox" id="osmAll" ${st}></label>
-    ${n?`<div class="omh-a"><b>${n}명 선택됨</b><span>${has<n||hm<n?`연락처 없음 ${n-has}명 · 메일 없음 ${n-hm}명`:''}</span><i></i><button class="vbtn sm" id="osmSend"${has?'':' disabled'}>문자 보내기 (${has}명)</button><button class="vbtn sm" id="osmMail"${hm?'':' disabled'}>메일 보내기 (${hm}명)</button><button class="vbtn alt sm" id="osmQr">QR 이미지 공유</button><button class="vbtn alt sm" id="osmClr">선택 해제</button></div>`
+    ${n?`<div class="omh-a">${orgGSel2()}<span>${has<n||hm<n?`연락처 없음 ${n-has}명 · 메일 없음 ${n-hm}명`:''}</span><i></i><button class="vbtn sm" id="osmSend"${has?'':' disabled'}>문자 보내기 (${has}명)</button><button class="vbtn sm" id="osmMail"${hm?'':' disabled'}>메일 보내기 (${hm}명)</button><button class="vbtn alt sm" id="osmQr">QR 이미지 공유</button><button class="vbtn alt sm" id="osmClr">선택 해제</button></div>`
       :`<span class="omh-l">팀 · 이름</span><span class="omh-m">메일</span><span class="omh-p">연락처</span><span class="omh-s">상태</span><span></span>`}</div>`;}
-function orgGBar(){
+function orgGSel2(){
+  const cur=orgG(),gs=(TS2.groups||[]).filter(g=>g.id!==cur);
+  return gs.length?`<select id="osmTo" class="osm-to" title="옮길 그룹"><option value="" disabled selected>그룹으로</option>${gs.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('')}</select><button class="vbtn sm" id="osmMove">이동</button>`:'';}
+function orgGBar(){return '';}
+function orgGBarOld(){
   const sel=orgVisible().filter(p=>orgPh.has(p.id));if(!sel.length)return '';
   const cur=orgG(),gs=(TS2.groups||[]).filter(g=>g.id!==cur);
   return `<div class="omg"><b>그룹으로</b>${gs.length?`<select id="osmTo">${gs.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('')}</select>
@@ -9227,7 +9232,7 @@ $('tmBody').addEventListener('click',async e=>{const t=e.target;
   if(t.id==='orgGcancel'){orgGForm=null;orgRender();return;}
   if(t.id==='orgGselX'){orgGSelMode=false;orgGSel.clear();orgRender();return;}
   if(t.id==='orgGdelSel'){orgGDelete([...orgGSel]);return;}
-  if(t.id==='osmAdd'||t.id==='osmMove'){const to=$('osmTo').value;if(!to)return;return orgToGroup([...orgPh],to,t.id==='osmMove');}
+  if(t.id==='osmMove'){const to=$('osmTo').value;if(!to){toastMsg('옮길 그룹을 먼저 고르세요');return;}return orgToGroup([...orgPh],to,true);}
   const r=t.closest&&t.closest('[data-ogr]');if(r){const u=r.dataset.ogr,pid=r.dataset.ogp,gid=orgG();if(!gid)return;if(!confirm('이 그룹에서 뺄까요?'))return;
     let er=null;if(u){const d=await SB.rpc('group_member_remove',{p_gid:gid,p_uids:[u]});er=er||d.error;}
     if(pid){const d=await SB.rpc('group_people_remove',{p_gid:gid,p_pids:[+pid]});er=er||d.error;}
@@ -9304,7 +9309,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v242';
+const APPVER=/*ver*/'v243';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
