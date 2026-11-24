@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v247">
+<meta name="app-ver" content="v248">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6384,7 +6384,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='그룹 화면에서 구성원을 추가했을 때 반영되지 않거나 오류가 조용히 사라지던 문제를 고쳤어요. 추가하면 바로 그 그룹 목록에 나오고, 실패하면 이유가 화면에 떠요.';
+const RELNOTE='그룹 화면에서 사람을 선택해도 메일·문자 보내기가 동작하지 않던 문제를 고쳤어요. 선택한 사람 중 메일/연락처가 없으면 안내가 떠요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -7327,6 +7327,7 @@ document.addEventListener('contextmenu',e=>{const r=e.target.closest&&e.target.c
 function orgRender(){
   const box=$('tmBody');
   orgSoft();
+  try{if(orgD){const ok=new Set(orgVisible().map(p=>p.id));[...orgPh].forEach(i=>{if(!ok.has(i))orgPh.delete(i);});}}catch(_){}
   if(!orgD){box.innerHTML='<div class="vempty">조직도를 불러오는 중…</div>';orgLoad().then(()=>{if($('tmSheet').classList.contains('open')&&tmView==='board')orgRender();});return;}
   const gid=orgG(),g0=gid?TS2.groups.find(x=>x.id===gid):null,u=gid?null:orgD.units.find(x=>x.id===orgSel),path=gid?[{name:'내 그룹'},{name:g0?g0.name:'그룹'}]:(u?orgPath(u.id):[]);
   const tabs=(gid?[['mem','구성원']]:[['mem','구성원'],['plan','일정'],['log','인수인계']]).map(([k,n])=>`<button data-ot2="${k}" class="${orgTab===k?'on':''}">${n}</button>`).join('');
@@ -7361,14 +7362,14 @@ $('tmBody').addEventListener('click',async e=>{
   const re=async()=>{await orgLoad();orgRender();};
   if(t0.id==='osmAll'){const v=orgVisible(),all=v.every(p=>orgPh.has(p.id));v.forEach(p=>all?orgPh.delete(p.id):orgPh.add(p.id));return orgRender();}
   if(t0.id==='osmClr'){orgPh.clear();return orgRender();}
-  if(t0.id==='osmMail'){const L=orgD.people.filter(p=>orgPh.has(p.id)&&p.email);if(!L.length)return;
+  if(t0.id==='osmMail'){const L=orgVisible().filter(p=>orgPh.has(p.id)&&p.email);if(!L.length){toastMsg('선택한 사람 중 메일이 있는 사람이 없어요');return;}
     const who=(typeof myName==='function'&&myName())||'';
     const body=(who?`${who}님이 TY-Scheduler 일정 앱에 초대합니다.\n\n`:'')+orgSmsText()+`\nQR 이미지: ${orgSite().replace(/\/?$/,'/')}qr.png`;
     const sep=/Windows/i.test(navigator.userAgent)?';':',';
     const to=L.map(p=>p.email).join(sep),subj='[TY-Scheduler] 일정 앱 안내 및 참여 코드'+(who?` (${who})`:'');
     mailPick(to,subj,body);
     return;}
-  if(t0.id==='osmSend'){const L=orgD.people.filter(p=>orgPh.has(p.id)&&p.phone);if(!L.length)return;
+  if(t0.id==='osmSend'){const L=orgVisible().filter(p=>orgPh.has(p.id)&&p.phone);if(!L.length){toastMsg('선택한 사람 중 연락처가 있는 사람이 없어요');return;}
     const ios=/iPhone|iPad|Mac/.test(navigator.userAgent)&&'ontouchend' in document;
     location.href=`sms:${L.map(p=>p.phone).join(',')}${ios?'&':'?'}body=${encodeURIComponent(orgSmsText())}`;return;}
   if(t0.id==='osmQr'){try{const svg=tsQr(orgSite()),url=URL.createObjectURL(new Blob([svg.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"')],{type:'image/svg+xml'}));
@@ -9345,7 +9346,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v247';
+const APPVER=/*ver*/'v248';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
