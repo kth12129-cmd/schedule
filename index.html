@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v237">
+<meta name="app-ver" content="v238">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6361,7 +6361,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='캡처 창의 동그라미 번호를 화면·영역·파일 아이콘으로 바꿨어요.';
+const RELNOTE='문서 캡처 시 본문 문장 속 날짜(예: 11월~12월 자료)는 일정으로 잡지 않고, "일정 :" 줄의 날짜만 요청 제목과 묶어 1건으로 등록해요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9116,7 +9116,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v237';
+const APPVER=/*ver*/'v238';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9900,6 +9900,7 @@ function ocrFix(line,dict){
     t=t.replace(/(CM팀?|cME|CMS|CMe)\s*\/\s*\(/,'CM팀 / (');}
   t=t.replace(/[가-힣]{3,}/g,w=>{if(dict.includes(w))return w;
     const hit=dict.find(x=>x.length>=3&&x.length===w.length&&lev1(x,w));return hit||w;});
+  t=t.replace(/원가투입현황\s*\(\s*[주추]정\s*\)/g,'원가투입현황(추정)').replace(/자료\s*작성\s*요청/g,'자료 작성 요청');
   t=t.replace(/[가-힣]{2}/g,w=>w==='메정'?'예정':w==='제줄'?'제출':w);
   t=t.replace(/(제출|예정|완료|요청)\s+[A-Z]{1,3}\s*$/,'$1').replace(/\s+(?:AS|SS|ES|AAA|SSS|EAE)(?=\s|$)/g,'');
   return t.replace(/\s+/g,' ').trim();}
@@ -9916,9 +9917,13 @@ function buildCaps(data,allowUndated){
   const seen=new Set(),out=[];let skipped=0;
   const subjBefore=i=>{for(let j=i-1;j>=0;j--){const m=rows[j].t.match(SUBJ_RE);if(m)return m[1].trim();}
     for(let j=i+1;j<rows.length;j++){const m=rows[j].t.match(SUBJ_RE);if(m)return m[1].trim();}return null;};
+  /* 문서에 '일정/기한 :' 줄이 있으면 그 줄만 일정으로 — 본문 문장 속 날짜(예: 11월~12월 자료)는 일정이 아님 */
+  const hasLab=rows.some(r=>DLAB_RE.test(r.t)&&DT2.test(r.t));
   rows.slice(0,100).forEach((r,i)=>{
     const line=r.t;
     if(r.c<45){return;}
+    if(/\d{1,2}\s*월\s*[~\-–]\s*\d{1,2}\s*월(?!\s*\d)/.test(line)&&!/\d{1,2}\s*월\s*\d{1,2}\s*일/.test(line))return;
+    if(hasLab&&!(DLAB_RE.test(line)&&DT2.test(line)))return;
     const dated=DT2.test(line);
     if(!dated&&!allowUndated){skipped++;return;}
     ensureSites(line);const p=parseInput(line,sel);
