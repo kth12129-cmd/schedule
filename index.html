@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v254">
+<meta name="app-ver" content="v255">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6392,7 +6392,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='캡처에서 "첨부파일·다운로드 기간·파일 이름/크기" 줄은 글자가 깨져 읽혀도(나운로드, MB} 등) 일정으로 올리지 않아요.';
+const RELNOTE='캡처에서 Esc를 누르면 한 단계씩 뒤로 가요. 영역 선택 중이면 캡처 방식 목록으로, 결과 목록이면 캡처 방식 목록으로 돌아가고 전체가 닫히지 않아요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -8285,6 +8285,10 @@ document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{
 /* Esc: 가장 위에 열린 시트(계정·설정·분석 등 전체 화면)를 닫습니다. 팝업·대화상자가 열려 있으면 그쪽이 먼저 닫힙니다 */
 window.addEventListener('keydown',e=>{
   if(e.key!=='Escape'||e.isComposing||e.defaultPrevented)return;
+  /* 캡처: 한 단계씩 뒤로 — 영역 선택 대기 → 캡처 방식 목록, 자르기 → 캡처 화면, 결과 목록 → 캡처 방식 목록 */
+  if(typeof snipWait!=='undefined'&&snipWait){snipStop();$('capSheet').classList.add('open');e.preventDefault();e.stopImmediatePropagation();return;}
+  if($('cropBox')&&$('cropBox').classList.contains('on')){closeCrop();e.preventDefault();e.stopImmediatePropagation();return;}
+  if(!document.querySelector('.xdlg.on')&&$('capSheet').classList.contains('open')&&typeof capCands!=='undefined'&&capCands.length&&!capBusy){capReset();e.preventDefault();e.stopImmediatePropagation();return;}
   if(document.querySelector('.xdlg.on,.pop.open,.wkpop.open,#brief[style*="block"],body.rc-open'))return;
   const sh=[...document.querySelectorAll('.sheet.open')].pop();
   if(!sh)return;
@@ -9354,7 +9358,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v254';
+const APPVER=/*ver*/'v255';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10619,7 +10623,7 @@ async function snipCheck(){
 }
 addEventListener('focus',()=>setTimeout(snipCheck,300));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(snipCheck,300);});
-$('capWaitX').onclick=snipStop;
+$('capWaitX').onclick=()=>{snipStop();$('capSheet').classList.add('open');};
 $('capRegion').onclick=()=>{capMode='region';if(capTouch)$('capFile').click();else startSnip();};
 capUI();
 
