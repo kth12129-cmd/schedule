@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v248">
+<meta name="app-ver" content="v249">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -762,6 +762,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .calp{margin-top:12px}
 .calp .ph{width:100%;max-height:30vh;object-fit:contain;background:var(--field);border:1px solid var(--line);border-radius:10px;display:block;cursor:zoom-in}
 .calp .ph.big{max-height:none;cursor:zoom-out}
+.capbar.c3{grid-template-columns:1fr 1fr 1fr}
 .calp .capbar{position:static;margin-top:12px;padding:0;background:none}
 .calp .hd{display:flex;align-items:center;gap:8px;margin:10px 2px 6px;flex-wrap:wrap}
 .calp .hd input[type=month]{font-size:16px;padding:5px 8px;border:1px solid var(--fieldline);border-radius:8px;background:var(--field);color:var(--ink);min-width:0}
@@ -3289,9 +3290,10 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
     <div class="card capwait" id="capWait" style="display:none"><b>영역 선택 대기 중</b><p id="capWaitTxt"></p><button id="capWaitX">취소</button></div>
     <div id="calPhoto" style="display:none"></div>
     <div id="capList"></div>
-    <div class="capbar" id="capBar" style="display:none">
+    <div class="capbar c3" id="capBar" style="display:none">
       <button class="go2 alt" id="capAll">전체 선택</button>
       <button class="go2" id="capSave">등록</button>
+      <button class="go2 alt" id="capAgain2">다시 캡처</button>
     </div>
   </div>
 </div>
@@ -6187,6 +6189,12 @@ function remPaint(){const it=store.items.find(i=>i.id===remId);if(!it)return;con
     <div class="rmact"><button data-rm="x">취소</button><button data-rm="ok" class="go">저장</button></div></div>`;}
 $('remDlg').onclick=e=>{
   if(e.target.id==='remDlg'){$('remDlg').classList.remove('on');return;}
+  if(e.target.closest&&e.target.closest('[data-caprem]')){
+    const k=e.target.closest('[data-crk]');if(k){capRemMin=+k.dataset.crk;capRemPaint();return;}
+    const m=e.target.closest('[data-crm]');if(!m)return;
+    if(m.dataset.crm==='ok'){let n=0;capRemIds.forEach(id=>{const it=store.items.find(i=>i.id===id);if(it&&it.time){it.rem=capRemMin;it.vib=it.vib||'once';touch(it);n++;}});
+      try{save();}catch(_){}toastMsg(n+'건에 '+(capRemMin>=60?capRemMin/60+'시간':capRemMin+'분')+' 전 알림을 등록했습니다');}
+    capRemIds=[];$('remDlg').classList.remove('on');try{redrawAll();}catch(_){try{renderDay();renderMonth();}catch(__){}}return;}
   const b=e.target.closest('[data-rk]');if(b&&!b.disabled){const k=b.dataset.rk,v=b.dataset.rv;remSt[k]=k==='min'?+v:v;remPaint();return;}
   const m=e.target.closest('[data-rm]');if(!m)return;
   if(m.dataset.rm==='ok'){const it=store.items.find(i=>i.id===remId);if(it){it.pri=true;
@@ -6384,7 +6392,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='그룹 화면에서 사람을 선택해도 메일·문자 보내기가 동작하지 않던 문제를 고쳤어요. 선택한 사람 중 메일/연락처가 없으면 안내가 떠요.';
+const RELNOTE='캡처 화면을 정리했어요. 전체 해제·등록·다시 캡처 순으로 아래에 모았어요. 안내문의 시간(오전 9시)·장소·작성자를 읽어 일정에 채우고, 연월일(26년11월25일)도 정확히 읽어요. 등록하면 "알림 등록할까요?" 창이 떠요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9346,7 +9354,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v248';
+const APPVER=/*ver*/'v249';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10123,7 +10131,7 @@ function lev1(a,b){if(a===b)return true;if(Math.abs(a.length-b.length)>1)return 
   if(a.length===b.length)return a.slice(i+1)===b.slice(i+1);
   return a.length>b.length?a.slice(i+1)===b.slice(i):b.slice(i+1)===a.slice(i);}
 function ocrFix(line,dict){
-  let t=line;
+  let t=line.replace(/(?<![\d])(20)?(\d{2})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일/g,(m,a,y,mo,d)=>'20'+y+'-'+pad(+mo)+'-'+pad(+d));
   t=t.replace(/(\d{1,2}\s*\/\s*\d{1,2}\s*\([월화수목금토]\))\s*(?:限|R+|&|[A-Za-z]{1,3}|是|恨|根)\s*$/,'$1 限');
   if(/\/\s*\(/.test(t)){
     t=t.replace(/^(\W*[가-힣A-Za-z0-9 ]{2,20}?)\s[-–~«]\s*/,'$1 : ');
@@ -10157,7 +10165,7 @@ function buildCaps(data,allowUndated){
     if(hasLab&&!(DLAB_RE.test(line)&&DT2.test(line)))return;
     const dated=DT2.test(line);
     if(!dated&&!allowUndated){skipped++;return;}
-    ensureSites(line);const p=parseInput(line,sel);
+    ensureSites(line);const p=parseInput(line,sel);{const iso=line.match(/(20\d{2})-(\d{2})-(\d{2})/);if(iso)p.date=iso[0];}
     let t=(p.title||line).replace(/^\s*[\(\[]?\d{1,2}[\)\]\.]\s+/,'').replace(/\(\s*[일월화수목금토]\s*\)/g,'')
       .replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').replace(/[:：\s]+$/,'').trim();
     let note='';
@@ -10182,18 +10190,37 @@ function buildCaps(data,allowUndated){
       const mineC=mine.map(r=>({on:true,raw:r.t,date:base.p.date,endDate:null,time:null,endTime:null,pri:false,
         note:'담당 · '+base.r.t.replace(/\s+/g,' '),cat:addCats()[0]||store.cats[0].id,
         title:r.t.replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').trim()}));
+      capEnrich(rows,mineC);
       capCands=[...mineC,...keep.filter(c=>!mine.some(m=>m.t===c.raw))];capSkipped=skipped;renderCaps();return;}}
+  capEnrich(rows,out);
   capCands=out;capSkipped=skipped;renderCaps();
+}
+
+/* 안내문 속 '시간 : 오전 9시 / 8층 대회의실', '회계팀 서동현 차장입니다' 같은 줄에서 시간·장소·작성자를 찾아 일정에 채움 */
+function capEnrich(rows,list){
+  let tm=null,place='',who='';
+  rows.forEach(r=>{const t=r.t;
+    let m=t.match(/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:시간|시각|일시)\s*[:：]\s*(.+)$/);
+    if(m){const body=m[1],h=body.match(/(오전|오후)?\s*(\d{1,2})\s*시(?:\s*(\d{1,2})\s*분)?/)||null,c=body.match(/(\d{1,2})\s*:\s*(\d{2})/);
+      if(!tm){if(c)tm=pad(+c[1])+':'+c[2];else if(h){let hh=+h[2];if(h[1]==='오후'&&hh<12)hh+=12;if(h[1]==='오전'&&hh===12)hh=0;tm=pad(hh)+':'+pad(+(h[3]||0));}}
+      const pm=body.split(/\s*[\/,]\s*/).slice(1).join(' ').trim();if(pm&&!place)place=pm;}
+    m=t.match(/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:장소|위치|회의실)\s*[:：]\s*(.+)$/);if(m&&!place)place=m[1].trim();
+    m=t.match(/([가-힣A-Za-z]{2,8}(?:팀|부|실|본부|센터|부서))\s+([가-힣]{2,4})\s*(사원|대리|과장|차장|부장|팀장|이사|상무|전무|실장|본부장|책임|선임|주임)/);
+    if(m&&!who)who=m[1]+' '+m[2]+' '+m[3];});
+  const extra=[who?'작성 · '+who:'',place?'장소 · '+place:''].filter(Boolean).join(' / ');
+  list.forEach(c=>{
+    if(tm&&!c.time)c.time=tm;
+    if(extra)c.note=(c.note?c.note+' / ':'')+extra;
+    c.title=String(c.title||'').replace(/\s*관련\s*(?:하여|해|해서)?\s*(?:아래와\s*같이|다음과\s*같이)?\s*(?:안내|공지|알려)\s*(?:해\s*)?(?:드립니다|드려요|합니다|드리겠습니다)\.?$/,'').trim()||c.title;});
 }
 function renderCaps(){
   const box=$('capList');
   $('capCard').style.display=capCands.length||capLast?'none':'';
   if(!capCands.length){
     box.innerHTML='<div class="caphead2" style="justify-content:center;padding:14px 0"><button id="capAgain">다시 캡처</button></div>';
-      +'<div class="caphead2"><button id="capAgain">다시 캡처</button>'+(capSkipped?'<button id="capUndated" class="alt">날짜 없는 줄 '+capSkipped+'개 보기</button>':'')+(capShown?'<button id="capCalBtn" class="alt">달력 사진으로 입력</button><button id="capTxtBtn" class="alt">글자 복사·붙여넣기</button>':'')+'</div></div>';
     $('capBar').style.display='none';return;}
   const opts=c=>store.cats.map(x=>`<option value="${x.id}"${x.id===c?' selected':''}>${esc(x.name)}</option>`).join('');
-  box.innerHTML='<div class="caphead"><b>일정 '+capCands.length+'건을 찾았어요</b><span>'+(capShown?'<button id="capTxtBtn">글자 붙여넣기</button> <button id="capCalBtn">달력 사진으로 입력</button> ':'')+'<button id="capAgain">다시 캡처</button></span></div>'+capCands.map((c,i)=>`<div class="capcard${c.on?' on':''}" data-i="${i}">
+  box.innerHTML='<div class="caphead"><b>일정 '+capCands.length+'건을 찾았어요</b></div>'+capCands.map((c,i)=>`<div class="capcard${c.on?' on':''}" data-i="${i}">
     <input type="checkbox" class="cc" data-f="on"${c.on?' checked':''}>
     <div class="cb">
       <input type="text" data-f="title" value="${esc(c.title)}">
@@ -10230,6 +10257,7 @@ $('capList').addEventListener('change',e=>{
   const card=e.target.closest('[data-i]');if(!card)return;
   const c=capCands[+card.dataset.i],f=e.target.dataset.f;if(!c||!f)return;
   if(f==='on'||f==='pri')c[f]=e.target.checked;else c[f]=e.target.value;});
+$('capAgain2').onclick=()=>capReset();
 $('capAll').onclick=()=>{const all=capCands.every(c=>c.on);
   capCands.forEach(c=>c.on=!all);renderCaps();};
 $('capSave').onclick=()=>{
@@ -10240,11 +10268,23 @@ $('capSave').onclick=()=>{
       title:c.title||c.raw,pri:!!c.pri,cats:(c.cats&&c.cats.length>1&&c.cats[0]===c.cat?c.cats.slice():[c.cat]),cat:c.cat,
       note:c.note||'',done:false,doneAt:null,mt:NOW()});});
   save();
-  const first=pick[0].date;
+  const first=pick[0].date,newIds=store.items.slice(-pick.length).filter(i=>i.time).map(i=>i.id);
+  setTimeout(()=>capAskRem(newIds),250);
   $('capSheet').classList.remove('open');
   capReset();
   goto(first);renderBanner();
 };
+
+/* 캡처로 등록한 뒤: 시간이 있는 일정에 알림을 등록할지 물음 */
+let capRemIds=[],capRemMin=30;
+function capAskRem(ids){
+  capRemIds=(ids||[]).filter(id=>store.items.some(i=>i.id===id));if(!capRemIds.length)return;capRemMin=30;capRemPaint();$('remDlg').classList.add('on');}
+function capRemPaint(){
+  const its=capRemIds.map(id=>store.items.find(i=>i.id===id)).filter(Boolean);
+  $('remDlg').innerHTML=`<div class="xd-card rmcard" data-caprem="1"><div class="rmh"><b>알림 등록할까요?</b><span>${its.length}건 · 시간이 있는 일정</span></div>
+    ${its.slice(0,4).map(i=>`<div class="rmpv"><b>${esc(i.date.slice(5).replace('-','/'))} ${esc(i.time)} ${esc(i.title)}</b></div>`).join('')}${its.length>4?`<div class="rmno">외 ${its.length-4}건</div>`:''}
+    <div class="rml">알림 시간</div><div class="rmseg">${[[5,'5분 전'],[10,'10분 전'],[30,'30분 전'],[60,'1시간 전']].map(([v,l])=>`<button data-crk="${v}" class="${capRemMin===v?'on':''}">${l}</button>`).join('')}</div>
+    <div class="rmact"><button data-crm="x">안 함</button><button data-crm="ok" class="go">알림 등록</button></div></div>`;}
 let capPhoto=false;
 async function capRun(file){
   if(capBusy||!file||!/^image\//.test(file.type||''))return;
