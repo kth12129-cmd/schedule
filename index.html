@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v263">
+<meta name="app-ver" content="v264">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6400,7 +6400,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='초대받은 사람이 등록된 메일로 가입하면 자동으로 해당 그룹 구성원으로 연결돼요. 메일 보내기 창의 설명 글을 짧게 줄여 줄바꿈이 어색하지 않게 했어요.';
+const RELNOTE='캡처에서 "11월 27일(금)까지 NAS 업로드"처럼 날짜 뒤 글만 남던 제목을 "요청자료" 내용과 합쳐 "개발 및 건설 3개월 자금 계획 NAS 업로드"로 만들고, IP 주소(10.62.15.32)를 날짜로 읽지 않아요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9367,7 +9367,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v263';
+const APPVER=/*ver*/'v264';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10130,7 +10130,7 @@ function prepOCR(file,cb,photo){
   r.onerror=()=>alert('파일을 읽지 못했습니다.');
   r.readAsDataURL(file);
 }
-const DT2=/(\d{4}\s*[-.\/]\s*\d{1,2}\s*[-.\/]\s*\d{1,2})|(\d{1,2}\s*월\s*\d{1,2}\s*일?)|(\d{1,2}\s*\/\s*\d{1,2})|(\b\d{1,2}\.\d{1,2}\b)|(\d{1,2}\s*:\s*\d{2})|((오전|오후)\s*\d{1,2}\s*시)|(\d{1,2}\s*시\s*(\d{1,2}\s*분)?)|(오늘|내일|모레|글피)|([일월화수목금토]요일)/;
+const DT2=/(\d{4}\s*[-.\/]\s*\d{1,2}\s*[-.\/]\s*\d{1,2})|(\d{1,2}\s*월\s*\d{1,2}\s*일?)|(\d{1,2}\s*\/\s*\d{1,2})|((?<![\d.])\d{1,2}\.\d{1,2}(?![\d.]))|(\d{1,2}\s*:\s*\d{2})|((오전|오후)\s*\d{1,2}\s*시)|(\d{1,2}\s*시\s*(\d{1,2}\s*분)?)|(오늘|내일|모레|글피)|([일월화수목금토]요일)/;
 let capLast=null,capSkipped=0,capMode='',capRaw='';
 function capAgainGo(){capReset();const b=capMode&&$({grab:'capGrab',region:'capRegion',drop:'capDrop'}[capMode]);if(b)b.click();}
 
@@ -10176,9 +10176,10 @@ function buildCaps(data,allowUndated){
   /* 문서에 '일정/기한 :' 줄이 있으면 그 줄만 일정으로 — 본문 문장 속 날짜(예: 11월~12월 자료)는 일정이 아님 */
   const hasLab=rows.some(r=>DLAB_RE.test(r.t)&&DT2.test(r.t));
   /* '2. 제출 일정' 같은 제목 아래 줄들(- 11/26(목) 限 …)만 일정으로 */
+  const DT3=/(\d{4}\s*[-.\/]\s*\d{1,2}\s*[-.\/]\s*\d{1,2})|(\d{1,2}\s*월\s*\d{1,2}\s*일?)|(\d{1,2}\s*\/\s*\d{1,2})/;
   const secIdx=new Set();
-  if(!hasLab){const HD=/^\s*\d{1,2}\s*[.)]\s*(?:제출\s*|회신\s*)?(?:일정|기한|마감)\s*$/;
-    rows.forEach((r,i)=>{if(!HD.test(r.t))return;for(let j=i+1;j<rows.length&&!/^\s*\d{1,2}\s*[.)]\s*\S/.test(rows[j].t);j++)if(DT2.test(rows[j].t))secIdx.add(j);});}
+  if(!hasLab){const HD=/^\s*\d{1,2}\s*[.)]\s*(?:제출\s*|회신\s*|접수\s*)?(?:일정|기[한안항힌]|마감|기간)\s*$/;
+    rows.forEach((r,i)=>{if(!HD.test(r.t))return;for(let j=i+1;j<rows.length&&!/^\s*\d{1,2}\s*[.)]\s*\S/.test(rows[j].t);j++)if(DT3.test(rows[j].t)&&!/\d+\.\d+\.\d+\.\d+/.test(rows[j].t))secIdx.add(j);});}
   const hasSec=secIdx.size>0;
   rows.slice(0,100).forEach((r,i)=>{
     const line=r.t;
@@ -10198,8 +10199,15 @@ function buildCaps(data,allowUndated){
       let sj=subjBefore(i);
       if(!sj){for(let j=i-1;j>=0;j--){if(!DT2.test(rows[j].t)&&rows[j].t.length>=4){sj=rows[j].t.replace(/^\s*\d{1,2}\s*[.)]\s*/,'').replace(/^[^:：]{1,6}[:：]\s*/,'');break;}}}
       if(sj&&sj.length>=2){note=line.replace(/^\s*(?:\d{1,2}\s*[.)]\s*)?[^:：]{1,6}[:：]\s*/,'').trim();t=sj;}}
+    if(!(hasSec&&secIdx.has(i))&&/^(?:까지|부터)(?:\s|$)/.test(t)){
+      t=t.replace(/^(?:까지|부터)\s*/,'').trim();
+      const reqJ=rows.findIndex(x=>/^\s*\d{1,2}\s*[.)]\s*요청\s*(?:자료|사항|내용)/.test(x.t)),sb=reqJ>=0&&rows[reqJ+1]?rows[reqJ+1].t.replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').trim():'';
+      if(sb&&sb.length>=3)t=sb+' '+t;}
     if(hasSec&&secIdx.has(i)){
       const rest=t.replace(/[\d\/\.\-~：:()\s]+/g,'').replace(/[월화수목금토일옥년限]/g,'').replace(/[A-Za-z&]{1,4}$/,'').trim();
+      t=t.replace(/^(?:까지|부터|까지는|한|限)\s*/,'').trim();
+      const reqI=rows.findIndex(x=>/^\s*\d{1,2}\s*[.)]\s*요청\s*(?:자료|사항|내용)/.test(x.t)),subj=reqI>=0&&rows[reqI+1]?rows[reqI+1].t.replace(/^[\-•·▶▪●○◆◇※:\s]+/,'').trim():'';
+      if(subj&&subj.length>=3&&(rest.match(/[가-힣]/g)||[]).length<12&&!t.includes(subj))t=subj+' '+t;
       if((rest.match(/[가-힣]/g)||[]).length<3){const rq=rows.find(x=>/(업데이트|작성|제출|회신).{0,30}요청\s*드리/.test(x.t));
         const base=rq?rq.t.replace(/^.*?첨부의?\s*/,'').replace(/\s*(?:에\s*대해|에\s*대하여)?\s*[^가-힣]*(?:요청\s*드리).*$/,'').trim():'';
         const up=rows.find(x=>/업데이트|현황|보고|작성/.test(x.t)&&!DT2.test(x.t)),upw=up?(up.t.match(/[가-힣]{2,8}\s*(?:현황|업데이트|보고|작성)/)||[''])[0]:'';
