@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v260">
+<meta name="app-ver" content="v261">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -762,6 +762,7 @@ textarea.memo{flex:1;min-height:0;width:100%;resize:none;background:var(--field)
 .calp{margin-top:12px}
 .calp .ph{width:100%;max-height:30vh;object-fit:contain;background:var(--field);border:1px solid var(--line);border-radius:10px;display:block;cursor:zoom-in}
 .calp .ph.big{max-height:none;cursor:zoom-out}
+.ctr{display:flex;gap:6px;align-items:center}.ctr input{flex:1;min-width:0}.ccdel{flex:none;width:32px;height:32px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink-2);font-size:18px;line-height:1}.ccdel:hover{color:#c0392b;border-color:#c0392b}
 .capraw{margin:8px 2px 0;font-size:12px;color:var(--ink-2)}.capraw summary{cursor:pointer;padding:4px 0}.capraw pre{white-space:pre-wrap;word-break:break-all;background:var(--field);border-radius:8px;padding:8px 10px;max-height:30vh;overflow:auto;margin:4px 0 0;font:12px/1.5 inherit}
 .capbar.c3{grid-template-columns:1fr 1fr 1fr}
 .calp .capbar{position:static;margin-top:12px;padding:0;background:none}
@@ -6399,7 +6400,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='캡처한 글에 내 이름·내 현장 담당 줄이 있으면 내 일정만 올리고, "기획팀 제출 예정" 같은 다른 사람 일정은 뺐어요.';
+const RELNOTE='캡처 결과의 각 일정 오른쪽에 × 버튼을 넣었어요. 누르면 그 일정이 목록에서 사라지고, 등록 건수도 바로 바뀌어요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9365,7 +9366,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v260';
+const APPVER=/*ver*/'v261';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10265,7 +10266,7 @@ function renderCaps(){
   box.innerHTML='<div class="caphead"><b>일정 '+capCands.length+'건을 찾았어요</b></div>'+capCands.map((c,i)=>`<div class="capcard${c.on?' on':''}" data-i="${i}">
     <input type="checkbox" class="cc" data-f="on"${c.on?' checked':''}>
     <div class="cb">
-      <input type="text" data-f="title" value="${esc(c.title)}">
+      <div class="ctr"><input type="text" data-f="title" value="${esc(c.title)}"><button type="button" class="ccdel" data-del="1" aria-label="이 일정 목록에서 빼기" title="목록에서 빼기">×</button></div>
       <div class="cr">
         <input type="date" data-f="date" value="${c.date}">
         <input type="time" data-f="time" value="${c.time||''}">
@@ -10282,6 +10283,8 @@ function renderCaps(){
 function capReset(){calSt=null;const cp=$('calPhoto');if(cp){cp.style.display='none';cp.innerHTML='';}try{snipStop();}catch(_){}capCands=[];capLast=null;capSkipped=0;$('capList').innerHTML='';$('capBar').style.display='none';
   $('capCard').style.display='';capSay('');}
 $('capList').addEventListener('click',e=>{
+  const dl=e.target.closest&&e.target.closest('[data-del]');
+  if(dl){const i=+dl.closest('[data-i]').dataset.i;capCands.splice(i,1);renderCaps();return;}
   if(e.target.id==='capAgain')capAgainGo();
   else if(e.target.id==='capUndated')buildCaps(capLast,true);
   else if(e.target.id==='capCalBtn')calOpen(capShown,capLast);
