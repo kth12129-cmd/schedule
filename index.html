@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v265">
+<meta name="app-ver" content="v266">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6374,7 +6374,6 @@ function mailPick(to,subj,body,people){
   const P=(people&&people.length?people:to.split(/[;,]/).filter(Boolean).map(x=>({name:x,email:x})));
   const done=new Set(),sep=/Windows/i.test(navigator.userAgent)?';':',';
   const paint=()=>{d.innerHTML=`<div class="xd-card mdcard"><div class="rmh"><b>메일 보내기</b><span>받는 사람 ${P.length}명</span></div>
-    <button class="mdo" data-md="open"><b>한 통으로 열기 (${P.length}명)</b><span>숨은 참조로 한 번에 열려요</span></button>
     <div class="mdl">${P.map((p,i)=>`<div class="mdr"><span>${esc(p.name||'')}<i>${esc(p.email)}</i></span><button data-mdi="${i}" class="${done.has(i)?'on':''}">${done.has(i)?'열었음 ✓':'따로 열기'}</button></div>`).join('')}</div>
     <button class="mdo" data-md="copy"><b>내용 복사 (회사 메일용)</b><span>받는 사람·제목·본문을 복사해요</span></button>
     <div class="rmact" style="grid-template-columns:1fr"><button data-md="x">닫기</button></div></div>`;};
@@ -6400,7 +6399,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='캡처가 AI(Claude)로 일정을 정리하도록 바꿨어요. 사진에서 읽은 글자를 보내 내 일정만 뽑고, 비밀번호 줄은 제외해요. AI가 안 되면 기존 방식으로 읽어요.';
+const RELNOTE='메일 보내기 창에서 "한 통으로 열기"를 뺐어요. 사람별 "따로 열기"와 "내용 복사"만 남아요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9367,7 +9366,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v265';
+const APPVER=/*ver*/'v266';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
