@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v264">
+<meta name="app-ver" content="v265">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6400,7 +6400,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='캡처에서 "11월 27일(금)까지 NAS 업로드"처럼 날짜 뒤 글만 남던 제목을 "요청자료" 내용과 합쳐 "개발 및 건설 3개월 자금 계획 NAS 업로드"로 만들고, IP 주소(10.62.15.32)를 날짜로 읽지 않아요.';
+const RELNOTE='캡처가 AI(Claude)로 일정을 정리하도록 바꿨어요. 사진에서 읽은 글자를 보내 내 일정만 뽑고, 비밀번호 줄은 제외해요. AI가 안 되면 기존 방식으로 읽어요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9367,7 +9367,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v264';
+const APPVER=/*ver*/'v265';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -10159,7 +10159,7 @@ function ocrFix(line,dict){
   return t.replace(/\s+/g,' ').trim();}
 const SUBJ_RE=/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:요청\s*사항|요청|제목|내용|건명|안건|업무|주제|목적|건)\s*[:：]\s*(.+)$/;
 const DLAB_RE=/^\s*(?:\d{1,2}\s*[.)]\s*)?(?:일정|월정|기한|마감|일시|날짜|기간|납기|제출)\s*[:：]/;
-function buildCaps(data,allowUndated){
+function buildCapsRules(data,allowUndated){
   capLast=data;
   const clean=x=>x.replace(/[|｜\\_~`ㅁ□■]+/g,' ').replace(/\s+/g,' ').trim();
   let rows=[];
@@ -10239,6 +10239,32 @@ function buildCaps(data,allowUndated){
       capCands=mineC;capSkipped=keep.filter(c=>!mine.some(m=>m.t===c.raw)).length;renderCaps();return;}}
   capEnrich(rows,out);
   capCands=out;capSkipped=skipped;renderCaps();
+}
+
+
+/* AI 정리: 읽은 글자를 서버(cap-ai)로 보내 내 일정만 뽑음. 안 되면 아래 규칙 방식으로 */
+let capAIMsg=false;
+async function buildCaps(data,allowUndated){
+  if(allowUndated||backend!=='sb'||!SB||!session){return buildCapsRules(data,allowUndated);}
+  const raw=(data&&data.lines&&data.lines.length)?data.lines.map(l=>l.text).join('\n'):((data&&data.text)||'');
+  const clean=raw.split(/\n/).filter(l=>!/(암호|비밀번호|패스워드|password|pw\s*[:：]|사용자\s*이름|사용자\s*아이디)/i.test(l)).join('\n');
+  if(clean.replace(/\s/g,'').length<12)return buildCapsRules(data,allowUndated);
+  try{capSay('AI로 일정을 정리하는 중…');}catch(_){}
+  let res=null;
+  try{
+    const nm=(()=>{try{const u=session&&session.user.id,q=orgD&&orgD.people.find(x=>x.user_id===u);return (store.settings&&store.settings.name)||(q&&q.name)||'';}catch(_){return '';}})();
+    const call=SB.functions.invoke('cap-ai',{body:{text:clean,today:sel||ymd(new Date()),name:nm,sites:'가마지천, 산포처리구역, 중곡-1 소구역, 일산수질복원센터, 주촌선천2초등학교, 운정3고, 용인 정수장'}});
+    res=await Promise.race([call,new Promise(r=>setTimeout(()=>r({data:null,error:'timeout'}),14000))]);
+  }catch(_){res=null;}
+  try{capSay('');}catch(_){}
+  const d=res&&res.data;
+  if(d&&d.ok&&Array.isArray(d.items)){
+    capLast=data;capRaw=raw;capSkipped=0;
+    capCands=d.items.map(x=>({on:true,raw:x.title,date:x.date,endDate:null,time:x.time||null,endTime:null,pri:false,note:x.note||'',cat:addCats()[0]||store.cats[0].id,cats:[],title:x.title}));
+    renderCaps();return;}
+  if(d&&d.error==='no_key'&&!capAIMsg){capAIMsg=true;toastMsg('AI 연결 전이라 기본 방식으로 읽었어요');}
+  else if(d&&d.error==='limit')toastMsg('오늘 AI 사용 한도를 넘어 기본 방식으로 읽었어요');
+  return buildCapsRules(data,allowUndated);
 }
 
 /* 안내문 속 '시간 : 오전 9시 / 8층 대회의실', '회계팀 서동현 차장입니다' 같은 줄에서 시간·장소·작성자를 찾아 일정에 채움 */
@@ -10361,10 +10387,10 @@ async function capRun(file){
       capShown=shown;
       if(calGuess(rd).grid){await worker.terminate();capSay('');calOpen(shown,rd);}
       else{
-        buildCaps(rd,false);
+        await buildCaps(rd,false);
         if(!capCands.length){
           capSay('다른 방식으로 한 번 더 읽는 중…');
-          try{await worker.setParameters({tessedit_pageseg_mode:'4'});res=await worker.recognize(forOcr);rd=res&&res.data?res.data:rd;buildCaps(rd,false);}catch(_){}
+          try{await worker.setParameters({tessedit_pageseg_mode:'4'});res=await worker.recognize(forOcr);rd=res&&res.data?res.data:rd;await buildCaps(rd,false);}catch(_){}
         }
         await worker.terminate();capSay('');}
     }catch(err){capSay('');alert('글자를 읽지 못했습니다.\n'+(err&&err.message||''));}
