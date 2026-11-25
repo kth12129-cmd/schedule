@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v266">
+<meta name="app-ver" content="v267">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6399,7 +6399,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='메일 보내기 창에서 "한 통으로 열기"를 뺐어요. 사람별 "따로 열기"와 "내용 복사"만 남아요.';
+const RELNOTE='그룹 구성원이 두 번씩 보이던 문제를 고쳤어요. 그룹 목록을 동시에 두 번 불러올 때 같은 사람이 겹쳐 쌓이던 것이 원인이었어요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -9226,13 +9226,17 @@ async function tsLoadMemos(){tsTrack();
   if(backend!=='sb'||!SB||!tsTid()){TS2.memos=[];return;}
   try{const r=await SB.from('team_memos').select('*').eq('team_id',tsTid()).eq('day',TS2.day).eq('hidden',false).order('created_at');TS2.memos=r.data||[];}catch(e){TS2.memos=[];}
   const box=$('tsMemo');if(box&&tsTid()){const v={};document.querySelectorAll('.tsqi').forEach(i=>{if(i.value)v[i.dataset.cat]=i.value;});const foc=(document.activeElement||{}).dataset?document.activeElement.dataset.cat:null;box.innerHTML=tsMemoHtml();document.querySelectorAll('.tsqi').forEach(i=>{if(v[i.dataset.cat])i.value=v[i.dataset.cat];if(foc&&i.dataset.cat===foc)i.focus();});}}
+window._tlg=0;
 async function tsLoadGroups(){
   if(backend!=='sb'||!SB||!session)return;
   try{if(!window._gsynced){window._gsynced=1;try{await SB.rpc('group_sync_me');}catch(_){}}
-    const g=await SB.from('groups').select('*').order('created_at');TS2.groups=g.data||[];
-    const m=await SB.from('group_members').select('*').eq('active',true);TS2.gmem={};
-    (m.data||[]).forEach(x=>(TS2.gmem[x.group_id]=TS2.gmem[x.group_id]||[]).push(x));
-    TS2.gpp={};TS2.gpl={};try{const gp=await SB.rpc('group_people_list');(gp.data||[]).forEach(x=>(TS2.gpl[x.group_id]=TS2.gpl[x.group_id]||[]).push(x));}catch(_){}
+    const my=++window._tlg;
+    const g=await SB.from('groups').select('*').order('created_at');
+    const m=await SB.from('group_members').select('*').eq('active',true);
+    const gmem={},gpl={};(m.data||[]).forEach(x=>(gmem[x.group_id]=gmem[x.group_id]||[]).push(x));
+    try{const gp=await SB.rpc('group_people_list');(gp.data||[]).forEach(x=>(gpl[x.group_id]=gpl[x.group_id]||[]).push(x));}catch(_){}
+    if(my!==window._tlg)return; /* 더 새로운 불러오기가 있으면 이 결과는 버림(중복 방지) */
+    TS2.groups=g.data||[];TS2.gmem=gmem;TS2.gpp={};TS2.gpl=gpl;
     if(tsIsGrp()&&!TS2.groups.some(x=>x.id===TS2.gid))TS2.gid='team';
     await tsLoadGItems();}catch(e){}}
 async function tsLoadGItems(){
@@ -9366,7 +9370,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v266';
+const APPVER=/*ver*/'v267';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
