@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v269">
+<meta name="app-ver" content="v270">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6448,7 +6448,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='분류 설정이 폴더 구조로 바뀌었어요. 공사가 끝난 현장은 분류 옆 종료 버튼을 누르면 종료 폴더로 가고, 종료 폴더의 일정은 색이 회색 한 가지로 통일돼요(색은 폴더에서 바꿀 수 있어요). 분류 선택 목록에서는 종료 폴더가 접혀 있고, 원하면 달력에서 숨길 수도 있어요. 폴더는 직접 추가할 수 있어요.';
+const RELNOTE='현황 탭에서 차주 휴가·외근 카드가 보이지 않던 문제를 고쳤어요. 앞선 업데이트에서 현황 화면을 바꾸면서 빠졌던 부분이에요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -8121,7 +8121,7 @@ function vacCard(){
 }
 const _rs123=renderStatus;
 renderStatus=function(){_rs123.apply(this,arguments);
-  try{const b=$('stBody'),t=b.querySelector('.st-tiles');if(t)t.insertAdjacentHTML('afterend',vacCard());
+  try{const b=$('stBody'),t=b.querySelector('.st-sum');if(t)t.insertAdjacentHTML('afterend',vacCard());
     if(backend==='sb'&&!team&&!window._vacTry){window._vacTry=1;loadTeam().then(()=>{try{renderStatus();renderMonth();}catch(_){}}).catch(()=>{});}}catch(e){}
 };
 function vacOn(k){
@@ -9438,7 +9438,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v269';
+const APPVER=/*ver*/'v270';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
