@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v268">
+<meta name="app-ver" content="v269">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -180,6 +180,24 @@ body[data-zoom="memo"] textarea.memo{font-size:16px;line-height:1.7;padding:16px
  padding:6px 9px;font-size:14px;line-height:1.35}
 .edit-in:focus{outline:2px solid var(--indigo);outline-offset:-1px}
 .edit-tip{font-size:11px;color:var(--ink-2);margin-top:5px}
+.cfd{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--field);border-bottom:1px solid var(--hair);border-top:1px solid var(--hair)}
+.cfd .cfcar{flex:none;width:26px;height:30px;font-size:14px;color:var(--ink-2)}
+.cfd .cfname{flex:1;min-width:0;background:transparent;border:0;border-bottom:1px dashed var(--line);padding:5px 2px;font-size:15px;font-weight:800;color:var(--ink)}
+.cfd .cfn{flex:none;font-size:12px;color:var(--ink-3);font-weight:700}
+.cfd .cfcol{width:34px;height:30px;border:1px solid var(--line);border-radius:8px;padding:2px;background:var(--surface)}
+.cfd .cfend{width:auto;padding:0 9px;font-size:12px;font-weight:800;border:1px solid var(--line);color:var(--ink-2)}.cfd .cfend.on{background:#9aa3b2;color:#fff;border-color:#9aa3b2}
+.cfd.end{background:color-mix(in srgb,#9aa3b2 14%,var(--surface))}
+.cfempty{padding:10px 18px;font-size:13px;color:var(--ink-3);border-bottom:1px solid var(--hair)}
+.crow .cbtn2.cmv{width:auto;min-width:40px;padding:0 8px;font-size:12px;font-weight:800;border:1px solid var(--line);color:var(--ink-2);white-space:nowrap}.crow .cbtn2.cmv.back{color:var(--indigo)}
+.cfd .cbtn2.cfend{white-space:nowrap}
+.crow .cfsel{flex:none;max-width:88px;background:var(--field);border:0;border-radius:8px;padding:6px 4px;font-size:12px;color:var(--ink)}
+.crow.endc{opacity:.78}.crow.endc input[type=text]{color:var(--ink-2)}
+.cfhide{display:flex;align-items:center;gap:8px;padding:12px 14px;font-size:13.5px;color:var(--ink-2)}
+@media (max-width:660px){.crow{gap:5px;padding:8px 8px}.crow input[type=color]{width:28px}.crow .cbtn2{width:26px}.crow .cbtn2.cmv{min-width:36px;padding:0 5px}.cfd{padding:8px 10px;gap:6px}}
+.catmenu .fhd{display:flex;align-items:center;gap:8px;padding:8px 12px 4px;font-size:12px;font-weight:800;color:var(--ink-3);letter-spacing:.03em}
+.catmenu .fhd.end{cursor:pointer;color:var(--ink-2);border-top:1px solid var(--hair);margin-top:4px}
+.catmenu .fhd b{white-space:nowrap}.catmenu .fhd em{font-style:normal;font-weight:600}.catmenu .fhd .fsel{margin-left:auto;font-size:12px;font-weight:700;color:var(--indigo);padding:2px 8px;min-height:0}
+.catmenu .clist button.endc{opacity:.8}
 .crow{display:flex;align-items:center;gap:9px;padding:9px 14px;border-bottom:1px solid var(--hair)}
 .crow input[type=text]{flex:1;min-width:0;background:var(--field);border:1px solid var(--fieldline);border-radius:9px;padding:8px 11px;font-size:15px}
 .crow input[type=color]{width:38px;height:34px;border:1px solid var(--line);border-radius:9px;
@@ -3376,9 +3394,9 @@ html.noauth:has(#authSheet.open) .logintop{display:none}
   <div class="sheet-bar"><h2>분류 설정</h2><button data-close="catSheet">완료</button></div>
   <div class="sheet-body"><div class="card" style="margin-top:12px">
     <div class="hint-txt">분류마다 <b>공유 / 비공개</b>를 정하면, 그 분류의 일정은 따로 누르지 않아도 자동으로 따릅니다. 분류를 추가하면 색이 자동으로 배정됩니다. 바꾸고 싶을 때만 색 상자를 누르세요.
-      ✎ 를 누르거나 글자를 클릭하면 이름을, ↑ 로 순서를 바꾸고, × 로 삭제합니다.</div>
+      <b>공사가 끝난 현장은 [종료]</b>를 누르면 종료 폴더로 가서 색이 한 가지로 통일되고, 분류 목록에서는 접혀 보입니다. 글자를 눌러 이름을, ↑ 로 순서를, × 로 삭제합니다.</div>
     <div id="catList"></div>
-    <div class="crow"><button id="addCat" style="color:var(--indigo);font-size:14.5px;font-weight:600">분류 추가</button></div>
+    <div class="crow"><button id="addCat" style="color:var(--indigo);font-size:14.5px;font-weight:600">분류 추가</button><button id="addFolder" style="color:var(--indigo);font-size:14.5px;font-weight:600;margin-left:auto">폴더 추가</button></div>
   </div></div>
 </div>
 <div class="sheet" id="shSheet">
@@ -5847,16 +5865,25 @@ let curCats=(localStorage.getItem('cur-cats')||localStorage.getItem('cur-cat')||
 if(!curCats.length)curCats=['__all'];
 try{if(!localStorage.getItem('cat-all-v1')){curCats=['__all'];localStorage.setItem('cat-all-v1','1');localStorage.setItem('cur-cats','__all');}}catch(e){}
 const allMode=()=>curCats.includes('__all');
-const addCats=()=>allMode()?[store.cats[0].id]:curCats.slice();
+const addCats=()=>allMode()?[(store.cats.find(c=>!isEnded(c))||store.cats[0]).id]:curCats.slice();
 let lgTeam=false;
 let showMine=(()=>{try{return localStorage.getItem('showMine')!=='0';}catch(e){return true;}})();
 let hidePri=(()=>{try{return localStorage.getItem('hidePri')==='1';}catch(e){return false;}})(),showHid=false;
-const inView=i=>(showHid||!i.hid)&&!(hidePri&&i.pri)&&showMine&&(allMode()||catsOf(i).some(c=>curCats.includes(c.id)))&&(!lgTeam||isShared(i));
+const inView=i=>(showHid||!i.hid)&&!(hidePri&&i.pri)&&!(store.settings&&store.settings.endHide&&catsOf(i).every(isEnded))&&showMine&&(allMode()||catsOf(i).some(c=>curCats.includes(c.id)))&&(!lgTeam||isShared(i));
 const saveCurCats=()=>localStorage.setItem('cur-cats',curCats.join(','));
 const catOf=id=>store.cats.find(c=>c.id===id)||store.cats[store.cats.length-1];
 const catsOf=i=>{const a=(Array.isArray(i.cats)&&i.cats.length?i.cats:[i.cat]).map(catOf);
   const seen=new Set();return a.filter(c=>c&&!seen.has(c.id)&&seen.add(c.id));};
-const catColor=i=>catsOf(i)[0].color;
+/* 분류 폴더 · 종료 현장은 색을 한 가지로 통일 */
+const DEF_FOLDERS=[{id:'f-act',name:'진행 중'},{id:'f-end',name:'종료 현장',ended:true}];
+const foldersOf=()=>{const f=store.settings&&store.settings.folders;return Array.isArray(f)&&f.length?f:DEF_FOLDERS;};
+const folderOf=c=>{const fs=foldersOf();return fs.find(f=>f.id===c.folder)||fs.find(f=>!f.ended)||fs[0];};
+const isEnded=c=>!!(c&&folderOf(c).ended);
+const endColor=()=>(store.settings&&store.settings.endColor)||'#9aa3b2';
+const cCol=c=>isEnded(c)?endColor():c.color;
+function ensureFolders(){store.settings=store.settings||{};if(!Array.isArray(store.settings.folders)||!store.settings.folders.length)store.settings.folders=JSON.parse(JSON.stringify(DEF_FOLDERS));return store.settings.folders;}
+const folderSave=()=>{store.settingsMt=NOW();save();};
+const catColor=i=>cCol(catsOf(i)[0]);
 store.items.forEach(i=>{if(i.pri===undefined)i.pri=false;if(i.note===undefined)i.note='';
   if(!i.cat)i.cat=(store.cats&&store.cats[0]?store.cats[0].id:'c3');
   if(!Array.isArray(i.cats))i.cats=[i.cat||(store.cats&&store.cats[0]?store.cats[0].id:'c3')];
@@ -6025,7 +6052,7 @@ function parseInput(raw,baseYmd){
   /* 제목에 적힌 분류 이름을 모두 찾아 글에 나온 순서대로 분류 — 긴 이름 우선, 겹치는 짧은 이름은 제외 */
   let cats=cat?[cat]:[];
   {const flat=s.replace(/\s/g,'');const ms=[];
-    store.cats.forEach(c=>{if(cats.includes(c.id))return;catKeys(c).forEach(k=>{
+    store.cats.forEach(c=>{if(cats.includes(c.id)||isEnded(c))return;catKeys(c).forEach(k=>{
       let from=0,i;while((i=flat.indexOf(k,from))>=0){ms.push({c,st:i,en:i+k.length});from=i+1;}});});
     ms.sort((a,b)=>(b.en-b.st)-(a.en-a.st)||a.st-b.st);
     const ok=[];ms.forEach(m=>{if(ok.some(o=>o.c===m.c))return;if(ok.some(o=>m.st<o.en&&o.st<m.en))return;ok.push(m);});
@@ -6421,7 +6448,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='오른쪽 탭 이름을 3일에서 현황으로 바꿨어요. 주 기준·1개월 기준을 고르면 한 일·못 한 일·미룬 일 개수가 보이고, 버튼을 누르면 달력에서 해당 일정이 깜빡여요(칸이 좁으면 날짜가 깜빡여요). 다시 누르면 꺼져요. 사정이 있어 미룬 일은 일정 줄의 미룸 버튼으로 표시해요.';
+const RELNOTE='분류 설정이 폴더 구조로 바뀌었어요. 공사가 끝난 현장은 분류 옆 종료 버튼을 누르면 종료 폴더로 가고, 종료 폴더의 일정은 색이 회색 한 가지로 통일돼요(색은 폴더에서 바꿀 수 있어요). 분류 선택 목록에서는 종료 폴더가 접혀 있고, 원하면 달력에서 숨길 수도 있어요. 폴더는 직접 추가할 수 있어요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -6486,7 +6513,7 @@ function renderDay(){try{memoMaterialize();}catch(_){}setTimeout(()=>{try{pickPa
       <button class="dck${i.done?' on':''}" data-act="done2" data-tip="${i.done?'완료 취소':'완료 표시'}" aria-label="${i.done?'완료 취소':'완료 표시'}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button>
       <div class="body"><div class="meta"><span class="no">${n}</span><span class="mdate">${i.wk&&i.endDate?`<b class="wkl">${wkLabel(i)}</b> ${md(i.date)}~${md(i.endDate)}`:md(i.date)+(i.endDate?'~'+md(i.endDate):'')}</span>
         ${i.time?`<span class="mtime">${i.time}${i.endTime?'~'+i.endTime:''}</span>`:''}${i.done?'<span class="mdone">완료</span>':((i.date<TODAY||i.pm)?`<button class="mpm${i.pm?' on':''}" data-act="pm" data-tip="${i.pm?'미룬 일 해제':'사정이 있어 미룬 일로 표시'}">${i.pm?'미룬 일':'미룸'}</button>`:'')}${i.pri?`<button class="mtag pri rmt" data-act="pri2" data-tip="알림 설정 변경">중요${i.time&&remVal(i)?' · '+(remVal(i)>=60?remVal(i)/60+'시간':remVal(i)+'분')+' 전'+(i.tn?' · 팀':''):''}</button>`:''}
-        ${catsOf(i).map(c=>`<button class="cattag" data-act="cat" data-tip="분류 변경" style="--c:${c.color}">${esc(c.name)}</button>`).join('')}</div>
+        ${catsOf(i).map(c=>`<button class="cattag" data-act="cat" data-tip="분류 변경" style="--c:${cCol(c)}">${esc(c.name)}</button>`).join('')}</div>
         ${editItem===i.id
           ?`<input class="edit-in" data-edit="${i.id}" value="${esc((i.endDate?md(i.date)+'~'+md(i.endDate)+' ':'')+(i.time?i.time+(i.endTime?'~'+i.endTime:'')+' ':'')+i.title)}">
              <div class="edit-tip">시간·날짜도 같이 고칠 수 있습니다. Enter 저장, Esc 취소</div>`
@@ -6810,7 +6837,7 @@ function renderAnCtl(){
     b.classList.toggle('on',b.dataset.sc===anScale&&!anRange));
   $('anLabel').textContent=anLabelText();
   $('catFilter').innerHTML=store.cats.map(c=>
-    `<button class="cfchip${anCats.size===0||anCats.has(c.id)?' on':''}" data-cf="${c.id}" style="--c:${c.color}">
+    `<button class="cfchip${anCats.size===0||anCats.has(c.id)?' on':''}" data-cf="${c.id}" style="--c:${cCol(c)}">
       <i></i>${esc(c.name)}</button>`).join('')
     +`<button class="cfchip${anCats.size?'':' on'}" data-cf="__all" style="--c:var(--ink)">전체</button>`;
 }
@@ -6943,7 +6970,7 @@ function viewChart(its,cs,r){
       if(!tot)return;
       rows+=`<div class="gtl"><i style="--c:${c.color}"></i>${esc(c.name)} <span style="color:var(--ink-3)">${tot}</span></div>`;
       grid[c.id].forEach(v=>{
-        rows+=v?`<div class="gtc hm" style="background:color-mix(in srgb,${c.color} ${Math.round(28+62*v/max.v)}%,transparent)">${v}</div>`
+        rows+=v?`<div class="gtc hm" style="background:color-mix(in srgb,${cCol(c)} ${Math.round(28+62*v/max.v)}%,transparent)">${v}</div>`
                :'<div class="gtc"></div>';});});
     if(!rows)rows='';
     return `<div class="card" style="margin-top:12px"><div class="gt"><div class="gtg"
@@ -8796,7 +8823,7 @@ function renderShare(){
     <div class="shadd"><input id="shEmail" type="email" placeholder="상대방 이메일" autocomplete="off"><button id="shAdd">추가</button></div>
     <div class="shmsg" id="shMsg"></div></div>
   <div class="card"><h3>이 분류는 자동으로 공유</h3>
-    ${store.cats.map(c=>`<label class="shrow"><input type="checkbox" data-shcat="${c.id}" ${c.share?'checked':''}><i style="width:10px;height:10px;border-radius:50%;background:${c.color}"></i><span class="nm">${esc(c.name)}</span></label>`).join('')}
+    ${store.cats.map(c=>`<label class="shrow"><input type="checkbox" data-shcat="${c.id}" ${c.share?'checked':''}><i style="width:10px;height:10px;border-radius:50%;background:${cCol(c)}"></i><span class="nm">${esc(c.name)}</span></label>`).join('')}
     <div class="shmsg">체크한 분류의 일정은 따로 누르지 않아도 공유됩니다. 일정 목록의 👥 버튼으로 일정마다 따로 켜고 끌 수 있습니다.</div></div>
   <div class="card"><h3>나에게 공유한 사람</h3>
     ${inShares.length?inShares.map(r=>`<label class="shrow"><input type="checkbox" data-shview="${r.owner_id}" ${viewOff.has(r.owner_id)?'':'checked'}><span class="nm">${esc(r.owner_name||'이름 없음')}</span><span class="sm">내 달력에 표시</span></label>`).join(''):'<div class="shmsg">아직 나에게 일정을 공유한 사람이 없습니다. 상대방이 내 이메일('+esc(me)+')을 추가하면 여기에 나타납니다.</div>'}</div>
@@ -9020,7 +9047,7 @@ function an2Chart(pats){
     const tot=cnt.map(o=>Object.values(o).reduce((a,b)=>a+b,0)),mx=Math.max(1,...tot.map((t,i)=>t+fut[i]));
     let bars='';
     for(let m=0;m<12;m++){
-      const seg=Object.entries(cnt[m]).map(([id,n])=>{const c=store.cats.find(x=>x.id===id);return `<i style="height:${n/mx*100}%;background:${c?c.color:'var(--ink-3)'}" title="${esc(c?c.name:'')} ${n}건"></i>`;}).join('');
+      const seg=Object.entries(cnt[m]).map(([id,n])=>{const c=store.cats.find(x=>x.id===id);return `<i style="height:${n/mx*100}%;background:${c?cCol(c):'var(--ink-3)'}" title="${esc(c?c.name:'')} ${n}건"></i>`;}).join('');
       bars+=`<div class="bc"><b>${tot[m]+fut[m]||''}</b><div class="bs">${fut[m]?`<i class="fu" style="height:${fut[m]/mx*100}%"></i>`:''}${seg}</div><span>${m+1}월</span></div>`;}
     an2Items().forEach(i=>{if(fromYmd(i.date).getFullYear()!==y)return;const k=AN2.map[i.id];if(!k)return;(grp[k]=grp[k]||{t:an2Name(i.title),n:0,c:catColor(i)}).n++;});
     const sum=tot.reduce((a,b)=>a+b,0),fs=fut.reduce((a,b)=>a+b,0);sumAll+=sum;
@@ -9050,7 +9077,7 @@ function an2DayChart(pats){
   for(let n=0;n<days;n++){
     const k=addDays(r.from,n),d=fromYmd(k),w=d.getDay(),c=cnt(k),by={};
     (real[k]||[]).forEach(i=>{const cc=catsOf(i)[0];const id=cc?cc.id:'-';by[id]=(by[id]||0)+1;});
-    const seg=Object.entries(by).map(([id,v])=>{const cc=store.cats.find(x=>x.id===id);return `<i style="height:${v/mx*100}%;background:${cc?cc.color:'var(--ink-3)'}"></i>`;}).join('');
+    const seg=Object.entries(by).map(([id,v])=>{const cc=store.cats.find(x=>x.id===id);return `<i style="height:${v/mx*100}%;background:${cc?cCol(cc):'var(--ink-3)'}"></i>`;}).join('');
     const gh=(ghost[k]||[]).length;
     bars+=`<div class="bc${k===TODAY?' t':''}"><b>${c&&(days<=21||c>=Math.max(3,Math.ceil(mx*.7)))?c:''}</b><div class="bs">${gh?`<i class="fu" style="height:${gh/mx*100}%"></i>`:''}${seg}</div><span class="${w===0?'su':w===6?'sa':''}">${days<=16||d.getDate()%5===0||d.getDate()===1||k===TODAY?d.getDate():'·'}</span></div>`;}
   /* 원형: 분류별(분류를 고르면 업무별) 건수 */
@@ -9411,7 +9438,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v268';
+const APPVER=/*ver*/'v269';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9714,7 +9741,7 @@ function openSet(){
 function paintCatBtn(){
   if(allMode()){$('catBtn').style.setProperty('--c','#8a8f9e');$('catName').textContent='전체';return;}
   const cs=curCats.map(catOf);
-  $('catBtn').style.setProperty('--c',cs[0].color);
+  $('catBtn').style.setProperty('--c',cCol(cs[0]));
   $('catName').textContent=cs.length>1?`${cs[0].name} 외 ${cs.length-1}`:cs[0].name;}
 let catTarget=null,multiCat=false,catIdx=0;
 function curSel(){
@@ -9722,12 +9749,20 @@ function curSel(){
     return it?catsOf(it).map(c=>c.id):[];}
   return curCats.slice();
 }
-const catNav=()=>catTarget?store.cats.map(c=>c.id):['__all'].concat(store.cats.map(c=>c.id));
+let catFO={};
+function catRows(sel){const fs=foldersOf();const nAct=fs.filter(f=>!f.ended).length;const out=[];
+  fs.forEach(f=>{const cs=store.cats.filter(c=>folderOf(c).id===f.id);
+    if(f.ended){if(!cs.length)return;const open=catFO[f.id]!==undefined?catFO[f.id]:cs.some(c=>sel.includes(c.id));
+      out.push({t:'head',f,n:cs.length,open,ended:true});if(open)cs.forEach(c=>out.push({t:'cat',c}));}
+    else{if(!cs.length&&nAct>1)return;if(nAct>1)out.push({t:'head',f,n:cs.length,open:true});cs.forEach(c=>out.push({t:'cat',c}));}});
+  return out;}
+const catNav=()=>(catTarget?[]:['__all']).concat(catRows(curSel()).filter(r=>r.t==='cat').map(r=>r.c.id));
 function paintCatMenu(){
   const sel2=curSel(),nav=catNav();const _l=$('catMenu').querySelector('.clist'),_st=_l?_l.scrollTop:0;
-  const rows=(catTarget?'':`<button data-c="__all" class="${allMode()?'on':''}${nav[catIdx]==='__all'?' cur':''}"><i style="background:#8a8f9e"></i><b>전체</b><span class="ck">${allMode()?'✓':''}</span></button>`)+store.cats.map((c,i)=>
-    `<button data-c="${c.id}" class="${sel2.includes(c.id)?'on':''}${nav[catIdx]===c.id?' cur':''}">
-      <i style="background:${c.color}"></i><b>${esc(c.name)}</b><em class="csm${c.share?' on':''}" data-csm="${c.id}" title="누르면 ${c.share?'비공개':'팀에 공개'}로 바뀜">${c.share?'공유':'비공개'}</em><span class="ck">${sel2.includes(c.id)?'✓':''}</span></button>`).join('');
+  const rows=(catTarget?'':`<button data-c="__all" class="${allMode()?'on':''}${nav[catIdx]==='__all'?' cur':''}"><i style="background:#8a8f9e"></i><b>전체</b><span class="ck">${allMode()?'✓':''}</span></button>`)+catRows(sel2).map(r=>r.t==='head'
+    ?`<div class="fhd${r.ended?' end':''}"${r.ended?` data-fh="${r.f.id}"`:''}><span class="fcar">${r.ended?(r.open?'▾':'▸'):''}</span><b>${esc(r.f.name)}</b><em>${r.n}</em>${r.ended&&!catTarget?`<button data-fsel="${r.f.id}" class="fsel">모두 보기</button>`:''}</div>`
+    :(c=>`<button data-c="${c.id}" class="${sel2.includes(c.id)?'on':''}${nav[catIdx]===c.id?' cur':''}${isEnded(c)?' endc':''}">
+      <i style="background:${cCol(c)}"></i><b>${esc(c.name)}</b><em class="csm${c.share?' on':''}" data-csm="${c.id}" title="누르면 ${c.share?'비공개':'팀에 공개'}로 바뀜">${c.share?'공유':'비공개'}</em><span class="ck">${sel2.includes(c.id)?'✓':''}</span></button>`)(r.c)).join('');
   $('catMenu').innerHTML=`<div class="clist">${rows}</div><div class="cfoot"><button data-c="__multi" class="${multiCat?'on':''}"><span class="mk">${multiCat?'☑':'☐'}</span>다중 선택</button><button data-c="__edit">분류 설정</button><button data-c="__close" class="ok">완료</button></div><div class="kbd">↑ ↓ 로 옮기고 Enter 로 선택</div>`;
   const _n=$('catMenu').querySelector('.clist');if(_n&&_st)_n.scrollTop=_st;
 }
@@ -9789,6 +9824,10 @@ $('catBtn').onclick=()=>openCatMenu(null,true);
     p.classList.add('big');},{passive:true});
   g.addEventListener('click',()=>{if(moved){moved=false;return;}if(p.style.maxHeight){p.style.maxHeight='';p.classList.remove('big');}else p.classList.toggle('big');});})();
 $('catMenu').onclick=e=>{
+  const fs0=e.target.closest('[data-fsel]');
+  if(fs0){e.stopPropagation();const ids=store.cats.filter(c=>folderOf(c).id===fs0.dataset.fsel).map(c=>c.id);if(ids.length){curCats=ids;saveCurCats();paintCatBtn();try{renderMonth();renderDay();}catch(_){}paintCatMenu();}return;}
+  const fh=e.target.closest('[data-fh]');
+  if(fh){const id=fh.dataset.fh;const cur=catFO[id]!==undefined?catFO[id]:catRows(curSel()).some(r=>r.t==='head'&&r.f.id===id&&r.open);catFO[id]=!cur;paintCatMenu();return;}
   const sm=e.target.closest('[data-csm]');
   if(sm){e.stopPropagation();const c=store.cats.find(x=>x.id===sm.dataset.csm);if(!c)return;
     c.share=!c.share;store.catsMt=NOW();
@@ -9813,20 +9852,60 @@ function nextColor(){
     v=0.55-0.35*Math.max(-1,Math.min(k-3,Math.min(9-k,1)));
     return Math.round(v*255).toString(16).padStart(2,'0');}).join('');
 }
+let catSetFO={};
 function renderCats(){
-  $('catList').innerHTML=store.cats.map((c,i)=>`<div class="crow">
-    <input type="color" value="${c.color}" data-i="${i}" data-f="color" title="색 바꾸기">
+  const fs=foldersOf();const nAct=fs.filter(f=>!f.ended).length,hasEnd=fs.some(f=>f.ended);
+  const row=([c,i])=>{const en=isEnded(c);return `<div class="crow${en?' endc':''}">
+    <input type="color" value="${cCol(c)}" data-i="${i}" data-f="color" title="${en?'종료 현장은 폴더의 공통 색을 씁니다':'색 바꾸기'}"${en?' disabled':''}>
     <input type="text" value="${esc(c.name)}" data-i="${i}" data-f="name" data-name="${i}">
-    <button class="cshare${c.share?' on':''}" data-csh="${i}" title="${c.share?'팀에 공유 중 · 누르면 비공개':'비공개 · 누르면 팀에 공유'}">${c.share?'공유':'비공개'}</button>${c.share?`<button class="cbtn2" data-cto="${i}" title="어느 팀에 보일지 선택">${Array.isArray(c.to)?'대상 '+c.to.length:'대상 전체'}</button>`:''}
-    <button class="cbtn2" data-cedit="${i}" title="이름 수정">✎</button>
+    <button class="cshare${c.share?' on':''}" data-csh="${i}" title="${c.share?'팀에 공유 중 · 누르면 비공개':'비공개 · 누르면 팀에 공유'}">${c.share?'공유':'비공개'}</button>${c.share?`<button class="cbtn2" data-cto="${i}" title="어느 팀에 보일지 선택">${Array.isArray(c.to)?'대상 '+c.to.length:'대상'}</button>`:''}
+    <button class="cbtn2 cmv${en?' back':''}" data-cmv="${i}" title="${en?'진행 중 폴더로 되돌리기':'공사가 끝났으면 종료 폴더로 보내기'}">${en?'복귀':'종료'}</button>
+    ${fs.length>2?`<select class="cfsel" data-csel="${i}" title="폴더 옮기기">${fs.map(f=>`<option value="${f.id}"${folderOf(c).id===f.id?' selected':''}>${esc(f.name)}</option>`).join('')}</select>`:''}
     <button class="cbtn2" data-cup="${i}" title="위로">↑</button>
-    <button class="cbtn2" data-cdel="${i}" title="삭제">×</button></div>`).join('');
+    <button class="cbtn2" data-cdel="${i}" title="삭제">×</button></div>`;};
+  let h='';
+  fs.forEach(f=>{const idx=store.cats.map((c,i)=>[c,i]).filter(([c])=>folderOf(c).id===f.id);
+    const open=catSetFO[f.id]!==undefined?catSetFO[f.id]:!f.ended;
+    h+=`<div class="cfd${f.ended?' end':''}"><button class="cfcar" data-fcar="${f.id}" aria-label="펼치기·접기">${open?'▾':'▸'}</button>
+      <input type="text" class="cfname" value="${esc(f.name)}" data-fname="${f.id}" aria-label="폴더 이름"><span class="cfn">${idx.length}개</span>
+      ${f.ended?`<input type="color" class="cfcol" value="${endColor()}" data-endcol title="종료 현장 공통 색 (모두 이 한 가지 색)">`:''}
+      <button class="cbtn2 cfend${f.ended?' on':''}" data-fend="${f.id}" title="${f.ended?'종료 폴더 · 누르면 진행 폴더로':'진행 폴더 · 누르면 종료 폴더로'}">${f.ended?'종료':'진행'}</button>
+      <button class="cbtn2" data-fdel="${f.id}" title="폴더 삭제">×</button></div>`;
+    if(open)h+=idx.length?idx.map(row).join(''):`<div class="cfempty">비어 있습니다</div>`;});
+  if(hasEnd)h+=`<label class="cfhide"><input type="checkbox" id="endHide"${store.settings&&store.settings.endHide?' checked':''}> 종료 현장 일정은 달력·목록에서 숨기기</label>`;
+  $('catList').innerHTML=h;
 }
-$('catList').oninput=e=>{const t=e.target;if(t.dataset.i===undefined)return;
+$('catList').oninput=e=>{const t=e.target;
+  if(t.dataset.fname){const f=ensureFolders().find(x=>x.id===t.dataset.fname);if(f){f.name=t.value;folderSave();}return;}
+  if(t.dataset.endcol!==undefined){store.settings.endColor=t.value;folderSave();try{redrawAll();}catch(_){}paintCatBtn();return;}
+  if(t.dataset.i===undefined)return;
   const c=store.cats[+t.dataset.i];
   if(t.dataset.f==='name')c.name=t.value;else c.color=t.value;
   store.catsMt=NOW();save();paintCatBtn();};
+$('catList').addEventListener('change',e=>{const t=e.target;
+  if(t.id==='endHide'){store.settings.endHide=t.checked?1:0;folderSave();try{redrawAll();}catch(_){}return;}
+  if(t.dataset.csel){const c=store.cats[+t.dataset.csel];if(c){c.folder=t.value;store.catsMt=NOW();save();renderCats();paintCatBtn();try{redrawAll();}catch(_){}}}});
 $('catList').onclick=e=>{
+  const fc=e.target.closest('[data-fcar]');
+  if(fc){const id=fc.dataset.fcar,f=foldersOf().find(x=>x.id===id);const cur=catSetFO[id]!==undefined?catSetFO[id]:!(f&&f.ended);catSetFO[id]=!cur;renderCats();return;}
+  const fe=e.target.closest('[data-fend]');
+  if(fe){const fl=ensureFolders(),f=fl.find(x=>x.id===fe.dataset.fend);if(!f)return;
+    if(!f.ended&&fl.filter(x=>!x.ended).length<=1){toastMsg('진행 폴더가 하나는 있어야 합니다');return;}
+    f.ended=!f.ended;if(!f.ended)delete f.ended;folderSave();renderCats();paintCatBtn();try{redrawAll();}catch(_){}
+    toastMsg(f.ended?`'${f.name}' 폴더는 색 한 가지로 정리됩니다`:`'${f.name}' 폴더를 진행 폴더로 바꿨어요`);return;}
+  const fd=e.target.closest('[data-fdel]');
+  if(fd){const fl=ensureFolders(),f=fl.find(x=>x.id===fd.dataset.fdel);if(!f)return;
+    const rest=fl.filter(x=>x.id!==f.id);if(!rest.some(x=>!x.ended)){toastMsg('진행 폴더가 하나는 있어야 합니다');return;}
+    const mine=store.cats.filter(c=>folderOf(c).id===f.id);
+    if(mine.length&&!confirm(`'${f.name}' 폴더를 삭제하면 안의 분류 ${mine.length}개가 '${rest.find(x=>!x.ended).name}' 폴더로 옮겨집니다. 계속할까요?`))return;
+    const to=rest.find(x=>!x.ended).id;mine.forEach(c=>{c.folder=to;});if(mine.length)store.catsMt=NOW();
+    store.settings.folders=rest;folderSave();renderCats();paintCatBtn();try{redrawAll();}catch(_){}return;}
+  const mv=e.target.closest('[data-cmv]');
+  if(mv){const c=store.cats[+mv.dataset.cmv];if(!c)return;const fl=ensureFolders();
+    if(isEnded(c)){c.folder=fl.find(x=>!x.ended).id;}
+    else{let ef=fl.find(x=>x.ended);if(!ef){ef={id:'f'+Date.now().toString(36),name:'종료 현장',ended:true};fl.push(ef);folderSave();}c.folder=ef.id;}
+    store.catsMt=NOW();save();renderCats();paintCatBtn();try{redrawAll();}catch(_){}
+    toastMsg(isEnded(c)?`'${c.name}' 을(를) 종료 폴더로 보냈어요 · 색은 한 가지로 통일`:`'${c.name}' 을(를) 진행 폴더로 되돌렸어요`);return;}
   const ct=e.target.closest('[data-cto]');if(ct){const r=ct.getBoundingClientRect();shPick('cat',store.cats[+ct.dataset.cto],r.left,r.bottom+4);return;}
   const sh=e.target.closest('[data-csh]');
   if(sh){const c=store.cats[+sh.dataset.csh];c.share=!c.share;store.catsMt=NOW();save();renderCats();
@@ -9835,8 +9914,8 @@ $('catList').onclick=e=>{
   if(ed){const inp=$('catList').querySelector(`input[data-name="${ed.dataset.cedit}"]`);
     if(inp){inp.focus();inp.select();}return;}
   const up=e.target.closest('[data-cup]');
-  if(up){const i=+up.dataset.cup;if(i>0){
-    [store.cats[i-1],store.cats[i]]=[store.cats[i],store.cats[i-1]];
+  if(up){const i=+up.dataset.cup;const fid=folderOf(store.cats[i]).id;let j=i-1;while(j>=0&&folderOf(store.cats[j]).id!==fid)j--;if(j>=0){
+    [store.cats[j],store.cats[i]]=[store.cats[i],store.cats[j]];
     store.catsMt=NOW();save();renderCats();}return;}
   const d=e.target.closest('[data-cdel]');if(!d)return;
   if(store.cats.length<=2){alert('분류는 최소 2개가 필요합니다.');return;}
@@ -9856,6 +9935,8 @@ $('addCat').onclick=()=>{
   store.catsMt=NOW();save();renderCats();
   const rows=$('catList').querySelectorAll('input[data-name]');
   const last=rows[rows.length-1];if(last){last.focus();last.select();}};
+$('addFolder').onclick=()=>{const fl=ensureFolders();fl.push({id:'f'+Date.now().toString(36),name:'새 폴더'});folderSave();catSetFO={};renderCats();
+  const ins=[...$('catList').querySelectorAll('.cfname')];const l=ins[ins.length-1];if(l){l.focus();l.select();}};
 $('setVoc').onclick=()=>{closeFind();$('vocBtn').click();};
 $('setAn').onclick=()=>{closeFind();$('analyBtn').click();};
 $('catSetBtn').onclick=()=>{closeFind();renderCats();$('catSheet').classList.add('open');};
