@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v274">
+<meta name="app-ver" content="v275">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -6467,7 +6467,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='분류 설정 화면을 한 줄씩 조밀하게 다시 디자인했어요. 색은 작은 동그라미로, 이름은 글자만 보이게, 공유·종료·순서·삭제 버튼은 칸을 맞춰 정렬했어요. 같은 화면에 더 많은 분류가 보여요.';
+const RELNOTE='할 일 목록의 동그라미 버튼을 한 번 누르면 완료, 두 번 누르면 미룬 일, 세 번 누르면 처음으로 돌아와요. 로그인 토큰이 만료돼도 자동으로 갱신하고, 저장 실패가 계속될 때 서버를 덜 두드리도록 고쳤어요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -7602,7 +7602,7 @@ function vName(){const n=(store.settings&&store.settings.name||'').trim();return
 async function vocLoad(){
   if(!SB){vocMe=null;return;}
   const isAuthErr=e=>!!e&&(e.status===401||e.code==='PGRST301'||/jwt|expired|token|unauthor/i.test(e.message||''));
-  const refresh=async()=>{try{const r=await SB.auth.refreshSession();return !!(r&&r.data&&r.data.session);}catch(_){return false;}};
+  const refresh=async()=>{try{const r=await sbRefreshOnce();return !!(r&&r.data&&r.data.session);}catch(_){return false;}};
   /* 토큰이 만료 직전/만료 상태면 요청 전에 먼저 갱신 */
   try{const{data:{session}}=await SB.auth.getSession();
     if(session&&session.expires_at&&session.expires_at*1000<Date.now()+60000)await refresh();}catch(_){}
@@ -9481,7 +9481,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v274';
+const APPVER=/*ver*/'v275';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9528,32 +9528,43 @@ const sbCfg=()=>{let c=null;try{c=JSON.parse(localStorage.getItem(SBCFG)||'null'
   return null;};
 const RECOV=/type=recovery/.test(location.hash);
 const LINKERR=/error_code=otp_expired|error=access_denied/.test(location.hash);
+/* 토큰 갱신은 동시에 하나만, 마지막 갱신 후 15초 안에는 다시 하지 않는다 */
+let _sbRefP=null,_sbRefAt=0;
+async function sbRefreshOnce(){
+  if(_sbRefP)return _sbRefP;
+  if(Date.now()-_sbRefAt<15000)return SB.auth.getSession();
+  _sbRefAt=Date.now();
+  _sbRefP=SB.auth.refreshSession().catch(e=>({data:{session:null},error:e})).finally(()=>{_sbRefP=null;});
+  return _sbRefP;
+}
 function sbInit(){
   const cfg=sbCfg();
   if(!cfg||!cfg.url||!cfg.key)return false;
   if(!window.supabase){setSync('','라이브러리 로드 실패');return false;}
   try{
-    /* 모든 Supabase 요청 공통: 401(로그인 토큰 만료)이면 토큰을 갱신하고 한 번만 재시도한다.
-       갱신 자체가 인증 오류로 거절되면(로그인 정보 폐기) 이 기기 로그인만 해제해 다시 로그인하게 한다.
-       네트워크 오류일 때는 로그아웃하지 않는다. */
+    /* 모든 Supabase 요청 공통: 로그인 토큰이 만료돼 401이 오면 토큰을 갱신하고 한 번만 재시도한다.
+       - 갱신은 한 번에 하나만(동시에 여러 번 갱신하면 서버가 429 로 막는다), 15초 안에는 다시 갱신하지 않는다.
+       - 로그인 토큰 없이(공개 키만으로) 보낸 요청의 401 은 건드리지 않는다.
+       - 갱신이 실패해도 절대 자동 로그아웃하지 않는다(상태 줄에만 안내). */
     const sbFetch=async(input,init)=>{
       const res=await fetch(input,init);
       if(res.status!==401)return res;
       const url=typeof input==='string'?input:(input&&input.url)||'';
       if(/\/auth\/v1\//.test(url)||!SB)return res;
       try{
-        const{data,error}=await SB.auth.refreshSession();
-        if(error)throw error;
-        if(!data||!data.session)throw new Error('no-session');
-        const h=new Headers((init&&init.headers)||{});
-        h.set('Authorization','Bearer '+data.session.access_token);
-        return await fetch(input,Object.assign({},init,{headers:h}));
-      }catch(e){
-        if(e&&e.name==='AuthApiError'||(e&&(e.status===400||e.status===401||e.status===403))||(e&&e.message==='no-session')){
-          try{setSync('busy','로그인 만료 · 다시 로그인해 주세요');await SB.auth.signOut({scope:'local'});}catch(_){}
+        const tok=((new Headers((init&&init.headers)||{})).get('Authorization')||'').replace(/^Bearer\s+/i,'');
+        if(!tok||tok===cfg.key)return res;
+        let{data:{session:s}}=await SB.auth.getSession();
+        if(!s||s.access_token===tok){
+          const r=await sbRefreshOnce();
+          s=r&&r.data&&r.data.session;
+          if(!s){try{setSync('busy','로그인 만료 · 다시 로그인해 주세요');}catch(_){}return res;}
         }
-        return res;
-      }
+        if(s.access_token===tok)return res;
+        const h=new Headers((init&&init.headers)||{});
+        h.set('Authorization','Bearer '+s.access_token);
+        return await fetch(input,Object.assign({},init,{headers:h}));
+      }catch(e){return res;}
     };
     SB=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true},global:{fetch:sbFetch}});
   }catch(e){setSync('','서버 설정 오류');return false;}
