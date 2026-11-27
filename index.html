@@ -9,7 +9,7 @@
 <script>try{var d=document.documentElement,__t=localStorage.getItem("theme2")||"light",__k=localStorage.getItem("skin")||"";d.setAttribute("data-theme",__t);if(__k&&__k!=="light"&&__k!=="dark")d.setAttribute("data-skin",__k);d.setAttribute("data-layout",localStorage.getItem("layout")||"focus");var __f=localStorage.getItem("font")||"";if(__f&&__f!=="sys")d.setAttribute("data-font",__f)}catch(e){document.documentElement.setAttribute("data-theme","light");document.documentElement.setAttribute("data-layout","focus")}</script>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<meta name="app-ver" content="v275">
+<meta name="app-ver" content="v276">
 <link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <title>TY-Scheduler</title>
@@ -5876,7 +5876,40 @@ store.catsMt=store.catsMt||0;
 /* 계정별 분리: 로그인 확인 전에는 일정 숨김, 다른 계정·로그아웃이면 이 기기 사본 비움 */
 try{if(!Object.keys(localStorage).some(k=>/^sb-.*-auth-token$/.test(k)))document.documentElement.classList.add('noauth');else document.documentElement.classList.add('authin');}catch(e){}
 try{if(localStorage.getItem('sb-config')||/github\.io/.test(location.host))document.documentElement.classList.add('authwait');setTimeout(()=>document.documentElement.classList.remove('authwait'),8000);}catch(e){}
+/* ── 안전장치: 서버에 아직 저장되지 않은 변경이 있는 채로 이 기기의 사본을 지우게 되면,
+      먼저 이 기기에 따로 보관해 두었다가 같은 계정으로 다시 로그인하면 자동으로 합쳐서 복구한다.
+      (이미 서버에 저장된 상태면 보관하지 않는다 — 로그아웃한 기기에 일정이 남지 않게) ── */
+const SAFE_KEY='ty-safety-v1',SAFE_DAYS=30,SAFE_MAXCH=1500000;
+function safeLoad(){try{const a=JSON.parse(localStorage.getItem(SAFE_KEY)||'[]');
+  return Array.isArray(a)?a.filter(s=>s&&s.owner&&s.data&&(Date.now()-s.at)<SAFE_DAYS*864e5):[];}catch(e){return [];}}
+function safeStore(a){try{
+  while(a.length>1&&JSON.stringify(a).length>SAFE_MAXCH)a.pop();      /* 오래된 것부터 버린다 */
+  localStorage.setItem(SAFE_KEY,JSON.stringify(a));return true;}catch(e){return false;}}
+function safeSnap(why){
+  try{
+    if(!store.owner)return;
+    if(!((store.items&&store.items.length)||Object.keys(store.memos||{}).length))return;
+    if(!(dirty||pushing))return;                       /* 서버에 이미 저장됨 → 보관 불필요 */
+    const snap={owner:store.owner,at:Date.now(),why:why||'',data:JSON.parse(JSON.stringify(payload()))};
+    const a=safeLoad();a.unshift(snap);
+    if(a.length>5)a.length=5;
+    if(safeStore(a)){try{toastMsg('저장되지 않은 변경을 이 기기에 보관했어요 · 다시 로그인하면 복구됩니다');}catch(_){}}
+  }catch(e){}}
+function safeRestore(uid){
+  try{
+    const mine=safeLoad().filter(s=>s.owner===uid);
+    if(!mine.length)return 0;
+    let n=0;
+    mine.slice().reverse().forEach(s=>{                /* 오래된 것부터 합쳐야 최신 수정이 이긴다 */
+      const have={};store.items.forEach(i=>have[i.id]=i);
+      (s.data.items||[]).forEach(ri=>{const li=have[ri.id];if(!li||(ri.mt||0)>(li.mt||0))n++;});
+      mergeRemote(s.data);});
+    window.__safeRestored=true;
+    return n;
+  }catch(e){return 0;}}
+function safeClear(uid){try{safeStore(safeLoad().filter(s=>s.owner!==uid));}catch(e){}}
 function wipeLocal(){
+  safeSnap('wipe');
   store.items=[];store.memos={};store.memoMeta={};store.memoMt={};store.tomb={};store.cases=[];store.casesMt={};store.caseTomb={};
   store.notified={};store.cats=JSON.parse(JSON.stringify(DEFAULT_CATS));store.catsMt=0;store.owner=null;
   try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
@@ -6467,7 +6500,7 @@ function ntcShow(title,msg,act,actLabel){
   const x=document.createElement('button');x.textContent='확인';x.onclick=close;r.appendChild(x);
   d.append(b,p,r);box.appendChild(d);box.classList.add('on');
 }
-const RELNOTE='할 일 목록의 동그라미 버튼을 한 번 누르면 완료, 두 번 누르면 미룬 일, 세 번 누르면 처음으로 돌아와요. 로그인 토큰이 만료돼도 자동으로 갱신하고, 저장 실패가 계속될 때 서버를 덜 두드리도록 고쳤어요.';
+const RELNOTE='서버에 저장되지 않은 변경이 있는 채로 로그아웃되거나 로그인이 풀려도, 변경 내용을 이 기기에 보관했다가 다시 로그인하면 자동으로 복구해요. 로그아웃할 때는 저장 안 된 변경이 있으면 한 번 더 물어봐요.';
 function verNotice(){
   let last=null;try{last=localStorage.getItem('tyLastVer');localStorage.setItem('tyLastVer',APPVER);}catch(_){return;}
   if(last&&last!==APPVER)ntcShow('최신 버전으로 업데이트되었습니다',APPVER+' · '+RELNOTE);
@@ -8790,7 +8823,8 @@ async function doPush(){
     /* 인증 오류가 계속되면 3초마다 서버를 두드리지 않고 30초 간격으로 늦춘다 */
     const authErr=!!error&&(error.code==='PGRST301'||error.status===401||/jwt|expired|unauthor/i.test(error.message||''));
     if(error){setSync('busy',authErr?'로그인 만료 · 다시 로그인해 주세요':'저장 실패 · 재시도');dirty=true;}
-    else{setSync('on','동기화됨 · '+(session.user.email||''));syncShared();}
+    else{setSync('on','동기화됨 · '+(session.user.email||''));syncShared();
+      if(window.__safeRestored){window.__safeRestored=false;safeClear(session.user.id);}}   /* 복구분이 서버에 저장됐으니 보관본 삭제 */
     pushing=false;if(dirty)setTimeout(doPush,authErr?30000:3000);
     return;
   }
@@ -9481,7 +9515,7 @@ async function tsSaveMemo(inp){const b=inp.value.trim();if(!b||!tsTid())return;i
   if(r.error){toastMsg('메모를 저장하지 못했습니다');inp.value=b;return;}tsLoadMemos();}
 $('ts').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.key==='Enter'&&!e.isComposing){e.preventDefault();tsSaveMemo(e.target);}});
 $('ts').addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('tsqi')&&e.target.value.trim())tsSaveMemo(e.target);});
-const APPVER=/*ver*/'v275';
+const APPVER=/*ver*/'v276';
 (function(){const e=$('verTxt');if(e)e.textContent=APPVER;})();
 /* GitHub 에 올라온 파일을 직접 읽어 새 버전이 있는지 확인한다 */
 let updSeen=null;
@@ -9587,6 +9621,8 @@ async function onAuth(){
   if(error){setSync('busy','불러오기 실패');}
   else{
     if(data&&data.data&&mergeRemote(data.data)){save(false);redrawAll();}
+    {const rn=safeRestore(session.user.id);      /* 이 기기에 보관돼 있던 저장 안 된 변경을 합친다 */
+     if(rn){save(false);redrawAll();try{toastMsg('이 기기에 보관돼 있던 저장 안 된 변경 '+rn+'건을 복구했어요');}catch(_){}}}
     setSync('on','동기화됨 · '+(session.user.email||''));
     try{vocNotice();}catch(_){}
     try{if(pushHere()&&'Notification'in window&&Notification.permission==='granted')pushEnable(false).catch(()=>{});}catch(_){}
@@ -9747,7 +9783,9 @@ function renderAuth(){
     catch(e){prompt('이 주소를 복사해 다른 기기에서 여세요',link);}
   };
   $('aPwChg').onclick=()=>{recovering=true;renderAuth();};
-  $('aOut').onclick=async()=>{await SB.auth.signOut();session=null;backend='sb';wipeLocal();try{redrawAll();}catch(_){}setSync('','로그아웃됨');renderAuth();};
+  $('aOut').onclick=async()=>{
+    if((dirty||pushing)&&!confirm('아직 서버에 저장되지 않은 변경이 있어요.\n지금 로그아웃하면 이 기기에서 지워집니다. (같은 계정으로 다시 로그인하면 복구를 시도합니다)\n\n그래도 로그아웃할까요?'))return;
+    await SB.auth.signOut();session=null;backend='sb';wipeLocal();try{redrawAll();}catch(_){}setSync('','로그아웃됨');renderAuth();};
   $('sbReset').onclick=()=>{localStorage.removeItem(SBCFG);location.reload();};
 }
 (async()=>{
